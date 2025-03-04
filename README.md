@@ -12,4 +12,4 @@ Desarrolladores Noobs:
   - David Días
   - Cristian Mojica
   - Manuel Alfonso
-  - Nestor Leó
+  - Nestor León
