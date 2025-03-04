@@ -5,8 +5,9 @@ Proyecto de desarrollo web con django de una plataforma para la gestión integra
 Corporación CDT de GAS
 
 # EQUIPO DE DESARROLLO
-Líder y Desarrollador principal: Jose Augusto Fuentes
+
 Desarrolladores Noobs:
+  - Jose Augusto Fuentes
   - Oscar Gómez
   - David Días
   - Cristian Mojica
