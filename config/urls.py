@@ -20,5 +20,9 @@ from django.urls import path, include
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('_AppHome.urls')),  # Incluir las URLs de Home
+<<<<<<< HEAD
     path('calc1/', include('_AppCalc1.urls')),  # Incluir las URLs de Home
+=======
+    path('calc1/', include('_AppCalc1.urls')),  # Ruta para Calc1
+>>>>>>> origin/main
 ]
