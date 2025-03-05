@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% load static %} 
+
+{% block title %}Home - GISME{% endblock %}
+
+{% block content %}
+    <h1>Bienvenido a GISME</h1>
+    <p>Este es el Home de la aplicación.</p>
+{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static '_AppHome/styles.css' %}">
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static '_AppHome/script.js' %}"></script>
+{% endblock %}
