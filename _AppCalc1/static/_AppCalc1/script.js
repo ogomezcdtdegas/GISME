@@ -1,0 +1,1 @@
+console.log("Script de AppCalc1 cargado");

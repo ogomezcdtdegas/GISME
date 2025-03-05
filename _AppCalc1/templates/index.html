@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}AppCalc1 - GISME{% endblock %}
+
+{% block content %}
+<h1>Bienvenido a a la Aplicacion Calc1</h1>
+<p>Esta es la aplicación de Incertidumbre.</p>
+{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static '_AppCalc1/styles.css' %}">
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static '_AppCalc1/script.js' %}"></script>
+{% endblock %}
