@@ -27,6 +27,7 @@ GASES_OPCIONES = {
 }
 
 def calc1_view(request):
+
     context = {"gases": GASES_OPCIONES}  # Pasar los gases al template
 
     if request.method == "POST":
@@ -72,3 +73,4 @@ def calc1_view(request):
             context["error"] = "La composición del gas no puede ser 0%. Debe agregar al menos un gas."
 
     return render(request, "_AppCalc1/index.html", context)
+
