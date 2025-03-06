@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% load static %} 
+
+{% block title %}Calc1 - GISME{% endblock %}
+
+{% block content %}
+    <h1>Bienvenido a Calc1</h1>
+    <p>Este es el Calc1 de la aplicación.</p>
+{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static '_AppHome/styles.css' %}">
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static '_AppHome/script.js' %}"></script>
+{% endblock %}
