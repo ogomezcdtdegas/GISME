@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     '_AppHome',
     '_AppCalc1',
+    '_AppCalc2',
 ]
 
 MIDDLEWARE = [
@@ -134,3 +135,9 @@ STATICFILES_FINDERS = [
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+REST_FRAMEWORK = {
+    'DEFAULT_RENDERER_CLASSES': (
+        'rest_framework.renderers.JSONRenderer',  # 🔹 Solo usa JSON, no HTML
+    ),
+}
