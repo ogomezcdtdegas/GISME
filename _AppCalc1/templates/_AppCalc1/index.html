@@ -4,8 +4,67 @@
 {% block title %}Calc1 - GISME{% endblock %}
 
 {% block content %}
-    <h1>Bienvenido a Calc1</h1>
-    <p>Este es el Calc1 de la aplicación.</p>
+<div class="container mt-8">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-lg">
+                <div class="card-header bg-primary text-white text-center">
+                    <h3>Bienvenido a Calc1</h3>
+                    <p>Ingrese los datos para calcular las propiedades del gas:</p>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+
+                        <div class="mb-3">
+                            <label for="pressure" class="form-label">Presión (bara):</label>
+                            <input type="number" step="any" class="form-control" name="pressure" id="pressure" value="1.0" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="temperature" class="form-label">Temperatura (°C):</label>
+                            <input type="number" step="any" class="form-control" name="temperature" id="temperature" value="40.0" required>
+                        </div>
+
+                        <h5 class="mt-3">Composición del Gas (%)</h5>
+                        <p class="text-muted">Seleccione los gases y asigne su porcentaje:</p>
+
+                        <div class="row">
+                            {% for key, name in gases.items %}
+                                <div class="col-md-6">
+                                    <div class="mb-2">
+                                        <label for="gas_{{ key }}" class="form-label">{{ name }} ({{ key }})</label>
+                                        <input type="number" step="any" min="0" max="100" class="form-control" name="gas_{{ key }}" id="gas_{{ key }}" value="0">
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="d-grid mt-3">
+                            <button type="submit" class="btn btn-primary">Calcular</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            {% if results %}
+            <div class="alert alert-info mt-4 text-center">
+                <h4>Resultados</h4>
+                <p><strong>Densidad (GERG-2008):</strong> {{ results.rho_gerg }}</p>
+                <p><strong>Densidad (DETAIL):</strong> {{ results.rho_detail }}</p>
+                <p><strong>Factor de compresibilidad (GERG-2008):</strong> {{ results.z_gerg }}</p>
+                <p><strong>Factor de compresibilidad (DETAIL):</strong> {{ results.z_detail }}</p>
+            </div>
+            {% endif %}
+
+            {% if error %}
+            <div class="alert alert-danger mt-4 text-center">
+                <strong>Error:</strong> {{ error }}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block extra_css %}
