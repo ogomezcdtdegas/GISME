@@ -71,6 +71,7 @@ def calc1_view(request):
 
         except Exception as e:
             context["error"] = "La composición del gas no puede ser 0%. Debe agregar al menos un gas."
-
-    return render(request, "_AppCalc1/index.html", context)
+    # Puedes elegir la plantilla dinámicamente
+    template = request.GET.get('template', '_AppCalc1/index.html')  
+    return render(request, template, context)
 
