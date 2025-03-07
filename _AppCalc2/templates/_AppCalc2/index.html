@@ -17,6 +17,13 @@
 <!-- 🔹 Contenedor donde se mostrarán los resultados -->
 <div id="resultado_incertidumbre"></div>
 
+    <!-- Lienzo donde se dibujará el histograma -->
+    <div id="chartContainer">
+        <canvas id="histogramaChart"></canvas>
+    </div>
+
+
+
 {% endblock %}
 
 {% block extra_css %}
@@ -24,5 +31,7 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="{% static '_AppCalc2/script.js' %}?v={{ timestamp }}"></script>
+
 {% endblock %}
