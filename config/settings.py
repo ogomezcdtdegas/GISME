@@ -90,7 +90,7 @@ DATABASES = {
         'NAME': 'dbGisme',
         'USER': 'admin',
         'PASSWORD': 'admin123',
-        'HOST': '31.220.52.98',  # o 'localhost'
+        'HOST': 'bla bla bla',  # o 'localhost'
         'PORT': '5432',
     }
 }
