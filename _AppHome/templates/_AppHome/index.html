@@ -7,9 +7,9 @@
 <div class="container mt-5">
     <h1 class="text-center">Gestión de Equipos</h1>
 
-    <!-- Formulario de Registro y Búsqueda -->
+    <!-- Formulario de Registro -->
     <div class="card p-4 mt-4">
-        <form method="post" class="row g-3">
+        <form method="post" class="row g-3" action="{% url 'gestion_equipos' %}">
             {% csrf_token %}
 
             <div class="col-md-4">
@@ -51,7 +51,7 @@
                     <td>{{ equipo.serial }}</td>
                     <td>{{ equipo.sap }}</td>
                     <td>{{ equipo.marca }}</td>
-                    <td>{{ equipo.fecha_registro|date:"d-m-Y H:i" }}</td>
+                    <td>{{ equipo.created_at|date:"d-m-Y H:i" }}</td>
                 </tr>
                 {% empty %}
                 <tr>
@@ -63,7 +63,6 @@
     </div>
 </div>
 {% endblock %}
-
 
 {% block extra_css %}
     <link rel="stylesheet" href="{% static '_AppHome/styles.css' %}">

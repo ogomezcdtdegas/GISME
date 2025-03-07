@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     '_AppHome',
     '_AppCalc1',
     '_AppCalc2',
+    '_AppCommon',
 ]
 
 MIDDLEWARE = [
@@ -76,10 +77,21 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-DATABASES = {
+'''DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}'''
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'dbGisme',
+        'USER': 'admin',
+        'PASSWORD': 'admin123',
+        'HOST': '31.220.52.98',  # o 'localhost'
+        'PORT': '5432',
     }
 }
 

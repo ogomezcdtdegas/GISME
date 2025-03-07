@@ -14,5 +14,5 @@ def gestion_equipos(request):
         if serial and sap and marca:
             Equipo.objects.create(serial=serial, sap=sap, marca=marca)
 
-    equipos = Equipo.objects.all()
+    equipos = Equipo.objects.all().order_by('-created_at')  # Ordenar por fecha descendente
     return render(request, "_AppHome/index.html", {"equipos": equipos})

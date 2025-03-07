@@ -1,10 +1,15 @@
 from django.db import models
+from _AppCommon.models import BaseModel  # Importamos el modelo base
 
-class Equipo(models.Model):
-    serial = models.CharField(max_length=50, unique=True, verbose_name="Serial")
-    sap = models.CharField(max_length=50, verbose_name="SAP")
-    marca = models.CharField(max_length=50, verbose_name="Marca")
-    fecha_registro = models.DateTimeField(auto_now_add=True, verbose_name="Fecha de Registro")
+
+class Equipo(BaseModel):
+    serial = models.CharField(max_length=100, unique=True)
+    sap = models.CharField(max_length=100)
+    marca = models.CharField(max_length=100)
+
+    class Meta:
+        verbose_name = "Equipo"
+        verbose_name_plural = "Equipos"
 
     def __str__(self):
-        return f"{self.serial} - {self.marca}"
+        return f"{self.serial} - {self.sap} - {self.marca}"
