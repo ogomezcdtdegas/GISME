@@ -9,7 +9,7 @@
 
     <!-- Formulario de Registro -->
     <div class="card p-4 mt-4">
-        <form method="post" class="row g-3" action="{% url 'crearEquipo' %}">
+        <form id="equipoForm" class="row g-3">
             {% csrf_token %}
 
             <div class="col-md-4">
@@ -59,7 +59,7 @@
                     <th>Fecha Registro</th>
                 </tr>
             </thead>
-            <tbody>
+            <tbody id="equiposTableBody">
                 {% for equipo in equipos %}
                 <tr>
                     <td>{{ equipo.serial }}</td>
@@ -116,5 +116,31 @@
             const perPage = document.getElementById('recordsPerPage').value;
             window.location.href = `?per_page=${perPage}&page=1`;
         }
+
+        document.getElementById('equipoForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData(this);
+            fetch("{% url 'crearEquipo' %}", {
+                method: "POST",
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const newRow = `<tr>
+                        <td>${data.equipo.serial}</td>
+                        <td>${data.equipo.sap}</td>
+                        <td>${data.equipo.marca}</td>
+                        <td>${data.equipo.created_at}</td>
+                    </tr>`;
+                    document.getElementById('equiposTableBody').insertAdjacentHTML('afterbegin', newRow);
+                    document.getElementById('equipoForm').reset();
+                }
+            })
+            .catch(error => console.error("Error:", error));
+        });
     </script>
 {% endblock %}
