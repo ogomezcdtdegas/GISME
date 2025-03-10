@@ -111,36 +111,4 @@
 
 {% block extra_js %}
     <script src="{% static '_AppHome/script.js' %}"></script>
-    <script>
-        function updateRecordsPerPage() {
-            const perPage = document.getElementById('recordsPerPage').value;
-            window.location.href = `?per_page=${perPage}&page=1`;
-        }
-
-        document.getElementById('equipoForm').addEventListener('submit', function(event) {
-            event.preventDefault();
-            const formData = new FormData(this);
-            fetch("{% url 'crearEquipo' %}", {
-                method: "POST",
-                body: formData,
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    const newRow = `<tr>
-                        <td>${data.equipo.serial}</td>
-                        <td>${data.equipo.sap}</td>
-                        <td>${data.equipo.marca}</td>
-                        <td>${data.equipo.created_at}</td>
-                    </tr>`;
-                    document.getElementById('equiposTableBody').insertAdjacentHTML('afterbegin', newRow);
-                    document.getElementById('equipoForm').reset();
-                }
-            })
-            .catch(error => console.error("Error:", error));
-        });
-    </script>
 {% endblock %}
