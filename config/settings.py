@@ -89,7 +89,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'dbGisme',
         'USER': 'admin',
-        'PASSWORD': 'admin123',
+        'PASSWORD': 'ope4kLug2-9sGwFMSfvBZ*',
         'HOST': '31.220.52.98',  # o 'localhost'
         'PORT': '5432',
     }
