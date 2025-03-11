@@ -1,7 +1,7 @@
 from django.urls import path
-from . import views
+from .views import allEquiposPag, crearEquipo
 
 urlpatterns = [
-    path('allEquiposPag/', views.allEquiposPag, name='allEquiposPag'),  # 📌 Ruta para la página de inicio
-    path('crear-equipo/', views.crearEquipo, name='crearEquipo'),
+    path('allEquiposPag/', allEquiposPag.as_view(), name='allEquiposPag'),  # 📌 Listar equipos con paginación
+    path('crear-equipo/', crearEquipo.as_view(), name='crearEquipo'),  # 📌 Crear equipo
 ]

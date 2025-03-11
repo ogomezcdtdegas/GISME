@@ -13,9 +13,7 @@
                     <p>Ingrese los datos para calcular las propiedades del gas:</p>
                 </div>
                 <div class="card-body">
-                    <form method="post">
-                        {% csrf_token %}
-
+                    <form id="calc-form">
                         <div class="mb-3">
                             <label for="pressure" class="form-label">Presión (bara):</label>
                             <input type="number" step="any" class="form-control" name="pressure" id="pressure" value="1.0" required>
@@ -44,33 +42,55 @@
                             <button type="submit" class="btn btn-primary">Calcular</button>
                         </div>
                     </form>
+
+                    <div id="results" class="alert alert-info mt-4 text-center" style="display: none;">
+                        <h4>Resultados</h4>
+                        <p><strong>Densidad (GERG-2008):</strong> <span id="rho_gerg"></span></p>
+                        <p><strong>Densidad (DETAIL):</strong> <span id="rho_detail"></span></p>
+                        <p><strong>Factor de compresibilidad (GERG-2008):</strong> <span id="z_gerg"></span></p>
+                        <p><strong>Factor de compresibilidad (DETAIL):</strong> <span id="z_detail"></span></p>
+                    </div>
+
+                    <div id="error-message" class="alert alert-danger mt-4 text-center" style="display: none;"></div>
                 </div>
             </div>
-
-            {% if results %}
-            <div class="alert alert-info mt-4 text-center">
-                <h4>Resultados</h4>
-                <p><strong>Densidad (GERG-2008):</strong> {{ results.rho_gerg }}</p>
-                <p><strong>Densidad (DETAIL):</strong> {{ results.rho_detail }}</p>
-                <p><strong>Factor de compresibilidad (GERG-2008):</strong> {{ results.z_gerg }}</p>
-                <p><strong>Factor de compresibilidad (DETAIL):</strong> {{ results.z_detail }}</p>
-            </div>
-            {% endif %}
-
-            {% if error %}
-            <div class="alert alert-danger mt-4 text-center">
-                <strong>Error:</strong> {{ error }}
-            </div>
-            {% endif %}
         </div>
     </div>
 </div>
 {% endblock %}
 
-{% block extra_css %}
-    <link rel="stylesheet" href="{% static '_AppHome/styles.css' %}">
-{% endblock %}
-
 {% block extra_js %}
-    <script src="{% static '_AppHome/script.js' %}"></script>
+<script>
+    document.getElementById("calc-form").addEventListener("submit", function(event) {
+        event.preventDefault();
+        
+        let formData = new FormData(this);
+        let jsonData = {};
+        formData.forEach((value, key) => { jsonData[key] = value; });
+
+        fetch("{% url 'calc1' %}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": "{{ csrf_token }}"
+            },
+            body: JSON.stringify(jsonData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                document.getElementById("error-message").innerText = data.error;
+                document.getElementById("error-message").style.display = "block";
+                document.getElementById("results").style.display = "none";
+            } else {
+                document.getElementById("rho_gerg").innerText = data.rho_gerg;
+                document.getElementById("rho_detail").innerText = data.rho_detail;
+                document.getElementById("z_gerg").innerText = data.z_gerg;
+                document.getElementById("z_detail").innerText = data.z_detail;
+                document.getElementById("results").style.display = "block";
+                document.getElementById("error-message").style.display = "none";
+            }
+        });
+    });
+</script>
 {% endblock %}
