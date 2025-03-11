@@ -2,7 +2,8 @@ from django.shortcuts import render, redirect
 from django.core.paginator import Paginator
 from django.http import JsonResponse
 from .models import Equipo
-
+from django.views.decorators.csrf import csrf_exempt
+import json
 # Create your views here.
 
 ''' -------------------------------------- '''
@@ -48,26 +49,25 @@ def allEquiposPag(request):
 ''' -------------------------------------- '''
 ''' -------------- Commands -------------- '''
 ''' -------------------------------------- '''
+#@csrf_exempt  # ⚠️ SOLO para pruebas. Usa CSRF en producción.
 def crearEquipo(request):
-    if request.method == "POST" and request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-        serial = request.POST.get("serial")
-        sap = request.POST.get("sap")
-        marca = request.POST.get("marca")
+    if request.method == "POST":
+        try:
+            data = json.loads(request.body.decode("utf-8"))  # Decodifica JSON
+            serial = data.get("serial")
+            sap = data.get("sap")
+            marca = data.get("marca")
 
-        if serial and sap and marca:
-            equipo = Equipo.objects.create(serial=serial, sap=sap, marca=marca)
-            return JsonResponse({
-                "success": True,
-                "equipo": {
-                    "serial": equipo.serial,
-                    "sap": equipo.sap,
-                    "marca": equipo.marca,
-                    "created_at": equipo.created_at.strftime("%d-%m-%Y %H:%M")
-                }
-            })
+            if not serial or not sap or not marca:
+                return JsonResponse({"success": False, "error": "Datos inválidos"}, status=400)
 
-    return JsonResponse({"success": False, "error": "Datos inválidos"}, status=400)
+            # 🚀 Aquí guarda en la BD (usa tu modelo)
+            Equipo.objects.create(serial=serial, sap=sap, marca=marca)
 
-        #return redirect("home")
+            return JsonResponse({"success": True, "message": "Equipo registrado con éxito"})
+        except json.JSONDecodeError:
+            return JsonResponse({"success": False, "error": "Formato JSON incorrecto"}, status=400)
+
+    return JsonResponse({"success": False, "error": "Método no permitido"}, status=405)
 
 

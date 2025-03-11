@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     '_AppCalc1',
     '_AppCalc2',
     '_AppCommon',
+    'django_extensions',
 ]
 
 MIDDLEWARE = [
