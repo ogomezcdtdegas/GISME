@@ -5,8 +5,9 @@
 
 {% block content %}
     <h2>Calcular Incertidumbre y mostrar histograma</h2>
-    {% csrf_token %}
+    
     <form id="incertidumbreForm">  <!-- 🔹 Asegurar que este ID coincida con script.js -->
+        {% csrf_token %}
         <input type="number" id="densidad_medida" placeholder="Densidad Medida" required>
         <input type="number" id="u_cal" placeholder="u_cal" required>
         <input type="number" id="u_res" placeholder="u_res" required>

@@ -1,17 +1,17 @@
 from django.shortcuts import render
-from rest_framework.decorators import api_view
+from rest_framework.views import APIView
 from rest_framework.response import Response
 import metrolopy as uc
 from django.utils.timezone import now
 
+class IncertidumbreAPIView(APIView):
 
-#@csrf_exempt
-@api_view(['GET', 'POST'])  # 🔹 Manejar GET y POST en la misma vista
-def calcular_incertidumbre(request):
-    if request.method == 'GET':
-         return render(request, '_AppCalc2/index.html', {'timestamp': now().timestamp()})
+    def get(self, request):
+        """Renderiza la página con el timestamp."""
+        return render(request, '_AppCalc2/index.html', {'timestamp': now().timestamp()})
 
-    if request.method == 'POST':
+    def post(self, request):
+        """Calcula la incertidumbre y devuelve los resultados."""
         print("✅ Recibida solicitud POST a /calc2/incertidumbre/")
 
         try:
@@ -21,6 +21,7 @@ def calcular_incertidumbre(request):
             if not all(k in data for k in ['densidad_medida', 'u_cal', 'u_res', 'u_der']):
                 return Response({"error": "Faltan datos en la solicitud"}, status=400)
 
+            # Convertir a float y validar
             valor_medido_d = float(data.get('densidad_medida', 0))
             ucal = float(data.get('u_cal', 0))
             ures = float(data.get('u_res', 0))
@@ -29,6 +30,7 @@ def calcular_incertidumbre(request):
             if valor_medido_d < 0 or ucal < 0 or ures < 0 or uder < 0:
                 return Response({"error": "Los valores deben ser positivos"}, status=400)
 
+            # Cálculo de incertidumbre
             k = 2
             ucal_mp = uc.gummy(0, u=ucal/k)
             ures_mp = uc.gummy(uc.UniformDist(center=0.0, half_width=ures/2))
