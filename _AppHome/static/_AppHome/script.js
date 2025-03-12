@@ -68,14 +68,16 @@ document.getElementById('equipoForm').addEventListener('submit', async function(
         console.log("📩 Respuesta del servidor:", data);
 
         if (data.success) {
-            const newRow = `<tr>
+            /*const newRow = `<tr>
                 <td>${serial}</td>
                 <td>${sap}</td>
                 <td>${marca}</td>
                 <td>${new Date().toLocaleString()}</td> 
             </tr>`;
             document.getElementById('equiposTableBody').insertAdjacentHTML('afterbegin', newRow);
-            document.getElementById('equipoForm').reset();
+            document.getElementById('equipoForm').reset();*/
+            alert("✅ Equipo registrado con éxito");
+            window.location.href = "/allEquiposPag/";  // 🔄 Redirigir a la vista de equipos
         } else {
             alert("❌ Error: " + (data.error || "No se pudo registrar el equipo"));
         }
