@@ -48,3 +48,15 @@ class crearEquipo(APIView):
             return Response({"success": True, "message": "Equipo registrado con éxito"}, status=status.HTTP_201_CREATED)
         
         return Response({"success": False, "error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class editarEquipo(APIView):
+    def put(self, request, equipo_id):
+        equipo = get_object_or_404(Equipo, id=equipo_id)
+        serializer = EquipoSerializer(equipo, data=request.data, partial=True)
+        
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"success": True, "message": "Equipo actualizado con éxito"}, status=status.HTTP_200_OK)
+        
+        return Response({"success": False, "error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)

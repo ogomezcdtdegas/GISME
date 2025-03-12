@@ -83,3 +83,44 @@ document.getElementById('equipoForm').addEventListener('submit', async function(
         console.error("❌ Error en el registro de equipo:", error);
     }
 });
+
+
+function openEditModal(id, serial, sap, marca) {
+    document.getElementById("editEquipoId").value = id;
+    document.getElementById("editSerial").value = serial;
+    document.getElementById("editSap").value = sap;
+    document.getElementById("editMarca").value = marca;
+    var modal = new bootstrap.Modal(document.getElementById('editModal'));
+    modal.show();
+}
+
+document.getElementById("editEquipoForm").addEventListener("submit", async function(event) {
+    event.preventDefault();
+
+    const id = document.getElementById("editEquipoId").value;
+    const serial = document.getElementById("editSerial").value;
+    const sap = document.getElementById("editSap").value;
+    const marca = document.getElementById("editMarca").value;
+    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+    try {
+        const response = await fetch(`/editar-equipo/${id}/`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": csrftoken,
+                "X-Requested-With": "XMLHttpRequest"
+            },
+            body: JSON.stringify({ serial, sap, marca })
+        });
+
+        const data = await response.json();
+        if (data.success) {
+            location.reload();
+        } else {
+            alert("Error al actualizar el equipo");
+        }
+    } catch (error) {
+        console.error("Error en la actualización:", error);
+    }
+});
