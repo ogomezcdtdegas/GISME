@@ -88,19 +88,6 @@ WSGI_APPLICATION = 'config.wsgi.application'
     }
 }'''
 
-''' 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'dbGisme',
-        'USER': 'admin',
-        'PASSWORD': 'ope4kLug2-9sGwFMSfvBZ*',
-        'HOST': '31.220.52.98',  # o 'localhost'
-        'PORT': '5432',
-    }
-}
-'''
-
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',  # Cambia esto si usas otra DB
