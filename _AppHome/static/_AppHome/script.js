@@ -14,7 +14,7 @@ function loadEquiposPag(page = 1) {
     
     const perPage = document.getElementById('recordsPerPage').value;
 
-    fetch(`/allEquiposPag/?page=${page}&per_page=${perPage}`, {
+    fetch(`/?page=${page}&per_page=${perPage}`, {
         method: "GET",
         headers: {
             "X-Requested-With": "XMLHttpRequest"  // 🔹 Para que Django lo detecte como AJAX
@@ -42,7 +42,7 @@ function loadEquiposPag(page = 1) {
             tableBody.insertAdjacentHTML('beforeend', row);
         });
 
-        updatePagination(data, "loadEquipos");
+        updatePagination(data, "loadEquiposPag");
     })
     .catch(error => console.error("❌ Error al cargar equipos:", error));
 }
