@@ -46,12 +46,12 @@ function loadEquiposPag(page = 1) {
 document.getElementById('equipoForm').addEventListener('submit', async function(event) {
     event.preventDefault();
 
-    // Capturar datos manualmente
     const serial = document.getElementById('serial').value;
     const sap = document.getElementById('sap').value;
     const marca = document.getElementById('marca').value;
-
     const requestBody = JSON.stringify({ serial, sap, marca });
+
+    console.log("🚀 Enviando datos:", requestBody);
 
     try {
         const response = await fetch("/crear-equipo/", {
@@ -59,25 +59,31 @@ document.getElementById('equipoForm').addEventListener('submit', async function(
             headers: {
                 "Content-Type": "application/json",
                 "X-Requested-With": "XMLHttpRequest",
-                "X-CSRFToken": getCSRFToken(),  // Agregar CSRF Token
+                "X-CSRFToken": getCSRFToken(),
             },
             body: requestBody
         });
+
+        console.log("📩 Estado de respuesta:", response.status);
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            console.error("❌ Error en la solicitud:", errorText);
+            throw new Error(`HTTP ${response.status}: ${errorText}`);
+        }
 
         const data = await response.json();
         console.log("📩 Respuesta del servidor:", data);
 
         if (data.success) {
-            /*const newRow = `<tr>
+            const newRow = `<tr>
                 <td>${serial}</td>
                 <td>${sap}</td>
                 <td>${marca}</td>
                 <td>${new Date().toLocaleString()}</td> 
             </tr>`;
             document.getElementById('equiposTableBody').insertAdjacentHTML('afterbegin', newRow);
-            document.getElementById('equipoForm').reset();*/
-            alert("✅ Equipo registrado con éxito");
-            window.location.href = "/allEquiposPag/";  // 🔄 Redirigir a la vista de equipos
+            document.getElementById('equipoForm').reset();
         } else {
             alert("❌ Error: " + (data.error || "No se pudo registrar el equipo"));
         }
