@@ -33,6 +33,11 @@ function loadEquiposPag(page = 1) {
                 <td>${equipo.sap}</td>
                 <td>${equipo.marca}</td>
                 <td>${equipo.created_at}</td>
+                <td>
+                    <button class="btn btn-primary btn-sm" onclick="openEditModal('${equipo.id}', '${equipo.serial}', '${equipo.sap}', '${equipo.marca}')">
+                        <i class="bi bi-pencil-square"></i>
+                    </button>
+                </td>
             </tr>`;
             tableBody.insertAdjacentHTML('beforeend', row);
         });
@@ -73,6 +78,11 @@ document.getElementById('equipoForm').addEventListener('submit', async function(
                 <td>${sap}</td>
                 <td>${marca}</td>
                 <td>${new Date().toLocaleString()}</td> 
+                <td>
+                    <button class="btn btn-primary btn-sm" onclick="openEditModal('${data.id}', '${serial}', '${sap}', '${marca}')">
+                        <i class="bi bi-pencil-square"></i>
+                    </button>
+                </td>
             </tr>`;
             document.getElementById('equiposTableBody').insertAdjacentHTML('afterbegin', newRow);
             document.getElementById('equipoForm').reset();
@@ -86,6 +96,12 @@ document.getElementById('equipoForm').addEventListener('submit', async function(
 
 
 function openEditModal(id, serial, sap, marca) {
+    console.log("🛠 Abriendo modal de edición para ID:", id, "Serial:", serial, "SAP:", sap, "Marca:", marca);
+
+    if (!id) {
+        console.error("❌ Error: El ID del equipo es undefined o vacío.");
+        return;
+    }
     document.getElementById("editEquipoId").value = id;
     document.getElementById("editSerial").value = serial;
     document.getElementById("editSap").value = sap;

@@ -28,7 +28,7 @@
             </div>
 
             <div class="col-12 text-center mt-3">
-                <button type="submit" class="btn btn-primary">Registrar Equipo</button>
+                <button type="submit" class="btn btn-success">Registrar Equipo</button>
             </div>
         </form>
     </div>
@@ -68,8 +68,9 @@
                     <td>{{ equipo.marca }}</td>
                     <td>{{ equipo.created_at|date:"d-m-Y H:i" }}</td>
                     <td>
-                        <button class="btn btn-primary btn-sm" onclick="openEditModal('{{ equipo.id }}', '{{ equipo.serial }}', '{{ equipo.sap }}', '{{ equipo.marca }}')">
-                            <i class="bi bi-pencil-square"> </i>
+                        <button class="btn btn-primary btn-sm"
+                            onclick="openEditModal('{{ equipo.id }}', '{{ equipo.serial }}', '{{ equipo.sap }}', '{{ equipo.marca }}')">
+                            <i class="bi bi-pencil-square"></i>
                         </button>
                     </td>
                 </tr>
