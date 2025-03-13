@@ -28,7 +28,7 @@ function loadEquiposPag(page = 1) {
         tableBody.innerHTML = ""; // Limpiar tabla
 
         data.equipos.forEach(equipo => {
-            const row = `<tr>
+            const row = `<tr data-id="${equipo.id}">  <!-- 🔹 ID oculto en un atributo -->
                 <td>${equipo.serial}</td>
                 <td>${equipo.sap}</td>
                 <td>${equipo.marca}</td>
@@ -73,7 +73,7 @@ document.getElementById('equipoForm').addEventListener('submit', async function(
         console.log("📩 Respuesta del servidor:", data);
 
         if (data.success) {
-            const newRow = `<tr>
+            const newRow = `<tr data-id="${data.id}">
                 <td>${serial}</td>
                 <td>${sap}</td>
                 <td>${marca}</td>
