@@ -5,37 +5,27 @@
 
 {% block content %}
 <div class="container mt-5">
-    <h1 class="text-center">Gestión de Equipos</h1>
+    <h1 class="text-center">Gestión de Criticidades</h1>
 
     <!-- Formulario de Registro -->
     <div class="card p-4 mt-4">
-        <form id="equipoForm" class="row g-3">
+        <form id="critForm" class="row g-3">
             <!--{% csrf_token %} -->
 
             <div class="col-md-4">
-                <label for="serial" class="form-label">Serial</label>
-                <input type="text" class="form-control" name="serial" id="serial" required>
-            </div>
-
-            <div class="col-md-4">
-                <label for="sap" class="form-label">SAP</label>
-                <input type="text" class="form-control" name="sap" id="sap" required>
-            </div>
-
-            <div class="col-md-4">
-                <label for="marca" class="form-label">Marca</label>
-                <input type="text" class="form-control" name="marca" id="marca" required>
+                <label for="name" class="form-label">Name</label>
+                <input type="text" class="form-control" name="name" id="name" required>
             </div>
 
             <div class="col-12 text-center mt-3">
-                <button type="submit" class="btn btn-success">Registrar Equipo</button>
+                <button type="submit" class="btn btn-success">Registrar Criticidad</button>
             </div>
         </form>
     </div>
 
     <!-- Contenedor para título y selector de registros por página -->
     <div class="d-flex justify-content-between align-items-center mt-5">
-        <h2 class="">Lista de Equipos</h2>
+        <h2 class="">Lista de Criticidades</h2>
         <div>
             <label for="recordsPerPage" class="me-2">Mostrar</label>
             <select id="recordsPerPage" class="form-select d-inline-block w-auto" onchange="updateRecordsPerPage()">
@@ -53,30 +43,26 @@
         <table class="table table-striped table-bordered text-center">
             <thead class="table-dark">
                 <tr>
-                    <th>Serial</th>
-                    <th>SAP</th>
-                    <th>Marca</th>
+                    <th>Nombre</th>
                     <th>Fecha Registro</th>
                     <th>Acciones</th>
                 </tr>
             </thead>
-            <tbody id="equiposTableBody">
-                {% for equipo in equipos %}
+            <tbody id="critTableBody">
+                {% for criticidad in criticidades %}
                 <tr>
-                    <td>{{ equipo.serial }}</td>
-                    <td>{{ equipo.sap }}</td>
-                    <td>{{ equipo.marca }}</td>
+                    <td>{{ criticidad.name }}</td>
                     <td>{{ equipo.created_at|date:"d-m-Y H:i" }}</td>
                     <td>
                         <button class="btn btn-primary btn-sm"
-                            onclick="openEditModal('{{ equipo.id }}', '{{ equipo.serial }}', '{{ equipo.sap }}', '{{ equipo.marca }}')">
+                            onclick="openEditModal('{{ criticidad.id }}', '{{ criticidad.name }}')">
                             <i class="bi bi-pencil-square"></i>
                         </button>
                     </td>
                 </tr>
                 {% empty %}
                 <tr>
-                    <td colspan="5">No hay equipos registrados</td>
+                    <td colspan="5">No hay criticidades registradas</td>
                 </tr>
                 {% endfor %}
             </tbody>
@@ -86,42 +72,42 @@
     <!-- Controles de paginación -->
     <nav>
         <ul class="pagination justify-content-center">
-            {% if equipos.has_previous %}
+            {% if criticidades.has_previous %}
                 <li class="page-item">
-                    <a class="page-link" href="?page=1&per_page={{ equipos.paginator.per_page }}">&laquo; Primero</a>
+                    <a class="page-link" href="?page=1&per_page={{ criticidades.paginator.per_page }}">&laquo; Primero</a>
                 </li>
                 <li class="page-item">
-                    <a class="page-link" href="?page={{ equipos.previous_page_number }}&per_page={{ equipos.paginator.per_page }}">Anterior</a>
+                    <a class="page-link" href="?page={{ criticidades.previous_page_number }}&per_page={{ criticidades.paginator.per_page }}">Anterior</a>
                 </li>
             {% endif %}
 
             <li class="page-item disabled">
-                <span class="page-link">Página {{ equipos.number }} de {{ equipos.paginator.num_pages }}</span>
+                <span class="page-link">Página {{ criticidades.number }} de {{ criticidades.paginator.num_pages }}</span>
             </li>
 
-            {% if equipos.has_next %}
+            {% if criticidades.has_next %}
                 <li class="page-item">
-                    <a class="page-link" href="?page={{ equipos.next_page_number }}&per_page={{ equipos.paginator.per_page }}">Siguiente</a>
+                    <a class="page-link" href="?page={{ criticidades.next_page_number }}&per_page={{ criticidades.paginator.per_page }}">Siguiente</a>
                 </li>
                 <li class="page-item">
-                    <a class="page-link" href="?page={{ equipos.paginator.num_pages }}&per_page={{ equipos.paginator.per_page }}">Última &raquo;</a>
+                    <a class="page-link" href="?page={{ criticidades.paginator.num_pages }}&per_page={{ criticidades.paginator.per_page }}">Última &raquo;</a>
                 </li>
             {% endif %}
         </ul>
     </nav>
 </div>
 
-{% include '_AppHome/_modal_editarEquipo.html' %}
+{% include '_AppComplementos/_modal_editarCriticidad.html' %}
 
 {% endblock %}
 
 {% block extra_css %}
-    <link rel="stylesheet" href="{% static '_AppHome/styles.css' %}">
+    <link rel="stylesheet" href="{% static '_AppComplementos/styles.css' %}">
 {% endblock %}
 
 {% block extra_js %}
-    <script src="{% static '_AppHome/js/api.js' %}"></script>
-    <script src="{% static '_AppHome/js/ui.js' %}"></script>
-    <script src="{% static '_AppHome/js/events.js' %}"></script>
-    <script src="{% static '_AppHome/js/main.js' %}"></script>
+    <script src="{% static '_AppComplementos/js/api.js' %}"></script>
+    <script src="{% static '_AppComplementos/js/ui.js' %}"></script>
+    <script src="{% static '_AppComplementos/js/events.js' %}"></script>
+    <script src="{% static '_AppComplementos/js/main.js' %}"></script>
 {% endblock %}

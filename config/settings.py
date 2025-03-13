@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     '_AppCalc1',
     '_AppCalc2',
     '_AppCommon',
+    '_AppComplementos',
     'django_extensions',
 ]
 
