@@ -1,22 +1,14 @@
-document.addEventListener("DOMContentLoaded", function () {
-    console.log("Script global cargado correctamente.");
+// Función para mostrar u ocultar el submenú de "Complementos"
+export function toggleSubMenu() {
+    let submenu = document.getElementById("complementosSubmenu");
+    if (submenu) {
+        submenu.style.display = submenu.style.display === "block" ? "none" : "block";
+        console.log("📂 Submenú de Complementos toggled:", submenu.style.display);
+    }
+}
 
-    // Definir la función en el objeto window para que sea accesible en todos los scripts
-    window.getCSRFToken = function () {
-        let csrfToken = null;
-        document.cookie.split(";").forEach(cookie => {
-            let [name, value] = cookie.trim().split("=");
-            if (name === "csrftoken") {
-                csrfToken = value;
-            }
-        });
-        return csrfToken;
-    };
-
-    console.log("CSRF Token function registrada.");
-});
-
-function updatePagination(data, loadFunction) {
+// Función para actualizar la paginación
+export function updatePagination(data, loadFunction) {
     const paginationContainer = document.querySelector(".pagination");
     paginationContainer.innerHTML = ""; // Limpiar paginación
 
