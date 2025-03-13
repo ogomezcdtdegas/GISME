@@ -18,7 +18,7 @@ async function fetchCriticidades(page = 1, perPage) {
 
 async function crearCriticidad(name) {
     try {
-        const response = await fetch("/crear-criticidad/", {
+        const response = await fetch("crear-criticidad/", {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
@@ -35,7 +35,7 @@ async function crearCriticidad(name) {
 
 async function actualizarCriticidad(id, name, csrftoken) {
     try {
-        const response = await fetch(`/editar-criticidad/${id}/`, {
+        const response = await fetch(`editar-criticidad/${id}/`, {
             method: "PUT",
             headers: {
                 "Content-Type": "application/json",
