@@ -13,7 +13,7 @@
             <!--{% csrf_token %} -->
 
             <div class="col-md-4">
-                <label for="name" class="form-label">Name</label>
+                <label for="name" class="form-label">Nombre</label>
                 <input type="text" class="form-control" name="name" id="name" required>
             </div>
 
@@ -97,17 +97,17 @@
     </nav>
 </div>
 
-{% include '_AppComplementos/_modal_editarCriticidad.html' %}
+{% include '_AppComplementos/templates_criticidad/_modal_editarCriticidad.html' %}
 
 {% endblock %}
 
 {% block extra_css %}
-    <link rel="stylesheet" href="{% static '_AppComplementos/styles.css' %}">
+    <link rel="stylesheet" href="{% static '_AppComplementos/static_criticidad/styles.css' %}">
 {% endblock %}
 
 {% block extra_js %}
-    <script src="{% static '_AppComplementos/js/api.js' %}"></script>
-    <script src="{% static '_AppComplementos/js/ui.js' %}"></script>
-    <script src="{% static '_AppComplementos/js/events.js' %}"></script>
-    <script src="{% static '_AppComplementos/js/main.js' %}"></script>
+    <script src="{% static '_AppComplementos/static_criticidad/js/api.js' %}"></script>
+    <script src="{% static '_AppComplementos/static_criticidad/js/ui.js' %}"></script>
+    <script src="{% static '_AppComplementos/static_criticidad/js/events.js' %}"></script>
+    <script src="{% static '_AppComplementos/static_criticidad/js/main.js' %}"></script>
 {% endblock %}

@@ -3,9 +3,8 @@ from django.core.paginator import Paginator
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Criticidad
-from .serializers import CriticidadSerializer
-
+from ..models import Criticidad
+from ..serializers import CriticidadSerializer
 
 ''' -------------------------------------- '''
 ''' -------------- Querys ---------------- '''
@@ -33,7 +32,7 @@ class allCriticidadPag(APIView):
             }, status=status.HTTP_200_OK)
         
         # 🔹 Si no es AJAX, renderizar la página
-        return render(request, "_AppComplementos/index.html", {"criticidad": criticidad_page})
+        return render(request, "_AppComplementos/templates_criticidad/index.html", {"criticidad": criticidad_page})
 
 
 ''' -------------------------------------- '''
@@ -52,7 +51,6 @@ class crearCriticidad(APIView):
             }, status=status.HTTP_201_CREATED)
         
         return Response({"success": False, "error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
-
 
 
 class editarCriticidad(APIView):

@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import allCriticidadPag, crearCriticidad, editarCriticidad
+from .views.criticidad import allCriticidadPag, crearCriticidad, editarCriticidad
 
 urlpatterns = [
     path('', allCriticidadPag.as_view(), name='allCriticidadesPag'),  # 📌 Listar equipos con paginación
