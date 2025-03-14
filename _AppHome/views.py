@@ -10,6 +10,8 @@ from .serializers import EquipoSerializer
 ''' -------------------------------------- '''
 ''' -------------- Querys ---------------- '''
 ''' -------------------------------------- '''
+
+
 class allEquiposPag(APIView):
     def get(self, request):
         equipos_list = Equipo.objects.all().order_by('-created_at')
@@ -31,7 +33,7 @@ class allEquiposPag(APIView):
                 "current_page": equipos_page.number,
                 "total_pages": paginator.num_pages,
             }, status=status.HTTP_200_OK)
-        
+
         # 🔹 Si no es AJAX, renderizar la página
         return render(request, "_AppHome/index.html", {"equipos": equipos_page})
 
@@ -39,6 +41,8 @@ class allEquiposPag(APIView):
 ''' -------------------------------------- '''
 ''' -------------- Commands -------------- '''
 ''' -------------------------------------- '''
+
+
 class crearEquipo(APIView):
     def post(self, request):
         serializer = EquipoSerializer(data=request.data)
@@ -50,18 +54,17 @@ class crearEquipo(APIView):
                 "message": "Equipo registrado con éxito",
                 "id": equipo.id  # 🔹 Devolver el ID
             }, status=status.HTTP_201_CREATED)
-        
-        return Response({"success": False, "error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
+        return Response({"success": False, "error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class editarEquipo(APIView):
     def put(self, request, equipo_id):
         equipo = get_object_or_404(Equipo, id=equipo_id)
         serializer = EquipoSerializer(equipo, data=request.data, partial=True)
-        
+
         if serializer.is_valid():
             serializer.save()
             return Response({"success": True, "message": "Equipo actualizado con éxito"}, status=status.HTTP_200_OK)
-        
+
         return Response({"success": False, "error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
