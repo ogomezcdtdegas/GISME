@@ -21,6 +21,7 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     #path('', include('_AppHome.urls')),  # Incluir las URLs de Home
     path('', include('_AppHome.urls')),  # Incluir las URLs de Home
+    path('complementos/', include('_AppComplementos.urls')),  # Incluir las URLs de Home
     path('calc1/', include('_AppCalc1.urls')),  # Ruta para Calc1
     path('calc2/', include('_AppCalc2.urls')),  # Ruta para Calc2
 ]

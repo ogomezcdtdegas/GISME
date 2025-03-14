@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.core.paginator import Paginator
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -44,10 +44,15 @@ class crearEquipo(APIView):
         serializer = EquipoSerializer(data=request.data)
 
         if serializer.is_valid():
-            serializer.save()
-            return Response({"success": True, "message": "Equipo registrado con éxito"}, status=status.HTTP_201_CREATED)
+            equipo = serializer.save()
+            return Response({
+                "success": True,
+                "message": "Equipo registrado con éxito",
+                "id": equipo.id  # 🔹 Devolver el ID
+            }, status=status.HTTP_201_CREATED)
         
         return Response({"success": False, "error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 class editarEquipo(APIView):

@@ -10,7 +10,7 @@
     <!-- Formulario de Registro -->
     <div class="card p-4 mt-4">
         <form id="equipoForm" class="row g-3">
-            {% csrf_token %}
+            <!--{% csrf_token %} -->
 
             <div class="col-md-4">
                 <label for="serial" class="form-label">Serial</label>
@@ -111,36 +111,8 @@
     </nav>
 </div>
 
-<!-- Modal de Edición -->
-<div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Editar Equipo</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form id="editEquipoForm">
-                    {% csrf_token %}
-                    <input type="hidden" id="editEquipoId">
-                    <div class="mb-3">
-                        <label for="editSerial" class="form-label">Serial</label>
-                        <input type="text" class="form-control" id="editSerial" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="editSap" class="form-label">SAP</label>
-                        <input type="text" class="form-control" id="editSap" required>
-                    </div>
-                    <div class="mb-3">
-                        <label for="editMarca" class="form-label">Marca</label>
-                        <input type="text" class="form-control" id="editMarca" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Guardar Cambios</button>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
+{% include '_AppHome/_modal_editarEquipo.html' %}
+
 {% endblock %}
 
 {% block extra_css %}
@@ -148,5 +120,8 @@
 {% endblock %}
 
 {% block extra_js %}
-    <script src="{% static '_AppHome/script.js' %}"></script>
+    <script src="{% static '_AppHome/js/api.js' %}"></script>
+    <script src="{% static '_AppHome/js/ui.js' %}"></script>
+    <script src="{% static '_AppHome/js/events.js' %}"></script>
+    <script src="{% static '_AppHome/js/main.js' %}"></script>
 {% endblock %}

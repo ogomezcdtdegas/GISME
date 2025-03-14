@@ -15,6 +15,7 @@ from dotenv import load_dotenv
 
 # Cargar variables desde el archivo .env
 load_dotenv()
+print("DEBUG:", os.getenv("DEBUG"))
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent  # Ahora BASE_DIR es un Path, compatible con /
@@ -44,6 +45,7 @@ INSTALLED_APPS = [
     '_AppCalc1',
     '_AppCalc2',
     '_AppCommon',
+    '_AppComplementos',
     'django_extensions',
 ]
 

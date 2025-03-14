@@ -1,7 +1,7 @@
 document.addEventListener("DOMContentLoaded", function () {
-    console.log("Script global cargado correctamente.");
+    console.log("🔄 Script global cargado correctamente.");
 
-    // Definir la función en el objeto window para que sea accesible en todos los scripts
+    // Definir la función para obtener el CSRF Token
     window.getCSRFToken = function () {
         let csrfToken = null;
         document.cookie.split(";").forEach(cookie => {
@@ -12,8 +12,21 @@ document.addEventListener("DOMContentLoaded", function () {
         });
         return csrfToken;
     };
+    console.log("✅ CSRF Token function registrada.");
 
-    console.log("CSRF Token function registrada.");
+    // Manejo del submenú de Complementos
+    let toggleComplementos = document.getElementById("toggleComplementos");
+    let submenu = document.getElementById("complementosSubmenu");
+
+    if (toggleComplementos && submenu) {
+        toggleComplementos.addEventListener("click", function (event) {
+            event.preventDefault();
+            submenu.style.display = submenu.style.display === "block" ? "none" : "block";
+            console.log("📂 Submenú de Complementos toggled:", submenu.style.display);
+        });
+    } else {
+        console.warn("⚠ No se encontró el botón o el submenú de Complementos.");
+    }
 });
 
 function updatePagination(data, loadFunction) {
