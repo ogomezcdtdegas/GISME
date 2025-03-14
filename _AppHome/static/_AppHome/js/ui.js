@@ -3,7 +3,8 @@ function renderEquipos(data) {
     const tableBody = document.getElementById('equiposTableBody');
     tableBody.innerHTML = ""; // Limpiar tabla
 
-    data.equipos.forEach(equipo => {
+    // ✅ Ajustar a la clave correcta ("results" en lugar de "equipos")
+    data.results.forEach(equipo => {
         const row = `<tr data-id="${equipo.id}">
             <td>${equipo.serial}</td>
             <td>${equipo.sap}</td>
@@ -20,6 +21,7 @@ function renderEquipos(data) {
 
     updatePagination(data, "loadEquiposPag");
 }
+
 
 function openEditModal(id, serial, sap, marca) {
     document.getElementById("editEquipoId").value = id;
