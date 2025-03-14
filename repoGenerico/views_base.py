@@ -7,6 +7,20 @@ from rest_framework import status
 ''' -------------------------------------- '''
 ''' ----------- Base List View ----------- '''
 ''' -------------------------------------- '''
+class BaseListAllView(APIView):
+    model = None  # 🔹 Se define en la subclase
+    serializer_class = None
+    template_name = None  # 🔹 Para renderizado en HTML (opcional)
+
+    def get(self, request):
+        queryset = self.model.objects.all().order_by('-created_at')
+
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+            data = self.serializer_class(queryset, many=True).data
+            return Response({"results": data}, status=status.HTTP_200_OK)
+
+        return render(request, self.template_name, {"objects": queryset})
+
 class BaseListView(APIView):
     model = None  # 🔹 Se define en la subclase
     serializer_class = None

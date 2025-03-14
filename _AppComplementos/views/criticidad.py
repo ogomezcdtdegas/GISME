@@ -1,13 +1,6 @@
-#from django.shortcuts import render, get_object_or_404
-#from django.core.paginator import Paginator
-#from rest_framework.views import APIView
-#from rest_framework.response import Response
-#from rest_framework import status
-
 from repoGenerico.views_base import BaseListView, BaseCreateView, BaseRetrieveUpdateView
 from ..models import Criticidad
 from ..serializers import CriticidadSerializer
-
 
 # 🔹 Listado paginado
 class allCriticidadPag(BaseListView):
