@@ -3,7 +3,7 @@ function renderCriticidades(data) {
     const tableBody = document.getElementById('critTableBody');
     tableBody.innerHTML = ""; // Limpiar tabla
 
-    data.criticidad.forEach(criticidad => {
+    data.results.forEach(criticidad => {
         const row = `<tr data-id="${criticidad.id}">
             <td>${criticidad.name}</td>
             <td>${criticidad.created_at}</td>
