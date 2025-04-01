@@ -139,7 +139,7 @@ STATIC_URL = '/static/'
 
 # Asegurar que la carpeta estática global se detecte
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static')  # Permite archivos estáticos globales
+    os.path.join(BASE_DIR, 'config/static')  # Permite archivos estáticos globales
 ]
 
 # Buscar archivos estáticos en cada app automáticamente
