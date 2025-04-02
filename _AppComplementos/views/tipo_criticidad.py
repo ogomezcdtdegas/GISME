@@ -3,7 +3,9 @@ from ..models import TipoCriticidad, Criticidad, TipoCriticidadCriticidad
 from ..serializers import TipoCriticidadSerializer, CriticidadSerializer, TipoCriticidadCriticidadSerializer
 from django.http import JsonResponse
 from rest_framework import status
-
+'''XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'''
+'''                                                          QUERYS                                                                          '''
+'''XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'''
 # 🔹 Listado
 class CriticidadListAllView(BaseListAllView):
     model = Criticidad
@@ -14,7 +16,14 @@ class allTipCriticidadPag(BaseListView):
     model = TipoCriticidadCriticidad
     serializer_class = TipoCriticidadCriticidadSerializer
     template_name = "_AppComplementos/templates_tipoCriticidad/index.html"
+'''XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'''
 
+
+
+
+'''XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'''
+'''                                                          COMMANDS                                                                        '''
+'''XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'''
 # 🔹 Creación independiente
 class crearTipCriticidad(BaseCreateView, BaseReadForIdView):
     model = TipoCriticidadCriticidad
@@ -50,3 +59,4 @@ class crearTipCriticidad(BaseCreateView, BaseReadForIdView):
 class editarTipCriticidad(BaseRetrieveUpdateView):
     model = TipoCriticidad
     serializer_class = TipoCriticidadSerializer
+'''XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX'''
