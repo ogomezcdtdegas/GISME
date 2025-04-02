@@ -3,12 +3,15 @@ function renderTipCriticidades(data) {
     const tableBody = document.getElementById('tipcritTableBody');
     tableBody.innerHTML = ""; // Limpiar tabla
 
-    data.results.forEach(tipcriticidad => {
-        const row = `<tr data-id="${tipcriticidad.id}">
-            <td>${tipcriticidad.name}</td>
-            <td>${tipcriticidad.created_at}</td>
+    data.results.forEach(relacion => {
+        console.log("🟢 Procesando:", relacion); // Para depuración
+
+        const row = `<tr data-id="${relacion.id}">
+            <td>${relacion.tipo_criticidad_name || "Sin datos"}</td>
+            <td>${relacion.criticidad_name || "Sin datos"}</td>
+            <td>${relacion.created_at ? new Date(relacion.created_at).toLocaleString() : "Sin fecha"}</td>
             <td>
-                <button class="btn btn-primary btn-sm" onclick="openEditModal('${tipcriticidad.id}', '${tipcriticidad.name}')">
+                <button class="btn btn-primary btn-sm" onclick="openEditModal('${relacion.id}', '${relacion.tipo_criticidad_name}')">
                     <i class="bi bi-pencil-square"></i>
                 </button>
             </td>
@@ -18,6 +21,7 @@ function renderTipCriticidades(data) {
 
     updatePagination(data, "loadTipCriticidadesPag");
 }
+
 
 function openEditModal(id, name) {
     document.getElementById("edittipCritId").value = id;

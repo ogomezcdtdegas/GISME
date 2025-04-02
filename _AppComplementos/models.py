@@ -15,8 +15,6 @@ class Criticidad(BaseModel):
 
 class TipoCriticidad(BaseModel):
     name = models.CharField(max_length=100, unique=True)
-    criticidades = models.ManyToManyField(
-        Criticidad, related_name="tipos_criticidad")
 
     class Meta:
         verbose_name = "Tipo de Criticidad"
@@ -24,3 +22,13 @@ class TipoCriticidad(BaseModel):
 
     def __str__(self):
         return f"{self.name}"
+    
+class TipoCriticidadCriticidad(BaseModel):
+    tipo_criticidad = models.ForeignKey(TipoCriticidad, on_delete=models.CASCADE)
+    criticidad = models.ForeignKey(Criticidad, on_delete=models.CASCADE)
+
+    class Meta:
+        unique_together = ('tipo_criticidad', 'criticidad')  # Evita duplicados
+
+    def __str__(self):
+        return f"{self.tipo_criticidad.name} - {self.criticidad.name}"

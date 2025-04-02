@@ -4,9 +4,38 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
-''' -------------------------------------- '''
-''' ----------- Base List View ----------- '''
-''' -------------------------------------- '''
+''' XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX '''
+''' ---------------------------------------------------------- Querys -------------------------------------------------------------------------------------- '''
+''' -------------------------------------------------------------------------------------------------------------------------------------------------------- '''
+
+class BaseReadForIdView(APIView):
+    model = None  # Se define en la subclase
+    serializer_class = None
+
+    @staticmethod
+    def get_object_by_id(model_class, obj_id, error_message):
+        """ Obtiene un objeto por ID o lanza un error si no existe """
+        try:
+            return model_class.objects.get(id=obj_id)
+        except model_class.DoesNotExist:
+            raise ValueError(error_message)
+
+    @staticmethod
+    def get_or_create_object(model_class, **kwargs):
+        """ Obtiene o crea un objeto basado en los argumentos """
+        return model_class.objects.get_or_create(**kwargs)
+
+    def get(self, request, obj_id):
+        """ Vista GET para obtener un objeto por su ID """
+        try:
+            obj = self.get_object_by_id(self.model, obj_id, "Objeto no encontrado")
+            serializer = self.serializer_class(obj)
+            return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
+        except ValueError as e:
+            return Response({"success": False, "error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+''' -------------------------------------------------------------------------------------------------------------------------------------------------------- '''
+
 class BaseListAllView(APIView):
     model = None  # 🔹 Se define en la subclase
     serializer_class = None
@@ -20,6 +49,8 @@ class BaseListAllView(APIView):
             return Response({"results": data}, status=status.HTTP_200_OK)
 
         return render(request, self.template_name, {"objects": queryset})
+
+''' -------------------------------------------------------------------------------------------------------------------------------------------------------- '''
 
 class BaseListView(APIView):
     model = None  # 🔹 Se define en la subclase
@@ -48,10 +79,12 @@ class BaseListView(APIView):
 
         return render(request, self.template_name, {"objects": page_obj})
 
+''' XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX '''
 
-''' -------------------------------------- '''
-''' ----------- Base Create View ----------- '''
-''' -------------------------------------- '''
+
+''' XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX '''
+''' --------------------------------------------------------------------- Commands ------------------------------------------------------------------------- '''
+''' -------------------------------------------------------------------------------------------------------------------------------------------------------- '''
 class BaseCreateView(APIView):
     model = None
     serializer_class = None
@@ -68,10 +101,7 @@ class BaseCreateView(APIView):
         
         return Response({"success": False, "error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
-
-''' -------------------------------------- '''
-''' ----------- Base Update View ----------- '''
-''' -------------------------------------- '''
+''' -------------------------------------------------------------------------------------------------------------------------------------------------------- '''
 class BaseRetrieveUpdateView(APIView):
     model = None
     serializer_class = None
@@ -86,3 +116,4 @@ class BaseRetrieveUpdateView(APIView):
             return Response({"success": True, "message": "Actualización exitosa"}, status=status.HTTP_200_OK)
         
         return Response({"success": False, "error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+''' XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX '''

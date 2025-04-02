@@ -31,7 +31,7 @@ async function fetchAllCriticidades() {
     }
 }
 
-async function crearTipCriticidad(name) {
+async function crearTipCriticidad(name, criticidad_id) {
     try {
         const response = await fetch("/complementos/crear-tipCriticidad/", {
             method: "POST",
@@ -40,11 +40,21 @@ async function crearTipCriticidad(name) {
                 "X-Requested-With": "XMLHttpRequest",
                 "X-CSRFToken": getCSRFToken(),
             },
-            body: JSON.stringify({ name }),
+            body: JSON.stringify({ name, criticidad_id }),
         });
-        return await response.json();
+
+        const result = await response.json(); // Convertir la respuesta en JSON
+
+        // 🔹 Si la API devuelve success: false, tratamos el mensaje como error
+        if (!result.success) {
+            return { success: false, error: result.message || "Error desconocido" };
+        }
+
+        return result;
+
     } catch (error) {
-        console.error("❌ Error al registrar la criticidad:", error);
+        console.error("❌ Error en la solicitud:", error);
+        return { success: false, error: "Error de conexión con el servidor" };
     }
 }
 

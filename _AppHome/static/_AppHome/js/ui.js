@@ -18,7 +18,6 @@ function renderEquipos(data) {
         </tr>`;
         tableBody.insertAdjacentHTML('beforeend', row);
     });
-
     updatePagination(data, "loadEquiposPag");
 }
 

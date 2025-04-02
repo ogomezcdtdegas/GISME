@@ -9,14 +9,30 @@ document.addEventListener("DOMContentLoaded", function () {
 
     document.getElementById('tipcritForm').addEventListener('submit', async function(event) {
         event.preventDefault();
+        
         const name = document.getElementById('name').value;
-
-        const data = await crearTipCriticidad(name);
-        if (data?.success) {
+        const criticidadInput = document.getElementById('criticidadDropdown');
+    
+        if (!criticidadInput) {
+            console.error("❌ No se encontró el campo criticidadDropdown en el formulario.");
+            return;
+        }
+    
+        const criticidad_id = criticidadInput.value;
+    
+        if (!criticidad_id) {
+            alert("❌ Debes seleccionar una criticidad.");
+            return;
+        }
+    
+        const data = await crearTipCriticidad(name, criticidad_id);
+        
+        if (data.success) {
+            alert("✅ " + data.message);
             loadTipCriticidadesPag();
             document.getElementById('tipcritForm').reset();
         } else {
-            alert("❌ Error al registrar el tipo de criticidad");
+            alert("⚠️ " + data.error);  // 🔹 Ahora tomamos correctamente el mensaje
         }
     });
 
