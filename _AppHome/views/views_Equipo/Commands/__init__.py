@@ -1,0 +1,2 @@
+from .CreateEquipoCommand import CreateEquipoCommand
+from .UpdateEquipoCommand import UpdateEquipoCommand

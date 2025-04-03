@@ -1,0 +1,2 @@
+from .GetAllCriticidadPagQuery import GetAllCriticidadPagQuery
+from .GetAllCriticidadListQuery import GetAllCriticidadListQuery

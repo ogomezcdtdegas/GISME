@@ -1,16 +1,21 @@
 from django.urls import path
-from .views.criticidad import allCriticidadPag, crearCriticidad, editarCriticidad
-from .views.tipo_criticidad import allTipCriticidadPag,crearTipCriticidad,editarTipCriticidad, CriticidadListAllView
+
+''' Criticidad '''
+from .views.views_Criticidad.Commands import CreateCriticidadCommand, UpdateCriticidadCommand
+from .views.views_Criticidad.Queries import GetAllCriticidadPagQuery, GetAllCriticidadListQuery
+
+''' Tipo Criticidad '''
+from .views.views_tipoCriticidad.Commands import CreateTipoCriticidadCommand, UpdateTipoCriticidadCommand
+from .views.views_tipoCriticidad.Queries import GetAllTipoCriticidadPagQuery
 
 urlpatterns = [
-    path('', allCriticidadPag.as_view(), name='allCriticidadesPag'),  # 📌 Listar equipos con paginación
-    path('crear-criticidad/', crearCriticidad.as_view(), name='crearCriticidad'),  # 📌 Crear equipo
-    path('editar-criticidad/<uuid:obj_id>/', editarCriticidad.as_view(), name='editarCriticidad'), # 📌 Editar equipo
+    path('', GetAllCriticidadPagQuery.allCriticidadPag.as_view(), name='allCriticidadesPag'),
+    path('crear-criticidad/', CreateCriticidadCommand.crearCriticidad.as_view(), name='crearCriticidad'),
+    path('editar-criticidad/<uuid:obj_id>/', UpdateCriticidadCommand.editarCriticidad.as_view(), name='editarCriticidad'),
 
+    path('tipCriticidades/', GetAllTipoCriticidadPagQuery.allTipCriticidadPag.as_view(), name='allTipCriticidadesPag'),
+    path('crear-tipCriticidad/', CreateTipoCriticidadCommand.crearTipCriticidad.as_view(), name='crearTipCriticidad'),
+    path('editar-tipCriticidad/<uuid:obj_id>/', UpdateTipoCriticidadCommand.editarTipCriticidad.as_view(), name='editarTipCriticidad'),
 
-    path('tipCriticidades/', allTipCriticidadPag.as_view(), name='allTipCriticidadesPag'),  # 📌 Listar equipos con paginación
-    path('crear-tipCriticidad/', crearTipCriticidad.as_view(), name='crearTipCriticidad'),  # 📌 Crear equipo
-    path('editar-tipCriticidad/<uuid:obj_id>/', editarTipCriticidad.as_view(), name='editarTipCriticidad'), # 📌 Editar equipo
-
-    path('listar-todo-criticidad/', CriticidadListAllView.as_view(), name='listarTodoCriticidad'),  # 🔹 Nueva ruta
+    path('listar-todo-criticidad/', GetAllCriticidadListQuery.CriticidadListAllView.as_view(), name='listarTodoCriticidad'),
 ]
