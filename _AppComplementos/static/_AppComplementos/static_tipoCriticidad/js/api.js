@@ -58,8 +58,10 @@ async function crearTipCriticidad(name, criticidad_id) {
     }
 }
 
-async function actualizarTipCriticidad(id, name, csrftoken) {
+async function actualizarTipCriticidad(id, name, tipoCriticidadId, criticidadId, csrftoken) {
     try {
+        console.log("📡 Enviando actualización:", { id, name, tipoCriticidadId, criticidadId });
+
         const response = await fetch(`/complementos/editar-tipCriticidad/${id}/`, {
             method: "PUT",
             headers: {
@@ -67,10 +69,16 @@ async function actualizarTipCriticidad(id, name, csrftoken) {
                 "X-CSRFToken": csrftoken,
                 "X-Requested-With": "XMLHttpRequest"
             },
-            body: JSON.stringify({ name })
+            body: JSON.stringify({ 
+                name, 
+                tipo_criticidad_id: tipoCriticidadId,  
+                criticidad_id: criticidadId 
+            })
         });
+
         return await response.json();
     } catch (error) {
         console.error("❌ Error en la actualización:", error);
+        return { success: false, error: "Error en la actualización" };
     }
 }

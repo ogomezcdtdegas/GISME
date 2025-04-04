@@ -84,6 +84,7 @@
                     <th>Criticidad</th>
                     <th>Fecha Registro</th>
                     <th>Acciones</th>
+                    <th>id Criticidad</th>
                 </tr>
             </thead>
             <tbody id="tipcritTableBody">
@@ -94,10 +95,11 @@
                     <td>{{ relacion.created_at|date:"d-m-Y H:i" }}</td>
                     <td>
                         <button class="btn btn-primary btn-sm"
-                            onclick="openEditModal('{{ relacion.id }}', '{{ relacion.tipo_criticidad_name }}')">
+                            onclick="openEditModal('{{ relacion.id }}', '{{ relacion.tipo_criticidad_name }}', '{{ relacion.criticidad }}')">
                             <i class="bi bi-pencil-square"></i>
                         </button>
                     </td>
+                    <td>{{ relacion.criticidad }}</td>
                 </tr>
                 {% empty %}
                 <tr>

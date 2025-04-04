@@ -38,12 +38,22 @@ document.addEventListener("DOMContentLoaded", function () {
 
     document.getElementById("edittipCritForm").addEventListener("submit", async function(event) {
         event.preventDefault();
+    
         const id = document.getElementById("edittipCritId").value;
         const name = document.getElementById("editName").value;
+        const tipoCriticidadId = document.getElementById("edittipCritTipoId").value;
+        const criticidadId = document.getElementById("editCriticidad").value;
         const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-
-        const data = await actualizarTipCriticidad(id, name, csrftoken);
-        if (data?.success) location.reload();
-        else alert("Error al actualizar el tipo de criticidad");
-    });
+    
+        console.log("📡 Datos para actualizar:", { id, name, tipoCriticidadId, criticidadId });
+    
+        const data = await actualizarTipCriticidad(id, name, tipoCriticidadId, criticidadId, csrftoken);
+        
+        if (data.success) {
+            alert("✅ Registro actualizado correctamente");
+            location.reload();
+        } else {
+            alert("❌ Error al actualizar: " + data.error);
+        }
+    });    
 });
