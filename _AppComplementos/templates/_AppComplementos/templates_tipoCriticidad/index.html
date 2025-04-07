@@ -42,7 +42,7 @@
             <label for="recordsPerPage" class="me-2">Mostrar</label>
             <select id="recordsPerPage" class="form-select d-inline-block w-auto" onchange="updateRecordsPerPage()">
                 <option value="5" {% if tipcriticidades.paginator.per_page == 5 %}selected{% endif %}>5</option>
-                <option value="10" {% if tipcriticidades.paginator.per_page == 10 %}selected{% endif %}>10</option>
+                <option value="10" {% if tipcriticidades.paginator.per_page == 10 or not tipcriticidades.paginator.per_page %}selected{% endif %}>10</option>
                 <option value="20" {% if tipcriticidades.paginator.per_page == 20 %}selected{% endif %}>20</option>
                 <option value="50" {% if tipcriticidades.paginator.per_page == 50 %}selected{% endif %}>50</option>
             </select>
@@ -84,7 +84,6 @@
                     <th>Criticidad</th>
                     <th>Fecha Registro</th>
                     <th>Acciones</th>
-                    <th>id Criticidad</th>
                 </tr>
             </thead>
             <tbody id="tipcritTableBody">
@@ -99,7 +98,6 @@
                             <i class="bi bi-pencil-square"></i>
                         </button>
                     </td>
-                    <td>{{ relacion.criticidad }}</td>
                 </tr>
                 {% empty %}
                 <tr>

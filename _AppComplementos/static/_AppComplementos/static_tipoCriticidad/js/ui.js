@@ -24,23 +24,25 @@ function renderTipCriticidades(data) {
 }
 
 function openEditModal(id, name, criticidadId, tipoCriticidadId) {
+    // 🔹 Asegúrate de que estos campos existan en el modal HTML
     document.getElementById("edittipCritId").value = id;
     document.getElementById("editName").value = name;
-    document.getElementById("edittipCritTipoId").value = tipoCriticidadId;
+    document.getElementById("edittipCritTipoId").value = tipoCriticidadId;  // 🔥 ¡Este es clave!
 
     const select = document.getElementById("editCriticidad");
     select.innerHTML = '<option value="">Cargando...</option>';
 
     fetchAllCriticidades().then(criticidades => {
         select.innerHTML = '<option value="">Seleccione una criticidad</option>'; 
-
         criticidades.forEach(crit => {
-            let selected = crit.id == criticidadId ? "selected" : "";
-            select.innerHTML += `<option value="${crit.id}" ${selected}>${crit.name}</option>`;
+            const option = document.createElement("option");
+            option.value = crit.id;
+            option.textContent = crit.name;
+            if (crit.id == criticidadId) option.selected = true;
+            select.appendChild(option);
         });
     });
 
-    let modal = new bootstrap.Modal(document.getElementById('editModal'));
-    modal.show();
+    new bootstrap.Modal(document.getElementById('editModal')).show();
 }
 
