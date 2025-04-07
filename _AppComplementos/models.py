@@ -23,6 +23,16 @@ class TipoCriticidad(BaseModel):
     def __str__(self):
         return f"{self.name}"
     
+class Producto(BaseModel):
+    name = models.CharField(max_length=100, unique=True)
+
+    class Meta:
+        verbose_name = "Producto"
+        verbose_name_plural = "Productos"
+
+    def __str__(self):
+        return f"{self.name}"
+    
 class TipoCriticidadCriticidad(BaseModel):
     tipo_criticidad = models.ForeignKey(TipoCriticidad, on_delete=models.CASCADE)
     criticidad = models.ForeignKey(Criticidad, on_delete=models.CASCADE)
@@ -32,3 +42,14 @@ class TipoCriticidadCriticidad(BaseModel):
 
     def __str__(self):
         return f"{self.tipo_criticidad.name} - {self.criticidad.name}"
+    
+class ProductoTipoCritCrit(BaseModel):
+    producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
+    relacion_tipo_criticidad = models.ForeignKey(TipoCriticidadCriticidad, on_delete=models.CASCADE)  # 🔥 Conexión directa
+
+    class Meta:
+        unique_together = ('producto', 'relacion_tipo_criticidad')  # Evita duplicados
+
+    def __str__(self):
+        relacion = self.relacion_tipo_criticidad
+        return f"{self.producto.name} - {relacion.tipo_criticidad.name} ({relacion.criticidad.name})"

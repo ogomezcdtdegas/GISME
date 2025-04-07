@@ -1,0 +1,1 @@
+from .GetAllProductoPagQuery import GetAllProductoPagQuery
