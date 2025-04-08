@@ -1,1 +1,2 @@
 from .GetAllTipoCriticidadPagQuery import GetAllTipoCriticidadPagQuery
+from .GetAllTipoCriticidadListQuery import GetAllTipoCriticidadListQuery
