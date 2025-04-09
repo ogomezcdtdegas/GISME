@@ -2,28 +2,37 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Editar Tipo de Criticidad</h5>
+                <h5 class="modal-title">Editar Producto</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <form id="edittipCritForm">
+                <form id="editprodForm">
                     {% csrf_token %}
-                    <input type="hidden" id="edittipCritId">
-                    <input type="hidden" id="edittipCritTipoId">
+                    <input type="hidden" id="editprodId">
                     
                     <div class="mb-3">
-                        <label for="editName" class="form-label">Nombre</label>
-                        <input type="text" class="form-control" id="editName" required>
+                        <label for="editprodName" class="form-label">Nombre del Producto</label>
+                        <input type="text" class="form-control" id="editprodName" required>
                     </div>
-
+        
+                    <div class="mb-3">
+                        <label for="editTipoCriticidad" class="form-label">Tipo de Criticidad</label>
+                        <select id="editTipoCriticidad" class="form-select" required
+                            onchange="loadEditCriticidadesByTipo()">
+                            <option value="">Seleccione el tipo de criticidad</option>
+                        </select>
+                    </div>
+        
                     <div class="mb-3">
                         <label for="editCriticidad" class="form-label">Criticidad</label>
                         <select id="editCriticidad" class="form-select" required>
                             <option value="">Seleccione una criticidad</option>
                         </select>
                     </div>
-
-                    <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+        
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                    </div>
                 </form>
             </div>
         </div>

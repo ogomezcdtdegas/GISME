@@ -1,10 +1,12 @@
 // main.js - Punto de entrada a la _AppHome
 async function loadProductosPag(page = 1) {
     console.log("🔄 Cargando los tipos de productos...");
+    console.log("🔄 Cargando los tipos de criticidades para la página:", page);
     const perPage = document.getElementById('recordsPerPage').value;
 
     // 🔹 Cargar tipos de criticidades paginados
     const data = await fetchProductos(page, perPage);
+    console.log("🔄 datos paginados de productos:", data);
     if (data) renderProductos(data);
 
     // 🔹 Cargar todas las criticidades sin paginación y verificar en consola

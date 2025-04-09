@@ -4,6 +4,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+
     <title>{% block title %}GISME{% endblock %}</title>
 
     <!-- Bootstrap CSS -->
@@ -17,11 +22,17 @@
     {% block extra_css %}{% endblock %}
 </head>
 <body>
-
     <!-- Barra Lateral -->
     <nav class="sidebar">
         <h4 class="text-center">GISME</h4>
         <hr>
+
+        <!-- Menú Administración -->
+        <a href="#" id="toggleAdministracion"><i class="bi bi-gear"></i> Administración <i class="bi bi-chevron-down float-end"></i></a>
+        <div class="submenu" id="administracionSubmenu">
+            <a href="{% url 'crear_usuario' %}"><i class="bi bi-person-plus"></i> Crear Usuario</a>
+        </div>
+
         <a href="{% url 'allEquiposPag' %}" class="active"><i class="bi bi-house-door"></i> Home</a>
         <a href="{% url 'calc1' %}"><i class="bi bi-calculator"></i> App Calc1</a>
         <a href="{% url 'calcular_incertidumbre' %}"><i class="bi bi-bar-chart"></i> App Calc2</a>
@@ -35,6 +46,13 @@
             <a href="#"><i class="bi bi-tags"></i> Tipo de Equipo</a>
             <a href="#"><i class="bi bi-tags"></i> Tecnología</a> 
         </div>
+
+        <!-- Botón de Logout -->
+        {% if request.user.is_authenticated %}
+        <a href="{% url 'logout' %}" class="text-warning">
+            <i class="bi bi-box-arrow-right"></i> Cerrar sesión
+        </a>
+        {% endif %}
     </nav>
 
     <!-- Contenido Dinámico -->

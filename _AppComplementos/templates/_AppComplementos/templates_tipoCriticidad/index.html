@@ -40,7 +40,7 @@
         <h2 class="">Lista de Tipo de Criticidades</h2>
         <div>
             <label for="recordsPerPage" class="me-2">Mostrar</label>
-            <select id="recordsPerPage" class="form-select d-inline-block w-auto" onchange="updateRecordsPerPage()">
+            <select id="recordsPerPage" class="form-select d-inline-block w-auto" onchange="updatePagination()">
                 <option value="5" {% if tipcriticidades.paginator.per_page == 5 %}selected{% endif %}>5</option>
                 <option value="10" {% if tipcriticidades.paginator.per_page == 10 or not tipcriticidades.paginator.per_page %}selected{% endif %}>10</option>
                 <option value="20" {% if tipcriticidades.paginator.per_page == 20 %}selected{% endif %}>20</option>

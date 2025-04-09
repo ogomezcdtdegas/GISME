@@ -48,7 +48,7 @@
         <h2 class="">Lista de Productos</h2>
         <div>
             <label for="recordsPerPage" class="me-2">Mostrar</label>
-            <select id="recordsPerPage" class="form-select d-inline-block w-auto" onchange="updateRecordsPerPage()">
+            <select id="recordsPerPage" class="form-select d-inline-block w-auto" onchange="updatePagination()">
                 <option value="5" {% if productos.paginator.per_page == 5 %}selected{% endif %}>5</option>
                 <option value="10" {% if productos.paginator.per_page == 10 or not productos.paginator.per_page %}selected{% endif %}>10</option>
                 <option value="20" {% if productos.paginator.per_page == 20 %}selected{% endif %}>20</option>

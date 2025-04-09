@@ -24,4 +24,6 @@ urlpatterns = [
     path('complementos/', include('_AppComplementos.urls')),  # Incluir las URLs de Home
     path('calc1/', include('_AppCalc1.urls')),  # Ruta para Calc1
     path('calc2/', include('_AppCalc2.urls')),  # Ruta para Calc2
+    path('auth/', include('_AppAuth.urls')),    # Ruta para Auth
+    path('admin_panel/', include('_AppAdmin.urls')), #Ruta para panel de administración
 ]

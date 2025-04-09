@@ -32,24 +32,48 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     });
 
+    
     document.getElementById("editprodForm").addEventListener("submit", async function(event) {
         event.preventDefault();
-    
-        const id = document.getElementById("edittipCritId").value;
-        const name = document.getElementById("editName").value;
-        const tipoCriticidadId = document.getElementById("edittipCritTipoId").value;
+        
+        const id = document.getElementById("editprodId").value;
+        const name = document.getElementById("editprodName").value;
+        const tipoCriticidadId = document.getElementById("editTipoCriticidad").value;
         const criticidadId = document.getElementById("editCriticidad").value;
         const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-    
-        console.log("📡 Datos para actualizar:", { id, name, tipoCriticidadId, criticidadId });
-    
-        const data = await actualizarTipCriticidad(id, name, tipoCriticidadId, criticidadId, csrftoken);
         
-        if (data.success) {
-            alert("✅ Registro actualizado correctamente");
-            location.reload();
-        } else {
-            alert("❌ Error al actualizar: " + data.error);
+        if (!name || !tipoCriticidadId || !criticidadId) {
+            alert("❌ Complete todos los campos obligatorios.");
+            return;
         }
-    });    
+        
+        try {
+            const response = await fetch(`/complementos/editar-producto/${id}/`, {
+                method: "PUT",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": csrftoken,
+                    "X-Requested-With": "XMLHttpRequest"
+                },
+                body: JSON.stringify({ 
+                    name, 
+                    tipo_criticidad_id: tipoCriticidadId,
+                    criticidad_id: criticidadId 
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                alert("✅ Producto actualizado correctamente");
+                loadProductosPag();
+                bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
+            } else {
+                alert("❌ Error al actualizar: " + (data.error || "Error desconocido"));
+            }
+        } catch (error) {
+            console.error("Error al actualizar producto:", error);
+            alert("❌ Error de conexión con el servidor");
+        }
+    });
 });

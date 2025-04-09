@@ -1,10 +1,12 @@
 // main.js - Punto de entrada a la _AppHome
 async function loadTipCriticidadesPag(page = 1) {
     console.log("🔄 Cargando los tipos de criticidades...");
+    console.log("🔄 Cargando los tipos de criticidades para la página:", page);
     const perPage = document.getElementById('recordsPerPage').value;
 
     // 🔹 Cargar tipos de criticidades paginados
     const data = await fetchTipCriticidades(page, perPage);
+    console.log("🔄 datos paginados de tipo de criticidades:", data);
     if (data) renderTipCriticidades(data);
 
     // 🔹 Cargar todas las criticidades sin paginación y verificar en consola

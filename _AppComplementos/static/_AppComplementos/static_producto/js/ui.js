@@ -1,7 +1,8 @@
 // ui.js - Manipulación del DOM
 function renderProductos(data) {
+    console.log("🔄 datos paginados recibidos por el render de productos:", data);
     const tableBody = document.getElementById('prodTableBody');
-    tableBody.innerHTML = ""; // Limpiar tabla
+    tableBody.innerHTML = "";
 
     if (!data || !data.results || data.results.length === 0) {
         const row = `<tr><td colspan="4">No hay productos registrados</td></tr>`;
@@ -20,7 +21,8 @@ function renderProductos(data) {
                         '${relacion.id}', 
                         '${relacion.producto_name || ""}', 
                         '${relacion.criticidad_name || ""}', 
-                        '${relacion.tipo_criticidad_id || ""}'
+                        '${relacion.tipo_criticidad_id || ""}',
+                        '${relacion.criticidad_id || ""}'  // Asegúrate de pasar este valor
                     )">
                     <i class="bi bi-pencil-square"></i>
                 </button>
@@ -29,32 +31,84 @@ function renderProductos(data) {
         tableBody.insertAdjacentHTML('beforeend', row);
     });
 
-    // Actualizar paginación si es necesario
-    if (data.paginator) {
-        updatePagination(data, "loadProductosPag");
-    }
+    updatePagination(data, "loadProductosPag");
 }
 
-function openEditModal(id, name, criticidadId, tipoCriticidadId) {
-    // 🔹 Asegúrate de que estos campos existan en el modal HTML
-    document.getElementById("edittipCritId").value = id;
-    document.getElementById("editName").value = productoName;
-    document.getElementById("edittipCritTipoId").value = tipoCriticidadId;
-
-    const select = document.getElementById("editCriticidad");
-    select.innerHTML = '<option value="">Cargando...</option>';
-
-    fetchAllCriticidades().then(criticidades => {
-        select.innerHTML = '<option value="">Seleccione una criticidad</option>'; 
-        criticidades.forEach(crit => {
-            const option = document.createElement("option");
-            option.value = crit.id;
-            option.textContent = crit.name;
-            if (crit.id == criticidadId) option.selected = true;
-            select.appendChild(option);
-        });
+async function openEditModal(id, productoName, criticidadName, tipoCriticidadId, criticidadId) {
+    // Setear valores básicos
+    document.getElementById("editprodId").value = id;
+    document.getElementById("editprodName").value = productoName;
+    
+    // Referencias a los selects
+    const tipoCritSelect = document.getElementById("editTipoCriticidad");
+    const critSelect = document.getElementById("editCriticidad");
+    
+    // Cargar tipos de criticidad
+    const allTipoCriticidades = await fetchAllTipoCriticidades();
+    
+    // Limpiar y poblar tipos de criticidad
+    tipoCritSelect.innerHTML = '<option value="">Seleccione un tipo de criticidad</option>';
+    allTipoCriticidades.forEach(tipo => {
+        const option = document.createElement("option");
+        option.value = tipo.id;
+        option.textContent = tipo.name;
+        if (tipo.id == tipoCriticidadId) option.selected = true;
+        tipoCritSelect.appendChild(option);
     });
-
+    
+    // Configurar criticidades
+    critSelect.innerHTML = '<option value="">Cargando criticidades...</option>';
+    critSelect.disabled = true;
+    
+    // Si hay un tipo seleccionado, cargar sus criticidades
+    if (tipoCriticidadId) {
+        const criticidades = await fetchCriticidadesByTipo(tipoCriticidadId);
+        
+        // Limpiar y poblar criticidades
+        critSelect.innerHTML = '';
+        
+        // Agregar opción por defecto solo si no hay criticidad seleccionada
+        if (!criticidadId) {
+            critSelect.appendChild(new Option("Seleccione una criticidad", ""));
+        }
+        
+        // Poblar opciones
+        criticidades.forEach(crit => {
+            const option = new Option(crit.name, crit.id);
+            if (crit.id == criticidadId) option.selected = true;
+            critSelect.appendChild(option);
+        });
+        
+        critSelect.disabled = false;
+    }
+    
+    // Mostrar modal
     new bootstrap.Modal(document.getElementById('editModal')).show();
 }
 
+async function loadEditCriticidadesByTipo() {
+    const tipoId = document.getElementById("editTipoCriticidad").value;
+    const critSelect = document.getElementById("editCriticidad");
+    
+    critSelect.innerHTML = '<option value="">Cargando...</option>';
+    critSelect.disabled = true;
+    
+    if (!tipoId) {
+        critSelect.innerHTML = '<option value="">Seleccione un tipo primero</option>';
+        return;
+    }
+    
+    const criticidades = await fetchCriticidadesByTipo(tipoId);
+    
+    // Mantener la selección actual si existe
+    const currentValue = critSelect.value;
+    
+    critSelect.innerHTML = '';
+    criticidades.forEach(crit => {
+        const option = new Option(crit.name, crit.id);
+        if (crit.id == currentValue) option.selected = true;
+        critSelect.appendChild(option);
+    });
+    
+    critSelect.disabled = false;
+}
