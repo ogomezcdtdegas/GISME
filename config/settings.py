@@ -46,6 +46,8 @@ INSTALLED_APPS = [
     '_AppCalc2',
     '_AppCommon',
     '_AppComplementos',
+    '_AppAuth',
+    '_AppAdmin',
     'django_extensions',
 ]
 
@@ -57,6 +59,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    '_AppAuth.middleware.AuthMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -139,7 +142,7 @@ STATIC_URL = '/static/'
 
 # Asegurar que la carpeta estática global se detecte
 STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static')  # Permite archivos estáticos globales
+    os.path.join(BASE_DIR, 'config/static')  # Permite archivos estáticos globales
 ]
 
 # Buscar archivos estáticos en cada app automáticamente

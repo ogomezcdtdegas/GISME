@@ -28,9 +28,9 @@
         <h2 class="">Lista de Criticidades</h2>
         <div>
             <label for="recordsPerPage" class="me-2">Mostrar</label>
-            <select id="recordsPerPage" class="form-select d-inline-block w-auto" onchange="updateRecordsPerPage()">
+            <select id="recordsPerPage" class="form-select d-inline-block w-auto" onchange="updatePagination()">
                 <option value="5" {% if criticidades.paginator.per_page == 5 %}selected{% endif %}>5</option>
-                <option value="10" {% if criticidades.paginator.per_page == 10 %}selected{% endif %}>10</option>
+                <option value="10" {% if criticidades.paginator.per_page == 10 or not criticidades.paginator.per_page %}selected{% endif %}>10</option>
                 <option value="20" {% if criticidades.paginator.per_page == 20 %}selected{% endif %}>20</option>
                 <option value="50" {% if criticidades.paginator.per_page == 50 %}selected{% endif %}>50</option>
             </select>

@@ -9,10 +9,20 @@
                 <form id="edittipCritForm">
                     {% csrf_token %}
                     <input type="hidden" id="edittipCritId">
+                    <input type="hidden" id="edittipCritTipoId">
+                    
                     <div class="mb-3">
                         <label for="editName" class="form-label">Nombre</label>
                         <input type="text" class="form-control" id="editName" required>
                     </div>
+
+                    <div class="mb-3">
+                        <label for="editCriticidad" class="form-label">Criticidad</label>
+                        <select id="editCriticidad" class="form-select" required>
+                            <option value="">Seleccione una criticidad</option>
+                        </select>
+                    </div>
+
                     <button type="submit" class="btn btn-primary">Guardar Cambios</button>
                 </form>
             </div>

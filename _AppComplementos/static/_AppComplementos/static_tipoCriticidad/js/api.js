@@ -31,7 +31,7 @@ async function fetchAllCriticidades() {
     }
 }
 
-async function crearTipCriticidad(name) {
+async function crearTipCriticidad(name, criticidad_id) {
     try {
         const response = await fetch("/complementos/crear-tipCriticidad/", {
             method: "POST",
@@ -40,16 +40,28 @@ async function crearTipCriticidad(name) {
                 "X-Requested-With": "XMLHttpRequest",
                 "X-CSRFToken": getCSRFToken(),
             },
-            body: JSON.stringify({ name }),
+            body: JSON.stringify({ name, criticidad_id }),
         });
-        return await response.json();
+
+        const result = await response.json(); // Convertir la respuesta en JSON
+
+        // 🔹 Si la API devuelve success: false, tratamos el mensaje como error
+        if (!result.success) {
+            return { success: false, error: result.message || "Error desconocido" };
+        }
+
+        return result;
+
     } catch (error) {
-        console.error("❌ Error al registrar la criticidad:", error);
+        console.error("❌ Error en la solicitud:", error);
+        return { success: false, error: "Error de conexión con el servidor" };
     }
 }
 
-async function actualizarTipCriticidad(id, name, csrftoken) {
+async function actualizarTipCriticidad(id, name, tipoCriticidadId, criticidadId, csrftoken) {
     try {
+        console.log("📡 Enviando actualización:", { id, name, tipoCriticidadId, criticidadId });
+
         const response = await fetch(`/complementos/editar-tipCriticidad/${id}/`, {
             method: "PUT",
             headers: {
@@ -57,10 +69,16 @@ async function actualizarTipCriticidad(id, name, csrftoken) {
                 "X-CSRFToken": csrftoken,
                 "X-Requested-With": "XMLHttpRequest"
             },
-            body: JSON.stringify({ name })
+            body: JSON.stringify({ 
+                name, 
+                tipo_criticidad_id: tipoCriticidadId,  
+                criticidad_id: criticidadId 
+            })
         });
+
         return await response.json();
     } catch (error) {
         console.error("❌ Error en la actualización:", error);
+        return { success: false, error: "Error en la actualización" };
     }
 }

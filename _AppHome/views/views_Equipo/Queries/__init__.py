@@ -1,0 +1,1 @@
+from .GetAllEquipoPagQuery import GetAllEquipoPagQuery

@@ -1,0 +1,2 @@
+from .CreateTipoCriticidadCommand import CreateTipoCriticidadCommand
+from .UpdateTipoCriticidadCommand import UpdateTipoCriticidadCommand
