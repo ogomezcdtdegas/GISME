@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+{% load static %} 
+
+{% block title %}Calc1 - GISME{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <!--Cabecero Principal-->
+        <header class="row">
+            <div class="col-6 d-flex align-items-center"><img style="height: 70px;" src="{% static '_AppHerramientas/static_fluxpro/images/logo.jpg' %}" alt="logoFluXPro"></div>
+            <div class="col-6 d-flex justify-content-end align-items-center section-title">PROPIEDADES DEL GAS</div>
+        </header>
+
+        <div class="row">
+            <div class="col-sm-12 col-lg-3">
+                <div class="box-title">Composición (fracción molar):</div>
+                <!--Composición-->
+                <section class="sectComposición">
+                    <div class="row justify-content-center">
+                        
+                        <table class="table table-sm table-striped">
+                            <tr>
+                                <td>Metano</td>
+                                <td><input type="text" class="gas-input" value="0.965809"></td>
+                            </tr>
+                            <tr>
+                                <td>Nitrógeno</td>
+                                <td><input type="text" class="gas-input" value="0.028195"></td>
+                            </tr>
+                            <tr>
+                                <td>Dióxido de Carbono</td>
+                                <td><input type="text" class="gas-input" value="0.000328"></td>
+                            </tr>
+                            <tr>
+                                <td>Etano</td>
+                                <td><input type="text" class="gas-input" value="0.004173"></td>
+                            </tr>
+                            <tr>
+                                <td>Propano</td>
+                                <td><input type="text" class="gas-input" value="0.000717"></td>
+                            </tr>
+                            <tr>
+                                <td>Agua</td>
+                                <td><input type="text" class="gas-input" value="0"></td>
+                            </tr>
+                            <tr>
+                                <td>Sulfuro de Hidrógeno</td>
+                                <td><input type="text" class="gas-input" value="0"></td>
+                            </tr>
+                            <tr>
+                                <td>Hidrógeno</td>
+                                <td><input type="text" class="gas-input" value="0"></td>
+                            </tr>
+                            <tr>
+                                <td>Monóxido de Carbono</td>
+                                <td><input type="text" class="gas-input" value="0"></td>
+                            </tr>
+                            <tr>
+                                <td>Oxígeno</td>
+                                <td><input type="text" class="gas-input" value="0"></td>
+                            </tr>
+                            <tr>
+                                <td>i-Butano</td>
+                                <td><input type="text" class="gas-input" value="0.000368"></td>
+                            </tr>
+                            <tr>
+                                <td>n-Butano</td>
+                                <td><input type="text" class="gas-input" value="0.000116"></td>
+                            </tr>
+                            <tr>
+                                <td>i-Pentano</td>
+                                <td><input type="text" class="gas-input" value="0"></td>
+                            </tr>
+                            <tr>
+                                <td>n-Pentano</td>
+                                <td><input type="text" class="gas-input" value="0"></td>
+                            </tr>
+                            <tr>
+                                <td>n-Hexano</td>
+                                <td><input type="text" class="gas-input" value="0.000278"></td>
+                            </tr>
+                            <tr>
+                                <td>n-Heptano</td>
+                                <td><input type="text" class="gas-input" value="0"></td>
+                            </tr>
+                            <tr>
+                                <td>n-Octano</td>
+                                <td><input type="text" class="gas-input" value="0"></td>
+                            </tr>
+                            <tr>
+                                <td>n-Nonano</td>
+                                <td><input type="text" class="gas-input" value="0"></td>
+                            </tr>
+                            <tr>
+                                <td>n-Decano</td>
+                                <td><input type="text" class="gas-input" value="0"></td>
+                            </tr>
+                            <tr>
+                                <td>Helio</td>
+                                <td><input type="text" class="gas-input" value="0"></td>
+                            </tr>
+                            <tr>
+                                <td>Argón</td>
+                                <td><input type="text" class="gas-input" value="0"></td>
+                            </tr>
+                        </table>
+                    </div>
+                </section>
+            </div>
+
+            <div class="col-sm-12 col-lg-9">
+                <!--Condiciones-->
+                <section>
+                    <div class="container backgroundColorIdent">
+                        <div class="row text-center backgroundColorIdent justify-content-center align-items-center">
+                            <div class="col">
+                                <div class="box-titleCondiciones d-flex justify-content-center align-items-center">Condiciones de operación y base:</div>
+                            </div>
+                        </div>
+                        <div class="row sectCondiciones d-flex justify-content-center align-items-center">
+                            <div class="col setCondOperacion mx-1">
+                                    <div class="box-title">Operación:</div>
+
+                                    <label class="form-label fw-bold mt-5 mb-3">Temperatura [Tf]:</label>
+                                    <div class="input-group input-group-sm">
+                                        <input type="text" class="form-control" placeholder="Ing. la temperatura">
+                                        <span class="input-group-text">°F</span>
+                                    </div>
+
+                                    <label class="form-label fw-bold mt-3 mb-3">Presión [Pf]:</label>
+                                    <div class="input-group input-group-sm">
+                                        <input type="text" class="form-control" placeholder="Ing. la presión">
+                                        <span class="input-group-text">psia</span>
+                                    </div>
+                            </div>
+                            <div class="col setCondOperacion mx-1">
+                                    <div class="box-title">Base:</div>
+
+                                    <label class="form-label fw-bold mt-5 mb-3">Temperatura [Tb]:</label>
+                                    <div class="input-group input-group-sm">
+                                        <input type="text" class="form-control" placeholder="Ing. la temperatura">
+                                        <span class="input-group-text">°F</span>
+                                    </div>
+
+                                    <label class="form-label fw-bold mt-3 mb-3">Presión [Pb]:</label>
+                                    <div class="input-group input-group-sm">
+                                        <input type="text" class="form-control" placeholder="Ing. la presión">
+                                        <span class="input-group-text">psia</span>
+                                    </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!--Resultados-->
+                <section>
+                    <div class="container sectResultados backgroundColorIdent ">
+                        <div class="row text-center box-titleResultados">
+                            <div class="col">Sección de Resultados</div>
+                        </div>
+                    </div>
+                </section>
+
+                <!--Botones [Calcular, Exportar, Volver]-->
+                <section>
+                        <div class="container sectBotones d-flex justify-content-center align-items-center">
+                            <div class="row">
+                                <div class="col-4"><button type="button" class="btn btn-success buttonWeight btn-lg">Calcular</button></div>
+                                <div class="col-4"><button type="button" class="btn btn-primary buttonWeight btn-lg">Exportar</button></div>
+                                <div class="col-4"><button type="button" class="btn btn-danger buttonWeight btn-lg">Volver</button></div>
+                            </div>    
+                        </div>
+                </section>
+            </div>
+        </div>
+        
+        <footer class="sectFooter text-center">
+            <h6>FluXpro Web V 1.0 -2025. Corporación CDT de GAS (wwww.cdtdegas.com)</h6>
+        </footer>
+    </div>
+{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static '_AppHerramientas/static_fluxpro/styles.css' %}">
+{% endblock %}
+
+{% block extra_js %}
+{% endblock %}
