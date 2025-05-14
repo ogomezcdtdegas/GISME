@@ -26,19 +26,18 @@
         }
 
         .setCondOperacion{
-            background-color: #f8f9fa;
-            border-right: 2px solid #aaa3a3;
+            background-color: #f8faf9;
+            border-left: 4px solid #52df10;
         }
 
         .setCondBase{
             background-color: #f8f9fa;
-            border: 2px solid #388e3c;
-            border-radius: 8px;
+            border-left: 4px solid #df3910;
         }
 
         .sectResultados{
             background-color: rgb(228, 225, 221);
-            height: 30vh;
+            height: 40vh;
             margin-bottom: 5px;
         }
 
@@ -63,12 +62,13 @@
         }
 
         .box-titleCondiciones{
-            background-color: rgb(52, 58, 64);
-            color:rgb(255, 255, 255);
+            background-color: rgb(248, 249, 250);
+            color:rgb(99, 94, 94);
             font-size: 25px;
             padding: 2px 5px;
-            font-weight: bold;
-            border-radius: 4px;
+            /*font-weight: bold;*/
+            border-bottom: 3px solid rgb(149, 153, 160);
+            border-radius: 6px;
             height: 80px;
         }
 
@@ -77,16 +77,16 @@
             color:rgb(255, 255, 255);
             font-size: 18px;
             padding: 2px 8px;
-            font-weight: bold;
+            /*font-weight: bold;*/
             border-radius: 6px; 
         }
 
         .box-titleResultados{
             background-color: rgb(52, 58, 64);
-            color:rgb(255, 255, 255);
+            color:rgb(255, 251, 251);
             font-size: 20px;
             padding: 2px 5px;
-            font-weight: bold;
+            /*font-weight: bold;*/
             border-radius: 4px;
             height: 35px;
         }
@@ -98,4 +98,29 @@
 
         .backgroundColorIdent {
             background-color: #f8f9fa;
+        }
+
+        .bgResultados{
+            background-color: #f8f9fa;
+            border-bottom: 2px solid rgb(149, 153, 160);
+            border-radius: 2px;
+            padding-bottom: 20px;
+        }
+
+        .form-check-input {
+            width: 20px;
+            height: 20px;
+            border: 1px solid #5d6061; /* Borde azul */
+            background-color: #ffffff; /* Fondo claro */
+            cursor: pointer;
+        }
+
+        /* Cambiar el color cuando el checkbox está marcado */
+        .form-check-input:checked {
+            background-color: #28a745; /* Fondo verde */
+            border-color: #28a745; /* Borde verde */
+        }
+
+        .form-control{
+            border-color: #a8a8a8; /* Borde verde */
         }
