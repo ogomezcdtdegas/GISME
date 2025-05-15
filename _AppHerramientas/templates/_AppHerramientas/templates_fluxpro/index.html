@@ -10,7 +10,8 @@
             <div class="col-6 d-flex align-items-center"><img style="height: 70px;" src="{% static '_AppHerramientas/static_fluxpro/images/logo.jpg' %}" alt="logoFluXPro"></div>
             <div class="col-6 d-flex justify-content-end align-items-center section-title">PROPIEDADES DEL GAS</div>
         </header>
-
+        
+        <form id="condicionesForm">
         <div class="row">
             <div class="col-sm-12 col-lg-3">
                 <div class="box-title">Composición (fracción molar):</div>
@@ -21,87 +22,87 @@
                         <table class="table table-sm table-striped table-hover">
                             <tr>
                                 <td>Metano</td>
-                                <td><input type="text" class="form-control gas-input" value="0.965809"></td>
+                                <td><input type="number" class="form-control gas-input" name="gas_C1" id="gas_C1" value="0.965809"></td>
                             </tr>
                             <tr>
                                 <td>Nitrógeno</td>
-                                <td><input type="text" class="form-control gas-input" value="0.028195"></td>
+                                <td><input type="number" class="form-control gas-input" name="gas_N2" id="gas_N2" value="0.028195"></td>
                             </tr>
                             <tr>
                                 <td>Dióxido de Carbono</td>
-                                <td><input type="text" class="form-control gas-input" value="0.000328"></td>
+                                <td><input type="number" class="form-control gas-input" name="gas_CO2" id="gas_CO2" value="0.000328"></td>
                             </tr>
                             <tr>
                                 <td>Etano</td>
-                                <td><input type="text" class="form-control gas-input" value="0.004173"></td>
+                                <td><input type="number" class="form-control gas-input" name="gas_C2" id="gas_C2" value="0.004173"></td>
                             </tr>
                             <tr>
                                 <td>Propano</td>
-                                <td><input type="text" class="form-control gas-input" value="0.000717"></td>
+                                <td><input type="number" class="form-control gas-input" name="gas_C3" id="gas_C3" value="0.000717"></td>
                             </tr>
                             <tr>
                                 <td>Agua</td>
-                                <td><input type="text" class="form-control gas-input" value="0"></td>
+                                <td><input type="number" class="form-control gas-input" name="gas_H2O" id="gas_H2O" value="0"></td>
                             </tr>
                             <tr>
                                 <td>Sulfuro de Hidrógeno</td>
-                                <td><input type="text" class="form-control gas-input" value="0"></td>
+                                <td><input type="number" class="form-control gas-input" name="gas_H2S" id="gas_H2S" value="0"></td>
                             </tr>
                             <tr>
                                 <td>Hidrógeno</td>
-                                <td><input type="text" class="form-control gas-input" value="0"></td>
+                                <td><input type="number" class="form-control gas-input" name="gas_H2" id="gas_H2" value="0"></td>
                             </tr>
                             <tr>
                                 <td>Monóxido de Carbono</td>
-                                <td><input type="text" class="form-control gas-input" value="0"></td>
+                                <td><input type="number" class="form-control gas-input" name="gas_CO" id="gas_CO" value="0"></td>
                             </tr>
                             <tr>
                                 <td>Oxígeno</td>
-                                <td><input type="text" class="form-control gas-input" value="0"></td>
+                                <td><input type="number" class="form-control gas-input" name="gas_O2" id="gas_O2" value="0"></td>
                             </tr>
                             <tr>
                                 <td>i-Butano</td>
-                                <td><input type="text" class="form-control gas-input" value="0.000368"></td>
+                                <td><input type="number" class="form-control gas-input" name="gas_iC4" id="gas_iC4" value="0.000368"></td>
                             </tr>
                             <tr>
                                 <td>n-Butano</td>
-                                <td><input type="text" class="form-control gas-input" value="0.000116"></td>
+                                <td><input type="number" class="form-control gas-input" name="gas_nC4" id="gas_nC4" value="0.000116"></td>
                             </tr>
                             <tr>
                                 <td>i-Pentano</td>
-                                <td><input type="text" class="form-control gas-input" value="0"></td>
+                                <td><input type="number" class="form-control gas-input" name="gas_iC5" id="gas_iC5" value="0"></td>
                             </tr>
                             <tr>
                                 <td>n-Pentano</td>
-                                <td><input type="text" class="form-control gas-input" value="0"></td>
+                                <td><input type="number" class="form-control gas-input" name="gas_nC5" id="gas_nC5" value="0"></td>
                             </tr>
                             <tr>
                                 <td>n-Hexano</td>
-                                <td><input type="text" class="form-control gas-input" value="0.000278"></td>
+                                <td><input type="number" class="form-control gas-input" name="gas_nC6" id="gas_nC6" value="0.000278"></td>
                             </tr>
                             <tr>
                                 <td>n-Heptano</td>
-                                <td><input type="text" class="form-control gas-input" value="0"></td>
+                                <td><input type="number" class="form-control gas-input" name="gas_nC7" id="gas_nC7" value="0"></td>
                             </tr>
                             <tr>
                                 <td>n-Octano</td>
-                                <td><input type="text" class="form-control gas-input" value="0"></td>
+                                <td><input type="number" class="form-control gas-input" name="gas_nC8" id="gas_nC8" value="0"></td>
                             </tr>
                             <tr>
                                 <td>n-Nonano</td>
-                                <td><input type="text" class="form-control gas-input" value="0"></td>
+                                <td><input type="number" class="form-control gas-input" name="gas_nC9" id="gas_nC9" value="0"></td>
                             </tr>
                             <tr>
                                 <td>n-Decano</td>
-                                <td><input type="text" class="form-control gas-input" value="0"></td>
+                                <td><input type="number" class="form-control gas-input" name="gas_nC10" id="gas_nC10" value="0"></td>
                             </tr>
                             <tr>
                                 <td>Helio</td>
-                                <td><input type="text" class="form-control gas-input" value="0"></td>
+                                <td><input type="number" class="form-control gas-input" name="gas_He" id="gas_He" value="0"></td>
                             </tr>
                             <tr>
                                 <td>Argón</td>
-                                <td><input type="text" class="form-control gas-input" value="0"></td>
+                                <td><input type="number" class="form-control gas-input" name="gas_Ar" id="gas_Ar" value="0.5"></td>
                             </tr>
                         </table>
                     </div>
@@ -117,38 +118,40 @@
                                 <div class="box-titleCondiciones d-flex justify-content-center align-items-center">PROPIEDADES DEL GAS:</div>
                             </div>
                         </div>-->
-                        <div class="row sectCondiciones d-flex justify-content-center align-items-center">
-                            <div class="col setCondOperacion mx-1">
-                                    <div class="box-title">Operación:</div>
+                        <!--<form id="condicionesForm">-->
+                            <div class="row sectCondiciones d-flex justify-content-center align-items-center">
+                                <div class="col setCondOperacion mx-1">
+                                        <div class="box-title">Operación:</div>
 
-                                    <label class="form-label fw-bold mt-5 mb-3">Temperatura [Tf]:</label>
-                                    <div class="input-group input-group-sm">
-                                        <input type="text" class="form-control" placeholder="Ing. la temperatura">
-                                        <span class="input-group-text">°F</span>
-                                    </div>
+                                        <label class="form-label fw-bold mt-5 mb-3">Temperatura [Tf]:</label>
+                                        <div class="input-group input-group-sm">
+                                            <input type="number" class="form-control" name="temperature" id="temperature" placeholder="Ing. la temperatura">
+                                            <span class="input-group-text">°F</span>
+                                        </div>
 
-                                    <label class="form-label fw-bold mt-3 mb-3">Presión [Pf]:</label>
-                                    <div class="input-group input-group-sm">
-                                        <input type="text" class="form-control" placeholder="Ing. la presión">
-                                        <span class="input-group-text">psia</span>
-                                    </div>
+                                        <label class="form-label fw-bold mt-3 mb-3">Presión [Pf]:</label>
+                                        <div class="input-group input-group-sm">
+                                            <input type="number" class="form-control" name="pressure" id="pressure" placeholder="Ing. la presión">
+                                            <span class="input-group-text">psia</span>
+                                        </div>
+                                </div>
+                                <div class="col setCondBase mx-1">
+                                        <div class="box-title">Base:</div>
+
+                                        <label class="form-label fw-bold mt-5 mb-3">Temperatura [Tb]:</label>
+                                        <div class="input-group input-group-sm">
+                                            <input type="number" class="form-control" name="tempBs" id="tempBs" placeholder="Ing. la temperatura">
+                                            <span class="input-group-text">°F</span>
+                                        </div>
+
+                                        <label class="form-label fw-bold mt-3 mb-3">Presión [Pb]:</label>
+                                        <div class="input-group input-group-sm">
+                                            <input type="number" class="form-control" name="presBs" id="presBs" placeholder="Ing. la presión">
+                                            <span class="input-group-text">psia</span>
+                                        </div>
+                                </div>
                             </div>
-                            <div class="col setCondBase mx-1">
-                                    <div class="box-title">Base:</div>
-
-                                    <label class="form-label fw-bold mt-5 mb-3">Temperatura [Tb]:</label>
-                                    <div class="input-group input-group-sm">
-                                        <input type="text" class="form-control" placeholder="Ing. la temperatura">
-                                        <span class="input-group-text">°F</span>
-                                    </div>
-
-                                    <label class="form-label fw-bold mt-3 mb-3">Presión [Pb]:</label>
-                                    <div class="input-group input-group-sm">
-                                        <input type="text" class="form-control" placeholder="Ing. la presión">
-                                        <span class="input-group-text">psia</span>
-                                    </div>
-                            </div>
-                        </div>
+                        <!--</form>-->
                     </div>
                 </section>
 
@@ -263,7 +266,7 @@
                 <section>
                         <div class="container sectBotones d-flex justify-content-center align-items-center">
                             <div class="row">
-                                <div class="col-4"><button type="button" class="btn btn-success buttonWeight btn-lg">Calcular</button></div>
+                                <div class="col-4"><button type="submit" class="btn btn-success buttonWeight btn-lg">Calcular</button></div>
                                 <div class="col-4"><button type="button" class="btn btn-primary buttonWeight btn-lg">Exportar</button></div>
                                 <div class="col-4"><button type="button" class="btn btn-danger buttonWeight btn-lg">Volver</button></div>
                             </div>    
@@ -271,6 +274,7 @@
                 </section>
             </div>
         </div>
+        </form>
         
         <footer class="sectFooter text-center">
             <h6>FluXpro Web V 1.0 -2025. Corporación CDT de GAS (wwww.cdtdegas.com)</h6>
@@ -283,4 +287,39 @@
 {% endblock %}
 
 {% block extra_js %}
+<script>
+    document.getElementById("condicionesForm").addEventListener("submit", function(event) {
+        event.preventDefault();
+        
+        let formData = new FormData(this);
+        let jsonData = {};
+        formData.forEach((value, key) => { jsonData[key] = value; });
+
+        console.log("Sending data:", jsonData);
+
+        fetch("{% url 'FluxCalcProp' %}", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": "{{ csrf_token }}"
+            },
+            body: JSON.stringify(jsonData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.error) {
+                document.getElementById("error-message").innerText = data.error;
+                document.getElementById("error-message").style.display = "block";
+                document.getElementById("results").style.display = "none";
+            } else {
+                document.getElementById("rho_gerg").innerText = data.rho_gerg;
+                document.getElementById("rho_detail").innerText = data.rho_detail;
+                document.getElementById("z_gerg").innerText = data.z_gerg;
+                document.getElementById("z_detail").innerText = data.z_detail;
+                document.getElementById("results").style.display = "block";
+                document.getElementById("error-message").style.display = "none";
+            }
+        });
+    });
+</script>
 {% endblock %}
