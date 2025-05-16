@@ -69,6 +69,7 @@ class FluxCalcProp_view(APIView):
                 "rho_detail": f"{gas_properties_detail['rho']:.3f} kg/m3",
                 "z_gerg": f"{gas_properties['z']:.3f}",
                 "z_detail": f"{gas_properties_detail['z']:.3f}",
+                "cp": f"{gas_properties_detail['cp']:.3f}",
             }, status=status.HTTP_200_OK)
 
         except Exception as e:
