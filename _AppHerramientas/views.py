@@ -2,7 +2,8 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-import pvtlib  
+import pvtlib
+from pvtlib import *
 
 def FluxPro_view(request):
     return render(request, "_AppHerramientas/templates_fluxpro/index.html")
@@ -64,12 +65,18 @@ class FluxCalcProp_view(APIView):
             detail = pvtlib.AGA8("DETAIL")
             gas_properties_detail = detail.calculate_from_PT(composition=composition, pressure=P, temperature=T)
 
+
+            gas_thermodynamics_detail = thermodynamics.natural_gas_viscosity_Lee_et_al(T=T, M=gas_properties["mm"], rho=gas_properties["rho"])
+
             return Response({
-                "rho_gerg": f"{gas_properties['rho']:.3f} kg/m3",
-                "rho_detail": f"{gas_properties_detail['rho']:.3f} kg/m3",
-                "z_gerg": f"{gas_properties['z']:.3f}",
-                "z_detail": f"{gas_properties_detail['z']:.3f}",
-                "cp": f"{gas_properties_detail['cp']:.3f}",
+                "rho_gerg": f"{gas_properties['rho']:.6f}",
+                "rho_detail": f"{gas_properties_detail['rho']:.6f} kg/m3",
+                "z_gerg": f"{gas_properties['z']:.6f}",
+                "z_detail": f"{gas_properties_detail['z']:.6f}",
+                "cps": f"{gas_properties_detail['cp']:.6f}",
+                "mm": f"{gas_properties_detail['mm']:.6f}",
+                "mu": f"{gas_thermodynamics_detail:.6f}",
+                "d": f"{gas_properties_detail['d']:.6f}",
             }, status=status.HTTP_200_OK)
 
         except Exception as e:

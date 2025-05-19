@@ -15,6 +15,10 @@ const api = {
             } else {
                 ui.showResults(data);
                 document.getElementById("Zf").value = data.z_gerg;
+                document.getElementById("μ").value = data.mu;
+                document.getElementById("mm").value = data.mm;
+                document.getElementById("ρ").value = data.rho_gerg;
+                document.getElementById("dx").value = data.d;
             }
         });
     }
