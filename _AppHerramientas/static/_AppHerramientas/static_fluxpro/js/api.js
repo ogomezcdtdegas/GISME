@@ -14,11 +14,12 @@ const api = {
                 ui.showServerError(data.error);
             } else {
                 ui.showResults(data);
+                console.log("dataCalc: ", data);
                 document.getElementById("Zf").value = data.z_gerg;
                 document.getElementById("μ").value = data.mu;
                 document.getElementById("mm").value = data.mm;
                 document.getElementById("ρ").value = data.rho_gerg;
-                document.getElementById("dx").value = data.d;
+                document.getElementById("Hv").value = data.HHV_BTU_ft3_real;
             }
         });
     }
