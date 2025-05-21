@@ -4,6 +4,8 @@ from rest_framework.response import Response
 from rest_framework import status
 import pvtlib
 from pvtlib import *
+from pvtlib import unit_converters
+import math
 
 def FluxPro_view(request):
     return render(request, "_AppHerramientas/templates_fluxpro/index.html")
@@ -41,6 +43,10 @@ HEATING_VALUES = {
 T_BASE_K = 288.5556      # 15 °C
 P_BASE_BAR = 1.01325353
 Z_BASE = 1           # las tablas asumen idealidad
+DENS_AIRE = 1.2192452 # kg/m3
+
+kg_per_m3_to_lb_per_ft3 = 0.062428
+
 
 class FluxCalcProp_view(APIView):
     def get(self, request):
@@ -49,16 +55,25 @@ class FluxCalcProp_view(APIView):
                 "message": "Bienvenido a FluxCalcProp",
                 "gases": GASES_OPCIONES,
                 "default_pressure": 1.0,
-                "default_temperature": 40.0
+                "default_temperature": 15.0
             }, status=status.HTTP_200_OK)
 
         return render(request, "_AppHerramientas/templates_fluxpro/index.html", {"gases": GASES_OPCIONES})
 
     def post(self, request):
         try:
-            P = float(request.data.get("pressure", 1.0))
-            T = float(request.data.get("temperature", 40.0))
+            
+            Pb = unit_converters.psi_to_bar(float(request.data.get("presBs", 1.0)))
+            Tb = unit_converters.fahrenheit_to_celsius(float(request.data.get("tempBs", 15.0)))
+
+            P = unit_converters.psi_to_bar(float(request.data.get("pressure", 1.0)))
+            T = unit_converters.fahrenheit_to_celsius(float(request.data.get("temperature", 15.0)))
+
+            #P = float(request.data.get("pressure", 1.0))
+            #T = float(request.data.get("temperature", 40.0))
+
             T_K = T + 273.15
+            T_Kb = Tb + 273.15
 
             composition = {}
             total_percentage = 0
@@ -81,9 +96,12 @@ class FluxCalcProp_view(APIView):
             # Propiedades físicas
             gerg = pvtlib.AGA8("GERG-2008")
             gas_properties = gerg.calculate_from_PT(composition=composition, pressure=P, temperature=T)
+            print(f"gas_properties: {gas_properties}")
+            gas_propertiesBas = gerg.calculate_from_PT(composition=composition, pressure=Pb, temperature=Tb)
 
             detail = pvtlib.AGA8("DETAIL")
             gas_properties_detail = detail.calculate_from_PT(composition=composition, pressure=P, temperature=T)
+            gas_properties_detailBas = detail.calculate_from_PT(composition=composition, pressure=Pb, temperature=Tb)
 
             # ----------- HHV/LHV base -------------
             HHV_base = sum(xi * HEATING_VALUES[g]["HHV"] for g, xi in composition_frac.items() if g in HEATING_VALUES)
@@ -92,8 +110,9 @@ class FluxCalcProp_view(APIView):
             print(f"T: {T}, P: {P}")
 
             # ----------- ajuste a condiciones reales (opcional) ----------
-            Z_real = gas_properties["z"]
-            factor = (P / P_BASE_BAR) * (Z_BASE / Z_real) * (T_BASE_K / T_K)
+            Z_real = gas_propertiesBas["z"]
+            print(f"Z_real_base: {Z_real}")
+            factor = (Pb / P_BASE_BAR) * (Z_BASE / Z_real) * (T_BASE_K / T_Kb)
             HHV_real = HHV_base * factor
             LHV_real = LHV_base * factor
 
@@ -104,19 +123,22 @@ class FluxCalcProp_view(APIView):
             )
 
             return Response({
-                "rho_gerg": f"{gas_properties['rho']:.6f} kg/m³",
-                "rho_detail": f"{gas_properties_detail['rho']:.6f} kg/m³",
+                "rho_gerg": f"{gas_properties['rho'] * kg_per_m3_to_lb_per_ft3:.6f}",
+                "rho_gergRelative": f"{gas_propertiesBas['rho'] / DENS_AIRE:.6f}",
+                "rho_detail": f"{gas_properties_detail['rho'] * kg_per_m3_to_lb_per_ft3:.6f}",
                 "z_gerg": f"{gas_properties['z']:.6f}",
+                "z_gergBas": f"{gas_propertiesBas['z']:.6f}",
                 "z_detail": f"{gas_properties_detail['z']:.6f}",
                 "cps": f"{gas_properties_detail['cp']:.6f} J/(mol·K)",
                 "mm": f"{gas_properties_detail['mm']:.6f} g/mol",
                 "mu": f"{gas_thermodynamics_detail:.6f} cP",
                 "d": f"{gas_properties_detail['d']:.6f} mol/L",
                 # ---- poder calorífico -----
-                "HHV_BTU_ft3_base": f"{HHV_base:.2f} BTU/ft³ (base 15 °C,1 bar)",
-                "LHV_BTU_ft3_base": f"{LHV_base:.2f} BTU/ft³ (base 15 °C,1 bar)",
+                "HHV_BTU_ft3_base": f"{HHV_base:.2f} BTU/ft³ (base 60 °F,14.696 psia)",
+                "LHV_BTU_ft3_base": f"{LHV_base:.2f} BTU/ft³ (base 60 °F,14.696 psia)",
                 "HHV_BTU_ft3_real": f"{HHV_real:.2f}",
                 "LHV_BTU_ft3_real": f"{LHV_real:.2f}",
+                "indice_Wobbe": f"{(HHV_real / math.sqrt(gas_propertiesBas['rho']/ DENS_AIRE)):.6f}",
             }, status=status.HTTP_200_OK)
 
         except Exception as e:

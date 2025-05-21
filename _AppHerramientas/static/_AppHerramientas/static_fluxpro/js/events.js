@@ -63,3 +63,9 @@ const events = {
         return true;
     }
 };
+
+document.getElementById("resetInputs").addEventListener("click", function() {
+    document.querySelectorAll('input[type="number"], input[type="text"]').forEach(function(input) {
+        input.value = 0;
+    });
+});

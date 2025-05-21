@@ -9,6 +9,15 @@ const ui = {
             input.step = "0.0001";
             input.value = "0";
         });
+        document.querySelectorAll('input.temperatureBas[type="number"]').forEach(input => {
+            input.step = "0.0001";
+            input.value = "0";
+        });
+        document.querySelectorAll('input.pressureBas[type="number"]').forEach(input => {
+            input.min = "0";
+            input.step = "0.0001";
+            input.value = "0";
+        });
         document.querySelectorAll('input.gas-input[type="number"]').forEach(input => {
             input.min = "0";
             input.max = "100";
