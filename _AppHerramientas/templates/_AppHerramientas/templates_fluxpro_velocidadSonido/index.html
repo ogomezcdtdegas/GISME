@@ -7,8 +7,8 @@
     <div class="container">
         <!--Cabecero Principal-->
         <header class="row">
-            <div class="col-6 d-flex align-items-center"><img style="height: 70px;" src="{% static '_AppHerramientas/static_fluxpro/images/logo.jpg' %}" alt="logoFluXPro"></div>
-            <div class="col-6 d-flex justify-content-end align-items-center section-title">PROPIEDADES DEL GAS</div>
+            <div class="col-6 d-flex align-items-center"><img style="height: 70px;" src="{% static '_AppHerramientas/static_fluxpro_propiedadesGas/images/logo.jpg' %}" alt="logoFluXPro"></div>
+            <div class="col-6 d-flex justify-content-end align-items-center section-title">Verificación de la Velocidad del Sonido</div>
         </header>
         
         <form id="condicionesForm">
@@ -119,8 +119,8 @@
                             </div>
                         </div>-->
                         <!--<form id="condicionesForm">-->
-                            <div class="row sectCondiciones d-flex justify-content-center align-items-center">
-                                <div class="col setCondOperacion mx-1">
+                            <div class="row sectCondiciones d-flex justify-content-center align-items-center mb-5">
+                                <div class="col setCondOperacion mx-1 bg-success">
                                         <div class="box-title">Operación:</div>
 
                                         <label class="form-label fw-bold mt-5 mb-3">Temperatura [Tf]:</label>
@@ -134,8 +134,14 @@
                                             <input type="number" class="form-control pressureOpe" name="pressure" id="pressure" placeholder="Ing. la presión">
                                             <span class="input-group-text">psia</span>
                                         </div>
+
+                                        <label class="form-label fw-bold mt-3 mb-3">Velocidad Medida:</label>
+                                        <div class="input-group input-group-sm">
+                                            <input type="number" class="form-control pressureOpe" name="pressure" id="pressure" placeholder="Ing. la velocidad medida">
+                                            <span class="input-group-text">ft/s</span>
+                                        </div>
                                 </div>
-                                <div class="col setCondBase mx-1">
+                                <div class="col setCondBase mx-1 bg-warning">
                                         <div class="box-title">Base:</div>
 
                                         <label class="form-label fw-bold mt-5 mb-3">Temperatura [Tb]:</label>
@@ -168,52 +174,8 @@
                                                 <div class="row w-100">
                                                     <div class="input-group input-group-sm">
                                                         <!--<div class="col d-flex justify-content-end"><input class="form-check-input me-2" type="checkbox" value=""></div>-->
-                                                        <div class="col"><label class="form-check-label me-2 text-dark d-flex justify-content-start" for="flexCheckDefault" title="Factor de Compresibilidad a condiciones de flujo">Zf</label></div>
-                                                        <input type="text" class="form-control" id="Zf" value="0" readonly style="width: 100px;"><span class="input-group-text" style="width: 60px;">_</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="form-check mb-2">
-                                            <div class="d-flex justify-content-center align-items-center">
-                                                <div class="row w-100">
-                                                    <div class="input-group input-group-sm">
-                                                        <!--<div class="col d-flex justify-content-end"><input class="form-check-input me-2" type="checkbox" value=""></div>-->
-                                                        <div class="col"><label class="form-check-label me-2 text-dark d-flex justify-content-start" for="flexCheckDefault" title="Factor de Compresibilidad a condiciones de base">Zb</label></div>
-                                                        <input type="text" class="form-control" id="Zb" value="0" readonly style="width: 100px;"><span class="input-group-text" style="width: 60px;">_</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="form-check mb-2">
-                                            <div class="d-flex justify-content-center align-items-center">
-                                                <div class="row w-100">
-                                                    <div class="input-group input-group-sm">
-                                                        <!--<div class="col d-flex justify-content-end"><input class="form-check-input me-2" type="checkbox" value=""></div>-->
-                                                        <div class="col"><label class="form-check-label me-2 text-dark d-flex justify-content-start" for="flexCheckDefault" title="Factor de Supercompresibilidad">Fpv</label></div>
-                                                        <input type="text" class="form-control" value="0" readonly style="width: 100px;"><span class="input-group-text" style="width: 60px;">_</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="form-check mb-2">
-                                            <div class="d-flex justify-content-center align-items-center">
-                                                <div class="row w-100">
-                                                    <div class="input-group input-group-sm">
-                                                        <!--<div class="col d-flex justify-content-end"><input class="form-check-input me-2" type="checkbox" value=""></div>-->
-                                                        <div class="col"><label class="form-check-label me-2 text-dark d-flex justify-content-start" for="flexCheckDefault" title="Densidad Absoluta">ρ</label></div>
-                                                        <input type="text" class="form-control" id="ρ" value="0" readonly style="width: 100px;"><span class="input-group-text" style="width: 60px;">lb/ft³</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="form-check mb-2">
-                                            <div class="d-flex justify-content-center align-items-center">
-                                                <div class="row w-100">
-                                                    <div class="input-group input-group-sm">
-                                                        <!--<div class="col d-flex justify-content-end"><input class="form-check-input me-2" type="checkbox" value=""></div>-->
-                                                        <div class="col"><label class="form-check-label me-2 text-dark d-flex justify-content-start" for="flexCheckDefault" title="Poder Calorífico Superior ajustado a condiciones base">Hv</label></div>
-                                                        <input type="text" class="form-control" id="Hv" value="0" readonly style="width: 100px;"><span class="input-group-text" style="width: 60px;">Btu/ft³</span>
+                                                        <div class="col"><label class="form-check-label me-2 text-dark d-flex justify-content-start" for="flexCheckDefault" title="Factor de Compresibilidad a condiciones de flujo">W</label></div>
+                                                        <input type="text" class="form-control" id="Zf" value="0" readonly style="width: 100px;"><span class="input-group-text" style="width: 60px;">ft/s</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -225,52 +187,8 @@
                                                 <div class="row w-100">
                                                     <div class="input-group input-group-sm">
                                                         <!--<div class="col d-flex justify-content-end"><input class="form-check-input me-2" type="checkbox" value=""></div>-->
-                                                        <div class="col"><label class="form-check-label me-2 text-dark d-flex justify-content-start" for="flexCheckDefault" title="Viscosidad">μ</label></div>
-                                                        <input type="text" class="form-control" id="μ" value="0" readonly style="width: 100px;"><span class="input-group-text" style="width: 60px;">Cp</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="form-check mb-2">
-                                            <div class="d-flex justify-content-center align-items-center">
-                                                <div class="row w-100">
-                                                    <div class="input-group input-group-sm">
-                                                        <!--<div class="col d-flex justify-content-end"><input class="form-check-input me-2" type="checkbox" value=""></div>-->
-                                                        <div class="col"><label class="form-check-label me-2 text-dark d-flex justify-content-start" for="flexCheckDefault" title="Densidad Relativa">Gr</label></div>
-                                                        <input type="text" class="form-control" id="gr" value="0" readonly style="width: 100px;"><span class="input-group-text" style="width: 60px;">_</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="form-check mb-2">
-                                            <div class="d-flex justify-content-center align-items-center">
-                                                <div class="row w-100">
-                                                    <div class="input-group input-group-sm">
-                                                        <!--<div class="col d-flex justify-content-end"><input class="form-check-input me-2" type="checkbox" value=""></div>-->
-                                                        <div class="col"><label class="form-check-label me-2 text-dark d-flex justify-content-start" for="flexCheckDefault" title="Indice de Wobbe">lw</label></div>
-                                                        <input type="text" class="form-control" id="lw" value="0" readonly style="width: 100px;"><span class="input-group-text" style="width: 60px;">Btu/ft³</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="form-check mb-2">
-                                            <div class="d-flex justify-content-center align-items-center">
-                                                <div class="row w-100">
-                                                    <div class="input-group input-group-sm">
-                                                        <!--<div class="col d-flex justify-content-end"><input class="form-check-input me-2" type="checkbox" value=""></div>-->
-                                                        <div class="col"><label class="form-check-label me-2 text-dark d-flex justify-content-start" for="flexCheckDefault" title="Masa Molar">Mr</label></div>
-                                                        <input type="text" class="form-control" id="mm" value="0" readonly style="width: 100px;"><span class="input-group-text" style="width: 60px;">g/mol</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="form-check mb-2">
-                                            <div class="d-flex justify-content-center align-items-center">
-                                                <div class="row w-100">
-                                                    <div class="input-group input-group-sm">
-                                                        <!--<div class="col d-flex justify-content-end"><input class="form-check-input me-2" type="checkbox" value=""></div>-->
-                                                        <div class="col"><label class="form-check-label me-2 text-dark d-flex justify-content-start" for="flexCheckDefault" title="Densidad Molar">dx</label></div>
-                                                        <input type="text" class="form-control" id="dx" value="0" readonly style="width: 100px;"><span class="input-group-text" style="width: 60px;">mol/l</span>
+                                                        <div class="col"><label class="form-check-label me-2 text-dark d-flex justify-content-start" for="flexCheckDefault" title="Viscosidad">Desviación</label></div>
+                                                        <input type="text" class="form-control" id="μ" value="0" readonly style="width: 100px;"><span class="input-group-text" style="width: 60px;">%</span>
                                                     </div>
                                                 </div>
                                             </div>
@@ -306,7 +224,7 @@
 {% endblock %}
 
 {% block extra_css %}
-    <link rel="stylesheet" href="{% static '_AppHerramientas/static_fluxpro/styles.css' %}">
+    <link rel="stylesheet" href="{% static '_AppHerramientas/static_fluxpro_velocidadSonido/styles.css' %}">
 {% endblock %}
 
 {% block extra_js %}
@@ -314,8 +232,8 @@
         window.apiUrl = "{% url 'FluxCalcProp' %}";
         window.csrfToken = "{{ csrf_token }}";
     </script>
-    <script src="{% static '_AppHerramientas/static_fluxpro/js/api.js' %}"></script>
-    <script src="{% static '_AppHerramientas/static_fluxpro/js/ui.js' %}"></script>
-    <script src="{% static '_AppHerramientas/static_fluxpro/js/events.js' %}"></script>
-    <script src="{% static '_AppHerramientas/static_fluxpro/js/main.js' %}"></script>
+    <script src="{% static '_AppHerramientas/static_fluxpro_velocidadSonido/js/api.js' %}"></script>
+    <script src="{% static '_AppHerramientas/static_fluxpro_velocidadSonido/js/ui.js' %}"></script>
+    <script src="{% static '_AppHerramientas/static_fluxpro_velocidadSonido/js/events.js' %}"></script>
+    <script src="{% static '_AppHerramientas/static_fluxpro_velocidadSonido/js/main.js' %}"></script>
 {% endblock %}

@@ -40,7 +40,16 @@
         <!-- Menú desplegable -->
         <a href="#" id="toggleHerramientas"><i class="bi bi-grid"></i> Herramientas <i class="bi bi-chevron-down float-end"></i></a>
         <div class="submenu" id="herramientasSubmenu">
-            <a href="{% url 'fluxpro' %}"><i class="bi bi-calculator"></i>FluxPro</a>
+            <a href="{% url 'fluxpro' %}"><i class="bi bi-calculator"></i>FluxPro [Propiedades del Gas]</a>
+            <a href="{% url 'fluxproVel' %}"><i class="bi bi-calculator"></i>FluxPro [Velocidad del Sonido]</a>
+
+            <a href="#" id="toggleCalculoCaudal" class="submenu-toggle">
+                <i class="bi bi-moisture"></i> FluxPro [Cálculo de Caudal] <i class="bi bi-chevron-down float-end"></i>
+            </a>
+            <div class="submenu" id="calculoCaudalSubmenu" style="display: none; padding-left: 20px;">
+                <a href="#"><i class="bi bi-graph-up"></i> Medidor Diferencial</a>
+                <a href="#"><i class="bi bi-graph-down"></i> Medidor Lineal</a>
+            </div>
         </div>
 
         <!-- Menú desplegable -->

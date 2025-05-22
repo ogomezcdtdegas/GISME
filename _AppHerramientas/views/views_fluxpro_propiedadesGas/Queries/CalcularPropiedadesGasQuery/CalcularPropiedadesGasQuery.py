@@ -8,7 +8,7 @@ from pvtlib import unit_converters
 import math
 
 def FluxPro_view(request):
-    return render(request, "_AppHerramientas/templates_fluxpro/index.html")
+    return render(request, "_AppHerramientas/templates_fluxpro_propiedadesGas/index.html")
 
 
 GASES_OPCIONES = {
@@ -58,7 +58,7 @@ class FluxCalcProp_view(APIView):
                 "default_temperature": 15.0
             }, status=status.HTTP_200_OK)
 
-        return render(request, "_AppHerramientas/templates_fluxpro/index.html", {"gases": GASES_OPCIONES})
+        return render(request, "_AppHerramientas/templates_fluxpro_propiedadesGas/index.html", {"gases": GASES_OPCIONES})
 
     def post(self, request):
         try:
@@ -130,9 +130,9 @@ class FluxCalcProp_view(APIView):
                 "z_gergBas": f"{gas_propertiesBas['z']:.6f}",
                 "z_detail": f"{gas_properties_detail['z']:.6f}",
                 "cps": f"{gas_properties_detail['cp']:.6f} J/(mol·K)",
-                "mm": f"{gas_properties_detail['mm']:.6f} g/mol",
+                "mm": f"{gas_properties_detail['mm']:.6f}",
                 "mu": f"{gas_thermodynamics_detail:.6f} cP",
-                "d": f"{gas_properties_detail['d']:.6f} mol/L",
+                "d": f"{gas_properties_detail['d']:.6f}",
                 # ---- poder calorífico -----
                 "HHV_BTU_ft3_base": f"{HHV_base:.2f} BTU/ft³ (base 60 °F,14.696 psia)",
                 "LHV_BTU_ft3_base": f"{LHV_base:.2f} BTU/ft³ (base 60 °F,14.696 psia)",
