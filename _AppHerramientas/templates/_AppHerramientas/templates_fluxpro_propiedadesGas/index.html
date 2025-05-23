@@ -14,9 +14,11 @@
         <form id="condicionesForm">
         <div class="row">
             <div class="col-sm-12 col-lg-3">
+                <div class="card shadow rounded-4 p-2 mb-4 backgroundColorIdent">
                 <div class="box-title">Composición (fracción molar) [%]:</div>
                 <!--Composición-->
                 <section class="sectComposición">
+                    
                     <div class="row justify-content-center">
                         
                         <table class="table table-sm table-striped table-hover">
@@ -106,21 +108,19 @@
                             </tr>
                         </table>
                     </div>
+                    
                 </section>
+                </div>
             </div>
 
             <div class="col-sm-12 col-lg-9">
                 <!--Condiciones-->
                 <section>
                     <div class="container backgroundColorIdent">
-                        <!--<div class="row text-center backgroundColorIdent justify-content-center align-items-center">
-                            <div class="col">
-                                <div class="box-titleCondiciones d-flex justify-content-center align-items-center">PROPIEDADES DEL GAS:</div>
-                            </div>
-                        </div>-->
-                        <!--<form id="condicionesForm">-->
                             <div class="row sectCondiciones d-flex justify-content-center align-items-start">
+                                
                                 <div class="col setCondOperacion mx-1">
+                                    <div class="card shadow rounded-4 p-3 mb-4 backgroundColorIdent">
                                         <div class="box-title">Operación:</div>
 
                                         <label class="form-label fw-bold mt-5 mb-3">Temperatura [Tf]:</label>
@@ -134,8 +134,10 @@
                                             <input type="number" class="form-control pressureOpe" name="pressure" id="pressure" placeholder="Ing. la presión">
                                             <span class="input-group-text">psia</span>
                                         </div>
+                                    </div>
                                 </div>
                                 <div class="col setCondBase mx-1">
+                                    <div class="card shadow rounded-4 p-3 mb-4 backgroundColorIdent">
                                         <div class="box-title">Base:</div>
 
                                         <label class="form-label fw-bold mt-5 mb-3">Temperatura [Tb]:</label>
@@ -149,6 +151,7 @@
                                             <input type="number" class="form-control pressureBas" name="presBs" id="presBs" placeholder="Ing. la presión">
                                             <span class="input-group-text">psia</span>
                                         </div>
+                                    </div>
                                 </div>
                             </div>
                         <!--</form>-->
@@ -157,12 +160,15 @@
 
                 <!--Resultados-->
                 <section>
+                    
                     <div class="container sectResultados backgroundColorIdent ">
-                        <div class="row text-center box-titleResultados">
-                            <div class="col-12 mb-1">Resultados</div>
+                        
+                        <div class="row text-center">
+                            <div class="card shadow rounded-4 p-3 mb-4 backgroundColorIdent">
+                            <div class="col-12 mb-1 box-titleResultados">Resultados</div>
                             <div class="col bgResultados">
                                 <div class="row">
-                                    <div class="col-6 ">
+                                    <div class="col-lg-6 col-sm-12 col-xs-12">
                                         <div class="form-check mt-4 mb-2">
                                             <div class="d-flex justify-content-center align-items-center">
                                                 <div class="row w-100">
@@ -219,7 +225,7 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-6">
+                                    <div class="col-lg-6 col-sm-12 col-xs-12">
                                         <div class="form-check mt-4 mb-2">
                                             <div class="d-flex justify-content-center align-items-center">
                                                 <div class="row w-100">
@@ -265,32 +271,27 @@
                                             </div>
                                         </div>
                                     </div>
+                                    
+                                    <div class="sectBotones d-flex justify-content-center gap-4 mt-5">
+                                        <button type="submit" class="btn btn-success buttonWeight btn-lg">Calcular</button>
+                                        <button type="button" id="resetInputs" class="btn btn-secondary buttonWeight btn-lg">Resetear</button>
+                                    </div>
+
+                                    <footer class="sectFooter text-center mt-4 mt-lg-0">
+                                        <h6>FluXpro Web V 1.0 -2025. Corporación CDT de GAS (wwww.cdtdegas.com)</h6>
+                                    </footer>
                                 </div>
                             </div>
+                            </div>
                         </div>
-                    </div>
-                </section>
-
-                <!--Botones [Calcular, Exportar, Volver]-->
-                <section>
-                    <div class="container sectBotones d-flex justify-content-center">
-                        <div class="row gap-3">
-                            <div class="col-4 d-flex justify-content-end">
-                                <button type="submit" class="btn btn-success buttonWeight btn-lg">Calcular</button>
-                            </div>
-                            <div class="col-4 d-flex justify-content-start">
-                                <button type="button" id="resetInputs" class="btn btn-secondary buttonWeight btn-lg">Resetear</button>
-                            </div>
-                        </div>    
+                    
                     </div>
                 </section>
             </div>
         </div>
         </form>
         
-        <footer class="sectFooter text-center">
-            <h6>FluXpro Web V 1.0 -2025. Corporación CDT de GAS (wwww.cdtdegas.com)</h6>
-        </footer>
+        
     </div>
 {% endblock %}
 

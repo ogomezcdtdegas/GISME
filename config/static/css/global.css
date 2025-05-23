@@ -17,6 +17,17 @@ h1 {
     padding-top: 20px;
     height: 100vh;
     position: fixed;
+    transition: margin-left 0.3s;
+}
+.sidebar.hidden {
+    margin-left: -260px;
+}
+.content {
+    transition: margin-left 0.3s;
+    margin-left: 260px;
+}
+.sidebar.hidden + .content {
+    margin-left: 0;
 }
 .sidebar a {
     color: white;
@@ -69,4 +80,19 @@ h1 {
 /* Estilo para los iconos dentro de los enlaces del menú */
 .submenu a .bi {
     margin-right: 8px; /* Espacio entre el icono y el texto */
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        margin-left: -260px !important;
+    }
+    .sidebar.show {
+        margin-left: 0 !important;
+    }
+    .content {
+        margin-left: 0 !important;
+    }
+    .sidebar.show ~ .content {
+        margin-left: 250px !important;
+    }
 }

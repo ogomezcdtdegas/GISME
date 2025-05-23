@@ -23,6 +23,9 @@
 </head>
 <body>
     <!-- Barra Lateral -->
+     <button id="toggleSidebar" class="btn btn-outline-secondary m-2" style="position:fixed;z-index:1051;">
+        <i class="bi bi-list"></i>
+    </button>
     <nav class="sidebar">
         <h4 class="text-center">GISME</h4>
         <hr>
@@ -85,6 +88,25 @@
     <script src="{% static 'js/ui.js' %}"></script>
     <script src="{% static 'js/events.js' %}"></script>
     <script src="{% static 'js/main.js' %}"></script>
+
+    <script>
+    function isMobile() {
+        return window.innerWidth <= 768;
+    }
+
+    document.getElementById("toggleSidebar").addEventListener("click", function() {
+        const sidebar = document.querySelector(".sidebar");
+        if (isMobile()) {
+            sidebar.classList.toggle("show");
+        }
+    });
+    window.addEventListener("resize", function() {
+        const sidebar = document.querySelector(".sidebar");
+        if (!isMobile()) {
+            sidebar.classList.remove("show");
+        }
+    });
+    </script>
 
     {% block extra_js %}{% endblock %}
 </body>
