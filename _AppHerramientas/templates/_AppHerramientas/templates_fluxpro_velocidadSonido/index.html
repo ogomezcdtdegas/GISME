@@ -63,7 +63,7 @@
 
                                         <label class="form-label fw-bold mt-3 mb-3">Velocidad Medida:</label>
                                         <div class="input-group input-group-sm">
-                                            <input type="number" class="form-control pressureOpe" name="pressure" id="pressure" placeholder="Ing. la velocidad medida">
+                                            <input type="number" class="form-control pressureOpe" name="velMedida" id="velMedida" placeholder="Ing. la velocidad medida">
                                             <span class="input-group-text">ft/s</span>
                                         </div>
                                     </div>
@@ -151,7 +151,7 @@
 
 {% block extra_js %}
     <script>
-        window.apiUrl = "{% url 'FluxCalcProp' %}";
+        window.apiUrl = "{% url 'FluxCalcPropVel' %}";
         window.csrfToken = "{{ csrf_token }}";
     </script>
     <script src="{% static '_AppHerramientas/static_fluxpro_velocidadSonido/js/api.js' %}"></script>

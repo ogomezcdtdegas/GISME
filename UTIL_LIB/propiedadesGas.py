@@ -105,4 +105,5 @@ def calcular_propiedades_gas(request_data):
         "HHV_BTU_ft3_real": f"{HHV_real:.2f}",
         "LHV_BTU_ft3_real": f"{LHV_real:.2f}",
         "indice_Wobbe": f"{(HHV_real / math.sqrt(gas_propertiesBas['rho']/ DENS_AIRE)):.6f}",
+        "Velocidad_sonido": f"{gas_properties_detail['w']:.6f} m/s",
     }

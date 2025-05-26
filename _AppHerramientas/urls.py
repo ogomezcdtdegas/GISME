@@ -6,4 +6,5 @@ urlpatterns = [
     path("fluxpro/", CalcularPropiedadesGasQuery.FluxPro_view, name="fluxpro"),
     path("fluxproVel/", CalcularVelocidadSonidoGasQuery.FluxProVel_view, name="fluxproVel"),
     path("FluxCalcProp/", CalcularPropiedadesGasQuery.FluxCalcProp_view.as_view(), name="FluxCalcProp"),
+    path("FluxCalcPropVel/", CalcularVelocidadSonidoGasQuery.FluxCalcProVel_view.as_view(), name="FluxCalcPropVel"),
 ]

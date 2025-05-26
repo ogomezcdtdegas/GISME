@@ -1,4 +1,8 @@
 from django.shortcuts import render
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from UTIL_LIB.velocidadSonido import calcular_velSonido_gas
 
 GASES = [
     {"label": "Metano", "id": "gas_C1", "name": "gas_C1"},
@@ -26,3 +30,15 @@ GASES = [
 
 def FluxProVel_view(request):
     return render(request, "_AppHerramientas/templates_fluxpro_velocidadSonido/index.html", {"gases": GASES})
+
+
+'''------------------------ Controlador para calculo de propiedades de gas --------------------------------------'''
+class FluxCalcProVel_view(APIView):
+    def post(self, request):
+        try:
+            resultado = calcular_velSonido_gas(request.data)
+            if "error" in resultado:
+                return Response({"error": resultado["error"]}, status=status.HTTP_400_BAD_REQUEST)
+            return Response(resultado, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"error": f"Error en el cálculo: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
