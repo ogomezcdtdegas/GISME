@@ -20,92 +20,13 @@
                 <section class="sectComposición">
                     
                     <div class="row justify-content-center">
-                        
                         <table class="table table-sm table-striped table-hover">
+                            {% for gas in gases %}
                             <tr>
-                                <td>Metano</td>
-                                <td><input type="number" class="form-control gas-input" name="gas_C1" id="gas_C1"></td>
+                                <td>{{ gas.label }}</td>
+                                <td><input type="number" class="form-control gas-input" name="{{ gas.name }}" id="{{ gas.id }}"></td>
                             </tr>
-                            <tr>
-                                <td>Nitrógeno</td>
-                                <td><input type="number" class="form-control gas-input" name="gas_N2" id="gas_N2"></td>
-                            </tr>
-                            <tr>
-                                <td>Dióxido de Carbono</td>
-                                <td><input type="number" class="form-control gas-input" name="gas_CO2" id="gas_CO2"></td>
-                            </tr>
-                            <tr>
-                                <td>Etano</td>
-                                <td><input type="number" class="form-control gas-input" name="gas_C2" id="gas_C2"></td>
-                            </tr>
-                            <tr>
-                                <td>Propano</td>
-                                <td><input type="number" class="form-control gas-input" name="gas_C3" id="gas_C3"></td>
-                            </tr>
-                            <tr>
-                                <td>Agua</td>
-                                <td><input type="number" class="form-control gas-input" name="gas_H2O" id="gas_H2O"></td>
-                            </tr>
-                            <tr>
-                                <td>Sulfuro de Hidrógeno</td>
-                                <td><input type="number" class="form-control gas-input" name="gas_H2S" id="gas_H2S"></td>
-                            </tr>
-                            <tr>
-                                <td>Hidrógeno</td>
-                                <td><input type="number" class="form-control gas-input" name="gas_H2" id="gas_H2"></td>
-                            </tr>
-                            <tr>
-                                <td>Monóxido de Carbono</td>
-                                <td><input type="number" class="form-control gas-input" name="gas_CO" id="gas_CO"></td>
-                            </tr>
-                            <tr>
-                                <td>Oxígeno</td>
-                                <td><input type="number" class="form-control gas-input" name="gas_O2" id="gas_O2"></td>
-                            </tr>
-                            <tr>
-                                <td>i-Butano</td>
-                                <td><input type="number" class="form-control gas-input" name="gas_iC4" id="gas_iC4"></td>
-                            </tr>
-                            <tr>
-                                <td>n-Butano</td>
-                                <td><input type="number" class="form-control gas-input" name="gas_nC4" id="gas_nC4"></td>
-                            </tr>
-                            <tr>
-                                <td>i-Pentano</td>
-                                <td><input type="number" class="form-control gas-input" name="gas_iC5" id="gas_iC5"></td>
-                            </tr>
-                            <tr>
-                                <td>n-Pentano</td>
-                                <td><input type="number" class="form-control gas-input" name="gas_nC5" id="gas_nC5"></td>
-                            </tr>
-                            <tr>
-                                <td>n-Hexano</td>
-                                <td><input type="number" class="form-control gas-input" name="gas_nC6" id="gas_nC6"></td>
-                            </tr>
-                            <tr>
-                                <td>n-Heptano</td>
-                                <td><input type="number" class="form-control gas-input" name="gas_nC7" id="gas_nC7"></td>
-                            </tr>
-                            <tr>
-                                <td>n-Octano</td>
-                                <td><input type="number" class="form-control gas-input" name="gas_nC8" id="gas_nC8"></td>
-                            </tr>
-                            <tr>
-                                <td>n-Nonano</td>
-                                <td><input type="number" class="form-control gas-input" name="gas_nC9" id="gas_nC9"></td>
-                            </tr>
-                            <tr>
-                                <td>n-Decano</td>
-                                <td><input type="number" class="form-control gas-input" name="gas_nC10" id="gas_nC10"></td>
-                            </tr>
-                            <tr>
-                                <td>Helio</td>
-                                <td><input type="number" class="form-control gas-input" name="gas_He" id="gas_He"></td>
-                            </tr>
-                            <tr>
-                                <td>Argón</td>
-                                <td><input type="number" class="form-control gas-input" name="gas_Ar" id="gas_Ar"></td>
-                            </tr>
+                            {% endfor %}
                         </table>
                     </div>
                     
@@ -169,107 +90,42 @@
                             <div class="col bgResultados">
                                 <div class="row">
                                     <div class="col-lg-6 col-sm-12 col-xs-12">
-                                        <div class="form-check mt-4 mb-2">
+                                        {% for res in resultados_izq %}
+                                        <div class="form-check {% if forloop.first %}mt-4{% else %}mb-2{% endif %}">
                                             <div class="d-flex justify-content-center align-items-center">
                                                 <div class="row w-100">
                                                     <div class="input-group input-group-sm">
-                                                        <!--<div class="col d-flex justify-content-end"><input class="form-check-input me-2" type="checkbox" value=""></div>-->
-                                                        <div class="col"><label class="form-check-label me-2 text-dark d-flex justify-content-start" for="flexCheckDefault" title="Factor de Compresibilidad a condiciones de flujo">Zf</label></div>
-                                                        <input type="text" class="form-control" id="Zf" value="0" readonly style="width: 100px;"><span class="input-group-text" style="width: 60px;">_</span>
+                                                        <div class="col">
+                                                            <label class="form-check-label me-2 text-dark d-flex justify-content-start"
+                                                                for="flexCheckDefault"
+                                                                title="{{ res.title }}">{{ res.label }}</label>
+                                                        </div>
+                                                        <input type="text" class="form-control" id="{{ res.id }}" value="0" readonly style="width: 100px;">
+                                                        <span class="input-group-text" style="width: 60px;">{{ res.unidad }}</span>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="form-check mb-2">
-                                            <div class="d-flex justify-content-center align-items-center">
-                                                <div class="row w-100">
-                                                    <div class="input-group input-group-sm">
-                                                        <!--<div class="col d-flex justify-content-end"><input class="form-check-input me-2" type="checkbox" value=""></div>-->
-                                                        <div class="col"><label class="form-check-label me-2 text-dark d-flex justify-content-start" for="flexCheckDefault" title="Factor de Compresibilidad a condiciones de base">Zb</label></div>
-                                                        <input type="text" class="form-control" id="Zb" value="0" readonly style="width: 100px;"><span class="input-group-text" style="width: 60px;">_</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="form-check mb-2">
-                                            <div class="d-flex justify-content-center align-items-center">
-                                                <div class="row w-100">
-                                                    <div class="input-group input-group-sm">
-                                                        <!--<div class="col d-flex justify-content-end"><input class="form-check-input me-2" type="checkbox" value=""></div>-->
-                                                        <div class="col"><label class="form-check-label me-2 text-dark d-flex justify-content-start" for="flexCheckDefault" title="Densidad Absoluta">ρ</label></div>
-                                                        <input type="text" class="form-control" id="ρ" value="0" readonly style="width: 100px;"><span class="input-group-text" style="width: 60px;">lb/ft³</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="form-check mb-2">
-                                            <div class="d-flex justify-content-center align-items-center">
-                                                <div class="row w-100">
-                                                    <div class="input-group input-group-sm">
-                                                        <!--<div class="col d-flex justify-content-end"><input class="form-check-input me-2" type="checkbox" value=""></div>-->
-                                                        <div class="col"><label class="form-check-label me-2 text-dark d-flex justify-content-start" for="flexCheckDefault" title="Poder Calorífico Superior ajustado a condiciones base">Hv</label></div>
-                                                        <input type="text" class="form-control" id="Hv" value="0" readonly style="width: 100px;"><span class="input-group-text" style="width: 60px;">Btu/ft³</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="form-check mb-2">
-                                            <div class="d-flex justify-content-center align-items-center">
-                                                <div class="row w-100">
-                                                    <div class="input-group input-group-sm">
-                                                        <!--<div class="col d-flex justify-content-end"><input class="form-check-input me-2" type="checkbox" value=""></div>-->
-                                                        <div class="col"><label class="form-check-label me-2 text-dark d-flex justify-content-start" for="flexCheckDefault" title="Viscosidad">μ</label></div>
-                                                        <input type="text" class="form-control" id="μ" value="0" readonly style="width: 100px;"><span class="input-group-text" style="width: 60px;">Cp</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
+                                        {% endfor %}
                                     </div>
                                     <div class="col-lg-6 col-sm-12 col-xs-12">
-                                        <div class="form-check mt-4 mb-2">
+                                        {% for res in resultados_der %}
+                                        <div class="form-check {% if forloop.first %}mt-4{% else %}mb-2{% endif %}">
                                             <div class="d-flex justify-content-center align-items-center">
                                                 <div class="row w-100">
                                                     <div class="input-group input-group-sm">
-                                                        <!--<div class="col d-flex justify-content-end"><input class="form-check-input me-2" type="checkbox" value=""></div>-->
-                                                        <div class="col"><label class="form-check-label me-2 text-dark d-flex justify-content-start" for="flexCheckDefault" title="Densidad Relativa">Gr</label></div>
-                                                        <input type="text" class="form-control" id="gr" value="0" readonly style="width: 100px;"><span class="input-group-text" style="width: 60px;">_</span>
+                                                        <div class="col">
+                                                            <label class="form-check-label me-2 text-dark d-flex justify-content-start"
+                                                                for="flexCheckDefault"
+                                                                title="{{ res.title }}">{{ res.label }}</label>
+                                                        </div>
+                                                        <input type="text" class="form-control" id="{{ res.id }}" value="0" readonly style="width: 100px;">
+                                                        <span class="input-group-text" style="width: 60px;">{{ res.unidad }}</span>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
-                                        <div class="form-check mb-2">
-                                            <div class="d-flex justify-content-center align-items-center">
-                                                <div class="row w-100">
-                                                    <div class="input-group input-group-sm">
-                                                        <!--<div class="col d-flex justify-content-end"><input class="form-check-input me-2" type="checkbox" value=""></div>-->
-                                                        <div class="col"><label class="form-check-label me-2 text-dark d-flex justify-content-start" for="flexCheckDefault" title="Indice de Wobbe">lw</label></div>
-                                                        <input type="text" class="form-control" id="lw" value="0" readonly style="width: 100px;"><span class="input-group-text" style="width: 60px;">Btu/ft³</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="form-check mb-2">
-                                            <div class="d-flex justify-content-center align-items-center">
-                                                <div class="row w-100">
-                                                    <div class="input-group input-group-sm">
-                                                        <!--<div class="col d-flex justify-content-end"><input class="form-check-input me-2" type="checkbox" value=""></div>-->
-                                                        <div class="col"><label class="form-check-label me-2 text-dark d-flex justify-content-start" for="flexCheckDefault" title="Masa Molar">Mr</label></div>
-                                                        <input type="text" class="form-control" id="mm" value="0" readonly style="width: 100px;"><span class="input-group-text" style="width: 60px;">g/mol</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="form-check mb-2">
-                                            <div class="d-flex justify-content-center align-items-center">
-                                                <div class="row w-100">
-                                                    <div class="input-group input-group-sm">
-                                                        <!--<div class="col d-flex justify-content-end"><input class="form-check-input me-2" type="checkbox" value=""></div>-->
-                                                        <div class="col"><label class="form-check-label me-2 text-dark d-flex justify-content-start" for="flexCheckDefault" title="Densidad Molar">dx</label></div>
-                                                        <input type="text" class="form-control" id="dx" value="0" readonly style="width: 100px;"><span class="input-group-text" style="width: 60px;">mol/l</span>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
+                                        {% endfor %}
                                     </div>
                                     
                                     <div class="sectBotones d-flex justify-content-center gap-4 mt-5">

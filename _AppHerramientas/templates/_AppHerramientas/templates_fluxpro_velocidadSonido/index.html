@@ -14,99 +14,24 @@
         <form id="condicionesForm">
         <div class="row">
             <div class="col-sm-12 col-lg-3">
+                <div class="card shadow rounded-4 p-2 mb-4 backgroundColorIdent">
                 <div class="box-title">Composición (fracción molar) [%]:</div>
                 <!--Composición-->
                 <section class="sectComposición">
                     <div class="row justify-content-center">
-                        
                         <table class="table table-sm table-striped table-hover">
+                            {% for gas in gases %}
                             <tr>
-                                <td>Metano</td>
-                                <td><input type="number" class="form-control gas-input" name="gas_C1" id="gas_C1"></td>
+                                <td>{{ gas.label }}</td>
+                                <td>
+                                    <input type="number" class="form-control gas-input" name="{{ gas.name }}" id="{{ gas.id }}">
+                                </td>
                             </tr>
-                            <tr>
-                                <td>Nitrógeno</td>
-                                <td><input type="number" class="form-control gas-input" name="gas_N2" id="gas_N2"></td>
-                            </tr>
-                            <tr>
-                                <td>Dióxido de Carbono</td>
-                                <td><input type="number" class="form-control gas-input" name="gas_CO2" id="gas_CO2"></td>
-                            </tr>
-                            <tr>
-                                <td>Etano</td>
-                                <td><input type="number" class="form-control gas-input" name="gas_C2" id="gas_C2"></td>
-                            </tr>
-                            <tr>
-                                <td>Propano</td>
-                                <td><input type="number" class="form-control gas-input" name="gas_C3" id="gas_C3"></td>
-                            </tr>
-                            <tr>
-                                <td>Agua</td>
-                                <td><input type="number" class="form-control gas-input" name="gas_H2O" id="gas_H2O"></td>
-                            </tr>
-                            <tr>
-                                <td>Sulfuro de Hidrógeno</td>
-                                <td><input type="number" class="form-control gas-input" name="gas_H2S" id="gas_H2S"></td>
-                            </tr>
-                            <tr>
-                                <td>Hidrógeno</td>
-                                <td><input type="number" class="form-control gas-input" name="gas_H2" id="gas_H2"></td>
-                            </tr>
-                            <tr>
-                                <td>Monóxido de Carbono</td>
-                                <td><input type="number" class="form-control gas-input" name="gas_CO" id="gas_CO"></td>
-                            </tr>
-                            <tr>
-                                <td>Oxígeno</td>
-                                <td><input type="number" class="form-control gas-input" name="gas_O2" id="gas_O2"></td>
-                            </tr>
-                            <tr>
-                                <td>i-Butano</td>
-                                <td><input type="number" class="form-control gas-input" name="gas_iC4" id="gas_iC4"></td>
-                            </tr>
-                            <tr>
-                                <td>n-Butano</td>
-                                <td><input type="number" class="form-control gas-input" name="gas_nC4" id="gas_nC4"></td>
-                            </tr>
-                            <tr>
-                                <td>i-Pentano</td>
-                                <td><input type="number" class="form-control gas-input" name="gas_iC5" id="gas_iC5"></td>
-                            </tr>
-                            <tr>
-                                <td>n-Pentano</td>
-                                <td><input type="number" class="form-control gas-input" name="gas_nC5" id="gas_nC5"></td>
-                            </tr>
-                            <tr>
-                                <td>n-Hexano</td>
-                                <td><input type="number" class="form-control gas-input" name="gas_nC6" id="gas_nC6"></td>
-                            </tr>
-                            <tr>
-                                <td>n-Heptano</td>
-                                <td><input type="number" class="form-control gas-input" name="gas_nC7" id="gas_nC7"></td>
-                            </tr>
-                            <tr>
-                                <td>n-Octano</td>
-                                <td><input type="number" class="form-control gas-input" name="gas_nC8" id="gas_nC8"></td>
-                            </tr>
-                            <tr>
-                                <td>n-Nonano</td>
-                                <td><input type="number" class="form-control gas-input" name="gas_nC9" id="gas_nC9"></td>
-                            </tr>
-                            <tr>
-                                <td>n-Decano</td>
-                                <td><input type="number" class="form-control gas-input" name="gas_nC10" id="gas_nC10"></td>
-                            </tr>
-                            <tr>
-                                <td>Helio</td>
-                                <td><input type="number" class="form-control gas-input" name="gas_He" id="gas_He"></td>
-                            </tr>
-                            <tr>
-                                <td>Argón</td>
-                                <td><input type="number" class="form-control gas-input" name="gas_Ar" id="gas_Ar"></td>
-                            </tr>
+                            {% endfor %}
                         </table>
                     </div>
                 </section>
+                </div>
             </div>
 
             <div class="col-sm-12 col-lg-9">
@@ -121,6 +46,7 @@
                         <!--<form id="condicionesForm">-->
                             <div class="row sectCondiciones d-flex justify-content-center align-items-start mb-5">
                                 <div class="col setCondOperacion mx-1">
+                                    <div class="card shadow rounded-4 p-3 mb-4 backgroundColorIdent">
                                         <div class="box-title">Operación:</div>
 
                                         <label class="form-label fw-bold mt-5 mb-3">Temperatura [Tf]:</label>
@@ -140,8 +66,10 @@
                                             <input type="number" class="form-control pressureOpe" name="pressure" id="pressure" placeholder="Ing. la velocidad medida">
                                             <span class="input-group-text">ft/s</span>
                                         </div>
+                                    </div>
                                 </div>
                                 <div class="col setCondBase mx-1">
+                                    <div class="card shadow rounded-4 p-3 mb-4 backgroundColorIdent">
                                         <div class="box-title">Base:</div>
 
                                         <label class="form-label fw-bold mt-5 mb-3">Temperatura [Tb]:</label>
@@ -155,6 +83,7 @@
                                             <input type="number" class="form-control pressureBas" name="presBs" id="presBs" placeholder="Ing. la presión">
                                             <span class="input-group-text">psia</span>
                                         </div>
+                                    </div>
                                 </div>
                             </div>
                         <!--</form>-->
@@ -163,9 +92,10 @@
 
                 <!--Resultados-->
                 <section>
-                    <div class="container sectResultados backgroundColorIdent ">
-                        <div class="row text-center box-titleResultados">
-                            <div class="col-12 mb-1">Resultados</div>
+                    <div class="container sectResultados backgroundColorIdent">
+                        <div class="row text-center">
+                            <div class="card shadow rounded-4 p-3 mb-4 backgroundColorIdent">
+                            <div class="col-12 mb-1 box-titleResultados">Resultados</div>
                             <div class="col bgResultados">
                                 <div class="row">
                                     <div class="col-6 ">
@@ -194,32 +124,24 @@
                                             </div>
                                         </div>
                                     </div>
+
+                                    <div class="sectBotones d-flex justify-content-center gap-4 mt-5">
+                                        <button type="submit" class="btn btn-success buttonWeight btn-lg">Calcular</button>
+                                        <button type="button" id="resetInputs" class="btn btn-secondary buttonWeight btn-lg">Resetear</button>
+                                    </div>
+
+                                    <footer class="sectFooter text-center mt-4 mt-lg-0">
+                                        <h6>FluXpro Web V 1.0 -2025. Corporación CDT de GAS (wwww.cdtdegas.com)</h6>
+                                    </footer>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </section>
-
-                <!--Botones [Calcular, Exportar, Volver]-->
-                <section>
-                    <div class="container sectBotones d-flex justify-content-center">
-                        <div class="row gap-3">
-                            <div class="col-4 d-flex justify-content-end">
-                                <button type="submit" class="btn btn-success buttonWeight btn-lg">Calcular</button>
-                            </div>
-                            <div class="col-4 d-flex justify-content-start">
-                                <button type="button" id="resetInputs" class="btn btn-secondary buttonWeight btn-lg">Resetear</button>
-                            </div>
-                        </div>    
+                        </div>
                     </div>
                 </section>
             </div>
         </div>
         </form>
-        
-        <footer class="sectFooter text-center">
-            <h6>FluXpro Web V 1.0 -2025. Corporación CDT de GAS (wwww.cdtdegas.com)</h6>
-        </footer>
     </div>
 {% endblock %}
 

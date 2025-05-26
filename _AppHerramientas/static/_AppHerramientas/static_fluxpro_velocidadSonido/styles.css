@@ -38,13 +38,13 @@
         .sectResultados{
             background-color: rgb(228, 225, 221);
             height: 40vh;
+            margin-top: 100px;
             margin-bottom: 5px;
         }
 
         .sectBotones{
             background-color: #f8f9fa;
             height: 10vh;
-            margin: 10px;
         }
 
         .sectFooter{

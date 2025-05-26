@@ -66,6 +66,7 @@ def calcular_propiedades_gas(request_data):
     # Propiedades físicas
     gerg = pvtlib.AGA8("GERG-2008")
     gas_properties = gerg.calculate_from_PT(composition=composition, pressure=P, temperature=T)
+    print(f"Gas properties: {gas_properties}")
     gas_propertiesBas = gerg.calculate_from_PT(composition=composition, pressure=Pb, temperature=Tb)
 
     detail = pvtlib.AGA8("DETAIL")
