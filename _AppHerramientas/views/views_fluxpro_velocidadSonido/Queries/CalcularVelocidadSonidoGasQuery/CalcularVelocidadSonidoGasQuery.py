@@ -32,7 +32,7 @@ def FluxProVel_view(request):
     return render(request, "_AppHerramientas/templates_fluxpro_velocidadSonido/index.html", {"gases": GASES})
 
 
-'''------------------------ Controlador para calculo de propiedades de gas --------------------------------------'''
+'''------------------------ Controlador para velocidad del sonido --------------------------------------'''
 class FluxCalcProVel_view(APIView):
     def post(self, request):
         try:
