@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+{% load static %} 
+
+{% block title %}Calc1 - GISME{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <!--Cabecero Principal-->
+        <header class="row">
+            <div class="col-6 d-flex align-items-center"><img style="height: 70px;" src="{% static '_AppHerramientas/static_fluxpro_propiedadesGas/images/logo.jpg' %}" alt="logoFluXPro"></div>
+            <div class="col-6 d-flex justify-content-end align-items-center section-title">Verificación de la VELOCIDAD DEL SONIDO</div>
+        </header>
+        
+        <form id="condicionesForm">
+        <div class="row">
+            <div class="col-sm-12 col-lg-3">
+                <div class="card shadow rounded-4 p-2 mb-4 backgroundColorIdent">
+                <div class="box-title">Composición (fracción molar) [%]:</div>
+                <!--Composición-->
+                <section class="sectComposición">
+                    <div class="row justify-content-center">
+                        <table class="table table-sm table-striped table-hover">
+                            {% for gas in gases %}
+                            <tr>
+                                <td>{{ gas.label }}</td>
+                                <td>
+                                    <input type="number" class="form-control gas-input" name="{{ gas.name }}" id="{{ gas.id }}">
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </table>
+                    </div>
+                </section>
+                </div>
+            </div>
+
+            <div class="col-sm-12 col-lg-9">
+                <!--Condiciones-->
+                <section>
+                    <div class="container backgroundColorIdent">
+                        <!--<div class="row text-center backgroundColorIdent justify-content-center align-items-center">
+                            <div class="col">
+                                <div class="box-titleCondiciones d-flex justify-content-center align-items-center">PROPIEDADES DEL GAS:</div>
+                            </div>
+                        </div>-->
+                        <!--<form id="condicionesForm">-->
+                            <div class="row sectCondiciones d-flex justify-content-center align-items-start mb-5">
+                                <div class="col setCondOperacion mx-1">
+                                    <div class="card shadow rounded-4 p-3 mb-4 backgroundColorIdent">
+                                        <div class="box-title">Operación:</div>
+
+                                        <label class="form-label fw-bold mt-5 mb-3">Temperatura [Tf]:</label>
+                                        <div class="input-group input-group-sm">
+                                            <input type="number" class="form-control temperatureOpe" name="temperature" id="temperature" placeholder="Ing. la temperatura">
+                                            <span class="input-group-text">°F</span>
+                                        </div>
+
+                                        <label class="form-label fw-bold mt-3 mb-3">Presión [Pf]:</label>
+                                        <div class="input-group input-group-sm">
+                                            <input type="number" class="form-control pressureOpe" name="pressure" id="pressure" placeholder="Ing. la presión">
+                                            <span class="input-group-text">psia</span>
+                                        </div>
+
+                                        <label class="form-label fw-bold mt-3 mb-3">Velocidad Medida:</label>
+                                        <div class="input-group input-group-sm">
+                                            <input type="number" class="form-control pressureOpe" name="velMedida" id="velMedida" placeholder="Ing. la velocidad medida">
+                                            <span class="input-group-text">ft/s</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col setCondBase mx-1">
+                                    <div class="card shadow rounded-4 p-3 mb-4 backgroundColorIdent">
+                                        <div class="box-title">Base:</div>
+
+                                        <label class="form-label fw-bold mt-5 mb-3">Temperatura [Tb]:</label>
+                                        <div class="input-group input-group-sm">
+                                            <input type="number" class="form-control temperatureBas" name="tempBs" id="tempBs" placeholder="Ing. la temperatura">
+                                            <span class="input-group-text">°F</span>
+                                        </div>
+
+                                        <label class="form-label fw-bold mt-3 mb-3">Presión [Pb]:</label>
+                                        <div class="input-group input-group-sm">
+                                            <input type="number" class="form-control pressureBas" name="presBs" id="presBs" placeholder="Ing. la presión">
+                                            <span class="input-group-text">psia</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <!--</form>-->
+                    </div>
+                </section>
+
+                <!--Resultados-->
+                <section>
+                    <div class="container sectResultados backgroundColorIdent">
+                        <div class="row text-center">
+                            <div class="card shadow rounded-4 p-3 mb-4 backgroundColorIdent">
+                            <div class="col-12 mb-1 box-titleResultados">Resultados</div>
+                            <div class="col bgResultados">
+                                <div class="row">
+                                    <div class="col-6 ">
+                                        <div class="form-check mt-4 mb-2">
+                                            <div class="d-flex justify-content-center align-items-center">
+                                                <div class="row w-100">
+                                                    <div class="input-group input-group-sm">
+                                                        <!--<div class="col d-flex justify-content-end"><input class="form-check-input me-2" type="checkbox" value=""></div>-->
+                                                        <div class="col"><label class="form-check-label me-2 text-dark d-flex justify-content-start" for="flexCheckDefault" title="Factor de Compresibilidad a condiciones de flujo">W</label></div>
+                                                        <input type="text" class="form-control" id="w" value="0" readonly style="width: 100px;"><span class="input-group-text" style="width: 60px;">ft/s</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-6">
+                                        <div class="form-check mt-4 mb-2">
+                                            <div class="d-flex justify-content-center align-items-center">
+                                                <div class="row w-100">
+                                                    <div class="input-group input-group-sm">
+                                                        <!--<div class="col d-flex justify-content-end"><input class="form-check-input me-2" type="checkbox" value=""></div>-->
+                                                        <div class="col"><label class="form-check-label me-2 text-dark d-flex justify-content-start" for="flexCheckDefault" title="Viscosidad">Desviación</label></div>
+                                                        <input type="text" class="form-control" id="desv" value="0" readonly style="width: 100px;"><span class="input-group-text" style="width: 60px;">%</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="sectBotones d-flex justify-content-center gap-4 mt-5">
+                                        <button type="submit" class="btn btn-success buttonWeight btn-lg">Calcular</button>
+                                        <button type="button" id="resetInputs" class="btn btn-secondary buttonWeight btn-lg">Resetear</button>
+                                    </div>
+
+                                    <footer class="sectFooter text-center mt-4 mt-lg-0">
+                                        <h6>FluXpro Web V 1.0 -2025. Corporación CDT de GAS (wwww.cdtdegas.com)</h6>
+                                    </footer>
+                                </div>
+                            </div>
+                        </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+        </form>
+    </div>
+{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static '_AppHerramientas/static_fluxpro_velocidadSonido/styles.css' %}">
+{% endblock %}
+
+{% block extra_js %}
+    <script>
+        window.apiUrl = "{% url 'FluxCalcPropVel' %}";
+        window.csrfToken = "{{ csrf_token }}";
+    </script>
+    <script src="{% static '_AppHerramientas/static_fluxpro_velocidadSonido/js/api.js' %}"></script>
+    <script src="{% static '_AppHerramientas/static_fluxpro_velocidadSonido/js/ui.js' %}"></script>
+    <script src="{% static '_AppHerramientas/static_fluxpro_velocidadSonido/js/events.js' %}"></script>
+    <script src="{% static '_AppHerramientas/static_fluxpro_velocidadSonido/js/main.js' %}"></script>
+{% endblock %}

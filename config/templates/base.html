@@ -23,6 +23,9 @@
 </head>
 <body>
     <!-- Barra Lateral -->
+     <button id="toggleSidebar" class="btn btn-outline-secondary m-2" style="position:fixed;z-index:1051;">
+        <i class="bi bi-list"></i>
+    </button>
     <nav class="sidebar">
         <h4 class="text-center">GISME</h4>
         <hr>
@@ -37,6 +40,21 @@
         <a href="{% url 'calc1' %}"><i class="bi bi-calculator"></i> App Calc1</a>
         <a href="{% url 'calcular_incertidumbre' %}"><i class="bi bi-bar-chart"></i> App Calc2</a>
         
+        <!-- Menú desplegable -->
+        <a href="#" id="toggleHerramientas"><i class="bi bi-grid"></i> Herramientas <i class="bi bi-chevron-down float-end"></i></a>
+        <div class="submenu" id="herramientasSubmenu">
+            <a href="{% url 'fluxpro' %}"><i class="bi bi-calculator"></i>FluxPro [Propiedades del Gas]</a>
+            <a href="{% url 'fluxproVel' %}"><i class="bi bi-calculator"></i>FluxPro [Velocidad del Sonido]</a>
+
+            <a href="#" id="toggleCalculoCaudal" class="submenu-toggle">
+                <i class="bi bi-moisture"></i> FluxPro [Cálculo de Caudal] <i class="bi bi-chevron-down float-end"></i>
+            </a>
+            <div class="submenu" id="calculoCaudalSubmenu" style="display: none; padding-left: 20px;">
+                <a href="#"><i class="bi bi-graph-up"></i> Medidor Diferencial</a>
+                <a href="#"><i class="bi bi-graph-down"></i> Medidor Lineal</a>
+            </div>
+        </div>
+
         <!-- Menú desplegable -->
         <a href="#" id="toggleComplementos"><i class="bi bi-grid"></i> Complementos <i class="bi bi-chevron-down float-end"></i></a>
         <div class="submenu" id="complementosSubmenu">
@@ -70,6 +88,25 @@
     <script src="{% static 'js/ui.js' %}"></script>
     <script src="{% static 'js/events.js' %}"></script>
     <script src="{% static 'js/main.js' %}"></script>
+
+    <script>
+    function isMobile() {
+        return window.innerWidth <= 768;
+    }
+
+    document.getElementById("toggleSidebar").addEventListener("click", function() {
+        const sidebar = document.querySelector(".sidebar");
+        if (isMobile()) {
+            sidebar.classList.toggle("show");
+        }
+    });
+    window.addEventListener("resize", function() {
+        const sidebar = document.querySelector(".sidebar");
+        if (!isMobile()) {
+            sidebar.classList.remove("show");
+        }
+    });
+    </script>
 
     {% block extra_js %}{% endblock %}
 </body>

@@ -17,6 +17,17 @@ h1 {
     padding-top: 20px;
     height: 100vh;
     position: fixed;
+    transition: margin-left 0.3s;
+}
+.sidebar.hidden {
+    margin-left: -260px;
+}
+.content {
+    transition: margin-left 0.3s;
+    margin-left: 260px;
+}
+.sidebar.hidden + .content {
+    margin-left: 0;
 }
 .sidebar a {
     color: white;
@@ -38,9 +49,50 @@ h1 {
 }
 .submenu {
     display: none;
-    background-color: #23272b;
+    background-color: #484949;
 }
 .submenu a {
     padding-left: 40px;
 }
 
+/* Estilo específico para submenús anidados (un .submenu dentro de otro .submenu) */
+.submenu .submenu {
+    padding-left: 20px; /* Indentación para sub-niveles */
+    /* Opcional: una línea visual para la jerarquía */
+    /* border-left: 1px solid #eee; */
+    /* margin-left: 5px; */ /* Si prefieres margen en lugar de padding para la indentación */
+}
+
+/* Estilo para los elementos 'a' dentro de los submenús */
+.submenu a {
+    display: block; /* Para que ocupen todo el ancho y el padding funcione bien */
+    padding: 8px 15px; /* Espaciado interno */
+    text-decoration: none;
+    color: #ffffff; /* Color del texto */
+}
+
+.submenu a:hover {
+    background-color: #f0f0f0; /* Color al pasar el ratón */
+    color: #000000;
+    text-decoration: solid;
+}
+
+/* Estilo para los iconos dentro de los enlaces del menú */
+.submenu a .bi {
+    margin-right: 8px; /* Espacio entre el icono y el texto */
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        margin-left: -260px !important;
+    }
+    .sidebar.show {
+        margin-left: 0 !important;
+    }
+    .content {
+        margin-left: 0 !important;
+    }
+    .sidebar.show ~ .content {
+        margin-left: 250px !important;
+    }
+}
