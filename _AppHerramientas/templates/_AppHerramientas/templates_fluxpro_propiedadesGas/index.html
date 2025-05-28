@@ -19,7 +19,7 @@
                 <!--Composición-->
                 <section class="sectComposición">
                     
-                    <div class="row justify-content-center">
+                    <div class="row justify-content-center" style="max-height: 720px; overflow-y: auto;">
                         <table class="table table-sm table-striped table-hover">
                             {% for gas in gases %}
                             <tr>
@@ -38,9 +38,9 @@
                 <!--Condiciones-->
                 <section>
                     <div class="container backgroundColorIdent">
-                            <div class="row sectCondiciones d-flex justify-content-center align-items-start">
+                            <div class="row d-flex justify-content-center align-items-start">
                                 
-                                <div class="col setCondOperacion mx-1">
+                                <div class="col mx-1">
                                     <div class="card shadow rounded-4 p-3 mb-4 backgroundColorIdent">
                                         <div class="box-title">Operación:</div>
 
@@ -57,7 +57,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col setCondBase mx-1">
+                                <div class="col mx-1">
                                     <div class="card shadow rounded-4 p-3 mb-4 backgroundColorIdent">
                                         <div class="box-title">Base:</div>
 
@@ -81,13 +81,11 @@
 
                 <!--Resultados-->
                 <section>
-                    
-                    <div class="container sectResultados backgroundColorIdent ">
-                        
+                    <div class="container backgroundColorIdent ">
                         <div class="row text-center">
                             <div class="card shadow rounded-4 p-3 mb-4 backgroundColorIdent">
                             <div class="col-12 mb-1 box-titleResultados">Resultados</div>
-                            <div class="col bgResultados">
+                            <div class="col">
                                 <div class="row">
                                     <div class="col-lg-6 col-sm-12 col-xs-12">
                                         {% for res in resultados_izq %}
@@ -128,7 +126,7 @@
                                         {% endfor %}
                                     </div>
                                     
-                                    <div class="sectBotones d-flex justify-content-center gap-4 mt-5">
+                                    <div class="d-flex justify-content-center gap-4 mt-5 mb-3">
                                         <button type="submit" class="btn btn-success buttonWeight btn-lg">Calcular</button>
                                         <button type="button" id="resetInputs" class="btn btn-secondary buttonWeight btn-lg">Resetear</button>
                                     </div>
@@ -140,14 +138,11 @@
                             </div>
                             </div>
                         </div>
-                    
                     </div>
                 </section>
             </div>
         </div>
-        </form>
-        
-        
+        </form>  
     </div>
 {% endblock %}
 

@@ -18,7 +18,7 @@
                 <div class="box-title">Composición (fracción molar) [%]:</div>
                 <!--Composición-->
                 <section class="sectComposición">
-                    <div class="row justify-content-center">
+                    <div class="row justify-content-center" style="max-height: 720px; overflow-y: auto;">
                         <table class="table table-sm table-striped table-hover">
                             {% for gas in gases %}
                             <tr>
@@ -38,14 +38,8 @@
                 <!--Condiciones-->
                 <section>
                     <div class="container backgroundColorIdent">
-                        <!--<div class="row text-center backgroundColorIdent justify-content-center align-items-center">
-                            <div class="col">
-                                <div class="box-titleCondiciones d-flex justify-content-center align-items-center">PROPIEDADES DEL GAS:</div>
-                            </div>
-                        </div>-->
-                        <!--<form id="condicionesForm">-->
-                            <div class="row sectCondiciones d-flex justify-content-center align-items-start mb-5">
-                                <div class="col setCondOperacion mx-1">
+                            <div class="row d-flex justify-content-center align-items-start mb-5">
+                                <div class="col mx-1">
                                     <div class="card shadow rounded-4 p-3 mb-4 backgroundColorIdent">
                                         <div class="box-title">Operación:</div>
 
@@ -68,19 +62,19 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col setCondBase mx-1">
+                                <div class="col mx-1">
                                     <div class="card shadow rounded-4 p-3 mb-4 backgroundColorIdent">
                                         <div class="box-title">Base:</div>
 
                                         <label class="form-label fw-bold mt-5 mb-3">Temperatura [Tb]:</label>
                                         <div class="input-group input-group-sm">
-                                            <input type="number" class="form-control temperatureBas" name="tempBs" id="tempBs" placeholder="Ing. la temperatura">
+                                            <input type="number" class="form-control temperatureBas" name="tempBs" id="tempBs" placeholder="Ing. la temperatura base">
                                             <span class="input-group-text">°F</span>
                                         </div>
 
                                         <label class="form-label fw-bold mt-3 mb-3">Presión [Pb]:</label>
                                         <div class="input-group input-group-sm">
-                                            <input type="number" class="form-control pressureBas" name="presBs" id="presBs" placeholder="Ing. la presión">
+                                            <input type="number" class="form-control pressureBas" name="presBs" id="presBs" placeholder="Ing. la presión base">
                                             <span class="input-group-text">psia</span>
                                         </div>
                                     </div>
@@ -91,33 +85,33 @@
                 </section>
 
                 <!--Resultados-->
-                <section>
-                    <div class="container sectResultados backgroundColorIdent">
+                <section class="mt-4">
+                    <div class="container" >
                         <div class="row text-center">
                             <div class="card shadow rounded-4 p-3 mb-4 backgroundColorIdent">
                             <div class="col-12 mb-1 box-titleResultados">Resultados</div>
-                            <div class="col bgResultados">
+                            <div class="col">
                                 <div class="row">
-                                    <div class="col-6 ">
+                                    <div class="col-lg-6 col-sm-12">
                                         <div class="form-check mt-4 mb-2">
                                             <div class="d-flex justify-content-center align-items-center">
                                                 <div class="row w-100">
                                                     <div class="input-group input-group-sm">
                                                         <!--<div class="col d-flex justify-content-end"><input class="form-check-input me-2" type="checkbox" value=""></div>-->
-                                                        <div class="col"><label class="form-check-label me-2 text-dark d-flex justify-content-start" for="flexCheckDefault" title="Factor de Compresibilidad a condiciones de flujo">W</label></div>
+                                                        <div class="col"><label class="form-check-label me-2 text-dark d-flex justify-content-start" for="flexCheckDefault" title="Velocidad del sonido">W</label></div>
                                                         <input type="text" class="form-control" id="w" value="0" readonly style="width: 100px;"><span class="input-group-text" style="width: 60px;">ft/s</span>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-6">
+                                    <div class="col-lg-6 col-sm-12">
                                         <div class="form-check mt-4 mb-2">
                                             <div class="d-flex justify-content-center align-items-center">
                                                 <div class="row w-100">
                                                     <div class="input-group input-group-sm">
                                                         <!--<div class="col d-flex justify-content-end"><input class="form-check-input me-2" type="checkbox" value=""></div>-->
-                                                        <div class="col"><label class="form-check-label me-2 text-dark d-flex justify-content-start" for="flexCheckDefault" title="Viscosidad">Desviación</label></div>
+                                                        <div class="col"><label class="form-check-label me-2 text-dark d-flex justify-content-start" for="flexCheckDefault" title="Desviación">Desviación</label></div>
                                                         <input type="text" class="form-control" id="desv" value="0" readonly style="width: 100px;"><span class="input-group-text" style="width: 60px;">%</span>
                                                     </div>
                                                 </div>
@@ -125,7 +119,7 @@
                                         </div>
                                     </div>
 
-                                    <div class="sectBotones d-flex justify-content-center gap-4 mt-5">
+                                    <div class="sectBotones d-flex justify-content-center gap-4 mt-5 mb-5">
                                         <button type="submit" class="btn btn-success buttonWeight btn-lg">Calcular</button>
                                         <button type="button" id="resetInputs" class="btn btn-secondary buttonWeight btn-lg">Resetear</button>
                                     </div>
