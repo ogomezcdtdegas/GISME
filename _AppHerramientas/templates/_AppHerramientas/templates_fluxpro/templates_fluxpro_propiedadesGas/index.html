@@ -7,8 +7,8 @@
     <div class="container">
         <!--Cabecero Principal-->
         <header class="row">
-            <div class="col-lg-6 col-sm-12 d-flex align-items-center"><img style="height: 70px;" src="{% static '_AppHerramientas/static_fluxpro_propiedadesGas/images/logo.jpg' %}" alt="logoFluXPro"></div>
-            <div class="col-lg-6 col-sm-12 d-flex justify-content-end align-items-center section-title">Verificación de la VELOCIDAD DEL SONIDO</div>
+            <div class="col-6 d-flex align-items-center"><img style="height: 70px;" src="{% static '_AppHerramientas/static_fluxpro/static_fluxpro_propiedadesGas/images/logo.jpg' %}" alt="logoFluXPro"></div>
+            <div class="col-6 d-flex justify-content-end align-items-center section-title">PROPIEDADES DEL GAS</div>
         </header>
         
         <form id="condicionesForm">
@@ -18,18 +18,18 @@
                 <div class="box-title">Composición (fracción molar) [%]:</div>
                 <!--Composición-->
                 <section class="sectComposición">
+                    
                     <div class="row justify-content-center" style="max-height: 720px; overflow-y: auto;">
                         <table class="table table-sm table-striped table-hover">
                             {% for gas in gases %}
                             <tr>
                                 <td>{{ gas.label }}</td>
-                                <td>
-                                    <input type="number" class="form-control gas-input" name="{{ gas.name }}" id="{{ gas.id }}">
-                                </td>
+                                <td><input type="number" class="form-control gas-input" name="{{ gas.name }}" id="{{ gas.id }}"></td>
                             </tr>
                             {% endfor %}
                         </table>
                     </div>
+                    
                 </section>
                 </div>
             </div>
@@ -38,7 +38,8 @@
                 <!--Condiciones-->
                 <section>
                     <div class="container backgroundColorIdent">
-                            <div class="row d-flex justify-content-center align-items-start mb-5">
+                            <div class="row d-flex justify-content-center align-items-start">
+                                
                                 <div class="col mx-1">
                                     <div class="card shadow rounded-4 p-3 mb-4 backgroundColorIdent">
                                         <div class="box-title">Operación:</div>
@@ -54,12 +55,6 @@
                                             <input type="number" class="form-control pressureOpe" name="pressure" id="pressure" placeholder="Ing. la presión">
                                             <span class="input-group-text">psia</span>
                                         </div>
-
-                                        <label class="form-label fw-bold mt-3 mb-3">Velocidad Medida:</label>
-                                        <div class="input-group input-group-sm">
-                                            <input type="number" class="form-control pressureOpe" name="velMedida" id="velMedida" placeholder="Ing. la velocidad medida">
-                                            <span class="input-group-text">ft/s</span>
-                                        </div>
                                     </div>
                                 </div>
                                 <div class="col mx-1">
@@ -68,13 +63,13 @@
 
                                         <label class="form-label fw-bold mt-5 mb-3">Temperatura [Tb]:</label>
                                         <div class="input-group input-group-sm">
-                                            <input type="number" class="form-control temperatureBas" name="tempBs" id="tempBs" placeholder="Ing. la temperatura base">
+                                            <input type="number" class="form-control temperatureBas" name="tempBs" id="tempBs" placeholder="Ing. la temperatura">
                                             <span class="input-group-text">°F</span>
                                         </div>
 
                                         <label class="form-label fw-bold mt-3 mb-3">Presión [Pb]:</label>
                                         <div class="input-group input-group-sm">
-                                            <input type="number" class="form-control pressureBas" name="presBs" id="presBs" placeholder="Ing. la presión base">
+                                            <input type="number" class="form-control pressureBas" name="presBs" id="presBs" placeholder="Ing. la presión">
                                             <span class="input-group-text">psia</span>
                                         </div>
                                     </div>
@@ -85,41 +80,53 @@
                 </section>
 
                 <!--Resultados-->
-                <section class="mt-4">
-                    <div class="container" >
+                <section>
+                    <div class="container backgroundColorIdent ">
                         <div class="row text-center">
                             <div class="card shadow rounded-4 p-3 mb-4 backgroundColorIdent">
                             <div class="col-12 mb-1 box-titleResultados">Resultados</div>
                             <div class="col">
                                 <div class="row">
-                                    <div class="col-lg-6 col-sm-12">
-                                        <div class="form-check mt-4 mb-2">
+                                    <div class="col-lg-6 col-sm-12 col-xs-12">
+                                        {% for res in resultados_izq %}
+                                        <div class="form-check {% if forloop.first %}mt-4{% else %}mb-2{% endif %}">
                                             <div class="d-flex justify-content-center align-items-center">
                                                 <div class="row w-100">
                                                     <div class="input-group input-group-sm">
-                                                        <!--<div class="col d-flex justify-content-end"><input class="form-check-input me-2" type="checkbox" value=""></div>-->
-                                                        <div class="col"><label class="form-check-label me-2 text-dark d-flex justify-content-start" for="flexCheckDefault" title="Velocidad del sonido">W</label></div>
-                                                        <input type="text" class="form-control" id="w" value="0" readonly style="width: 100px;"><span class="input-group-text" style="width: 60px;">ft/s</span>
+                                                        <div class="col">
+                                                            <label class="form-check-label me-2 text-dark d-flex justify-content-start"
+                                                                for="flexCheckDefault"
+                                                                title="{{ res.title }}">{{ res.label }}</label>
+                                                        </div>
+                                                        <input type="text" class="form-control" id="{{ res.id }}" value="0" readonly style="width: 100px;">
+                                                        <span class="input-group-text" style="width: 60px;">{{ res.unidad }}</span>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
+                                        {% endfor %}
                                     </div>
-                                    <div class="col-lg-6 col-sm-12">
-                                        <div class="form-check mt-4 mb-2">
+                                    <div class="col-lg-6 col-sm-12 col-xs-12">
+                                        {% for res in resultados_der %}
+                                        <div class="form-check {% if forloop.first %}mt-4{% else %}mb-2{% endif %}">
                                             <div class="d-flex justify-content-center align-items-center">
                                                 <div class="row w-100">
                                                     <div class="input-group input-group-sm">
-                                                        <!--<div class="col d-flex justify-content-end"><input class="form-check-input me-2" type="checkbox" value=""></div>-->
-                                                        <div class="col"><label class="form-check-label me-2 text-dark d-flex justify-content-start" for="flexCheckDefault" title="Desviación">Desviación</label></div>
-                                                        <input type="text" class="form-control" id="desv" value="0" readonly style="width: 100px;"><span class="input-group-text" style="width: 60px;">%</span>
+                                                        <div class="col">
+                                                            <label class="form-check-label me-2 text-dark d-flex justify-content-start"
+                                                                for="flexCheckDefault"
+                                                                title="{{ res.title }}">{{ res.label }}</label>
+                                                        </div>
+                                                        <input type="text" class="form-control" id="{{ res.id }}" value="0" readonly style="width: 100px;">
+                                                        <span class="input-group-text" style="width: 60px;">{{ res.unidad }}</span>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
+                                        {% endfor %}
                                     </div>
-
-                                    <div class="sectBotones d-flex justify-content-center gap-4 mt-5 mb-5">
+                                    
+                                    <div class="d-flex justify-content-center gap-4 mt-5 mb-3">
                                         <button type="submit" class="btn btn-success buttonWeight btn-lg">Calcular</button>
                                         <button type="button" id="resetInputs" class="btn btn-secondary buttonWeight btn-lg">Resetear</button>
                                     </div>
@@ -129,27 +136,27 @@
                                     </footer>
                                 </div>
                             </div>
-                        </div>
+                            </div>
                         </div>
                     </div>
                 </section>
             </div>
         </div>
-        </form>
+        </form>  
     </div>
 {% endblock %}
 
 {% block extra_css %}
-    <link rel="stylesheet" href="{% static '_AppHerramientas/static_fluxpro_velocidadSonido/styles.css' %}">
+    <link rel="stylesheet" href="{% static '_AppHerramientas/static_fluxpro/static_fluxpro_propiedadesGas/styles.css' %}">
 {% endblock %}
 
 {% block extra_js %}
     <script>
-        window.apiUrl = "{% url 'FluxCalcPropVel' %}";
+        window.apiUrl = "{% url 'FluxCalcProp' %}";
         window.csrfToken = "{{ csrf_token }}";
     </script>
-    <script src="{% static '_AppHerramientas/static_fluxpro_velocidadSonido/js/api.js' %}"></script>
-    <script src="{% static '_AppHerramientas/static_fluxpro_velocidadSonido/js/ui.js' %}"></script>
-    <script src="{% static '_AppHerramientas/static_fluxpro_velocidadSonido/js/events.js' %}"></script>
-    <script src="{% static '_AppHerramientas/static_fluxpro_velocidadSonido/js/main.js' %}"></script>
+    <script src="{% static '_AppHerramientas/static_fluxpro/static_fluxpro_propiedadesGas/js/api.js' %}"></script>
+    <script src="{% static '_AppHerramientas/static_fluxpro/static_fluxpro_propiedadesGas/js/ui.js' %}"></script>
+    <script src="{% static '_AppHerramientas/static_fluxpro/static_fluxpro_propiedadesGas/js/events.js' %}"></script>
+    <script src="{% static '_AppHerramientas/static_fluxpro/static_fluxpro_propiedadesGas/js/main.js' %}"></script>
 {% endblock %}

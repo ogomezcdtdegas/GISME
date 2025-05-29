@@ -45,7 +45,7 @@ RESULTADOS_DER = [
 
 '''------------------------ Controlador de redirección a template de fluxpro_propiedadesGas ---------------------'''
 def FluxPro_view(request):
-    return render(request, "_AppHerramientas/templates_fluxpro_propiedadesGas/index.html", {"gases": GASES, "resultados_izq": RESULTADOS_IZQ, "resultados_der": RESULTADOS_DER})
+    return render(request, "_AppHerramientas/templates_fluxpro/templates_fluxpro_propiedadesGas/index.html", {"gases": GASES, "resultados_izq": RESULTADOS_IZQ, "resultados_der": RESULTADOS_DER, "active_section": "fluxpro_propiedadesGas"})
 ''' ------------------------------------------------------------------------------------------------------------- '''
 
 '''------------------------ Controlador para calculo de propiedades de gas --------------------------------------'''

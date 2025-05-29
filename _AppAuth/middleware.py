@@ -8,7 +8,7 @@ class AuthMiddleware:
 
     def __call__(self, request):
         exempt_paths = {"/auth/login/", "/api/token/"}  # URLs públicas sin login
-        max_inactivity = 60  # segundos para cerrar sesión por inactividad
+        max_inactivity = 1200  # segundos para cerrar sesión por inactividad
 
         if request.user.is_authenticated:
             current_time = int(time.time())

@@ -27,7 +27,7 @@ class calc1_view(APIView):
                 "default_temperature": 40.0
             }, status=status.HTTP_200_OK)
         
-        return render(request, "_AppCalc1/index.html", {"gases": GASES_OPCIONES})
+        return render(request, "_AppCalc1/index.html", {"gases": GASES_OPCIONES, "active_section": "calc1"})
 
     def post(self, request):
         """

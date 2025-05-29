@@ -31,8 +31,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-# Expira en 300 segundos (5 minuto)
-SESSION_COOKIE_AGE = 300  
+# Expira en 1200 segundos (20 minuto)
+SESSION_COOKIE_AGE = 1200  
 
 # Cada vez que el usuario haga algo, se renueva el tiempo
 SESSION_SAVE_EVERY_REQUEST = True
@@ -65,8 +65,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    "django.contrib.sessions.middleware.SessionMiddleware",
-    "django.contrib.auth.middleware.AuthenticationMiddleware",
     '_AppAuth.middleware.AuthMiddleware',
 ]
 

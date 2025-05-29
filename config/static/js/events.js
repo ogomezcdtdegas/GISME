@@ -19,16 +19,16 @@ document.addEventListener("DOMContentLoaded", function () {
     // Función para alternar menú
     // (Asegúrate de que window.toggleElement esté definida en tu proyecto)
     // Ejemplo de cómo podría ser window.toggleElement:
-    // if (typeof window.toggleElement !== 'function') {
-    //     window.toggleElement = function(element) {
-    //         if (!element) return;
-    //         if (element.style.display === "none" || element.style.display === "") {
-    //             element.style.display = "block"; // o "flex", según tu layout
-    //         } else {
-    //             element.style.display = "none";
-    //         }
-    //     };
-    // }
+    /* if (typeof window.toggleElement !== 'function') {
+         window.toggleElement = function(element) {
+             if (!element) return;
+             if (element.style.display === "none" || element.style.display === "") {
+                 element.style.display = "block"; // o "flex", según tu layout
+             } else {
+                 element.style.display = "none";
+             }
+         };
+     }*/
 
     function toggleMenu(button, submenu, name) {
         if (button && submenu) {

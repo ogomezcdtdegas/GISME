@@ -1,17 +1,16 @@
 console.log("🎨 ui.js cargado.");
 
-// Función para mostrar/ocultar elementos
+// Función para mostrar/ocultar elementos usando la clase 'show'
 window.toggleElement = function (element) {
-    element.style.display = element.style.display === "block" ? "none" : "block";
+    if (!element) return;
+    element.classList.toggle('show');
 };
 
 // Función para actualizar la paginación
 window.onload = function () {
     console.log("🎨 ui.js cargado.");
 
-    window.toggleElement = function (element) {
-        element.style.display = element.style.display === "block" ? "none" : "block";
-    };
+    // Ya no redefinas window.toggleElement aquí, solo déjala definida arriba
 
     window.updatePagination = function (data, loadFunction) {
         const paginationContainer = document.querySelector(".pagination");
