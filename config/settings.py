@@ -31,11 +31,16 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+# Expira en 1200 segundos (20 minuto)
+SESSION_COOKIE_AGE = 1200  
+
+# Cada vez que el usuario haga algo, se renueva el tiempo
+SESSION_SAVE_EVERY_REQUEST = True
 
 # Application definition
 
 INSTALLED_APPS = [
-    'django.contrib.admin',
+    #'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',

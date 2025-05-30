@@ -28,12 +28,12 @@ GASES = [
     {"label": "Argón", "id": "gas_Ar", "name": "gas_Ar"},
 ]
 
-def FluxProVel_view(request):
-    return render(request, "_AppHerramientas/templates_fluxpro_velocidadSonido/index.html", {"gases": GASES})
+def FluxProCaudLineal_view(request):
+    return render(request, "_AppHerramientas/templates_fluxpro/templates_fluxpro_caudalMedLineal/index.html", {"gases": GASES, "active_section": "fluxpro_caudalMedLineal"})
 
 
 '''------------------------ Controlador para velocidad del sonido --------------------------------------'''
-class FluxCalcProVel_view(APIView):
+class FluxCalcProCaudLineal_view(APIView):
     def post(self, request):
         try:
             resultado = calcular_velSonido_gas(request.data)

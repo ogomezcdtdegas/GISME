@@ -48,9 +48,13 @@ h1 {
     overflow-y: auto;
 }
 .submenu {
-    display: none;
     background-color: #484949;
 }
+
+.submenu.show {
+    display: block !important;
+}
+
 .submenu a {
     padding-left: 40px;
 }
@@ -61,6 +65,10 @@ h1 {
     /* Opcional: una línea visual para la jerarquía */
     /* border-left: 1px solid #eee; */
     /* margin-left: 5px; */ /* Si prefieres margen en lugar de padding para la indentación */
+}
+
+.submenu .submenu.show {
+    display: block !important;
 }
 
 /* Estilo para los elementos 'a' dentro de los submenús */
@@ -81,6 +89,8 @@ h1 {
 .submenu a .bi {
     margin-right: 8px; /* Espacio entre el icono y el texto */
 }
+
+
 
 @media (max-width: 768px) {
     .sidebar {

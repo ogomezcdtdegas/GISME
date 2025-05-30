@@ -8,7 +8,7 @@ class IncertidumbreAPIView(APIView):
 
     def get(self, request):
         """Renderiza la página con el timestamp."""
-        return render(request, '_AppCalc2/index.html', {'timestamp': now().timestamp()})
+        return render(request, '_AppCalc2/index.html', {'timestamp': now().timestamp(), "active_section": "calc2"})
 
     def post(self, request):
         """Calcula la incertidumbre y devuelve los resultados."""
