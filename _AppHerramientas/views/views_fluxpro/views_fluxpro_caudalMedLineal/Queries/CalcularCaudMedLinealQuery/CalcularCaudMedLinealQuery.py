@@ -2,7 +2,7 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from UTIL_LIB.velocidadSonido import calcular_velSonido_gas
+from UTIL_LIB.volumenBaseML import calcular_volBaseML
 
 GASES = [
     {"label": "Metano", "id": "gas_C1", "name": "gas_C1"},
@@ -36,7 +36,7 @@ def FluxProCaudLineal_view(request):
 class FluxCalcProCaudLineal_view(APIView):
     def post(self, request):
         try:
-            resultado = calcular_velSonido_gas(request.data)
+            resultado = calcular_volBaseML(request.data)
             if "error" in resultado:
                 return Response({"error": resultado["error"]}, status=status.HTTP_400_BAD_REQUEST)
             return Response(resultado, status=status.HTTP_200_OK)
