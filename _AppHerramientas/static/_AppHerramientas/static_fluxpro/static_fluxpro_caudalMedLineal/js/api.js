@@ -15,15 +15,10 @@ const api = {
             } else {
                 ui.showResults(data);
                 console.log("dataCalc: ", data);
-                document.getElementById("Zf").value = data.z_gerg;
-                document.getElementById("Zb").value = data.z_gergBas;
-                document.getElementById("μ").value = data.mu;
-                document.getElementById("mm").value = data.mm;
-                document.getElementById("ρ").value = data.rho_gerg;
-                document.getElementById("Hv").value = data.HHV_BTU_ft3_real;
-                document.getElementById("dx").value = data.d;
-                document.getElementById("gr").value = data.rho_gergRelative;
-                document.getElementById("lw").value = data.indice_Wobbe;
+                document.getElementById("vb").value = data.volBase;
+                document.getElementById("desv").value = data.Desviación;
+                document.getElementById("zf").value = data.zf;
+                document.getElementById("zb").value = data.zb;
             }
         });
     }
