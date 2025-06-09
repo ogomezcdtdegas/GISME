@@ -59,3 +59,4 @@ document.addEventListener("DOMContentLoaded", function () {
     toggleMenu(toggleCalculoCaudal, submenuCalculoCaudal, "Cálculo de Caudal");
     // --- FIN NUEVO ---
 });
+
