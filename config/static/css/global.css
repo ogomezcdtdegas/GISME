@@ -106,7 +106,7 @@ h1 {
         height: 100vh;
         width: 250px;
         margin-left: -260px !important;
-        padding-bottom: 60px; /* Ajusta según lo que necesites */
+        padding-bottom: 120px; /* Ajusta según lo que necesites */
         z-index: 2000; /* Asegura que esté encima */
         box-shadow: 2px 0 8px rgba(0,0,0,0.2);
         transition: margin-left 0.3s;
