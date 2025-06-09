@@ -15,6 +15,7 @@ h1 {
     background-color: #34403e;
     color: white;
     padding-top: 20px;
+    overflow-y: auto;
     height: 100vh;
     position: fixed;
     transition: margin-left 0.3s;
@@ -90,11 +91,24 @@ h1 {
     margin-right: 8px; /* Espacio entre el icono y el texto */
 }
 
-
+#toggleSidebar {
+    position: fixed;
+    top: 16px;
+    left: 16px;
+    z-index: 2100; /* Mayor que el de la sidebar */
+}
 
 @media (max-width: 768px) {
     .sidebar {
+        position: fixed;
+        left: 0;
+        top: 0;
+        height: 100vh;
+        width: 250px;
         margin-left: -260px !important;
+        z-index: 2000; /* Asegura que esté encima */
+        box-shadow: 2px 0 8px rgba(0,0,0,0.2);
+        transition: margin-left 0.3s;
     }
     .sidebar.show {
         margin-left: 0 !important;
@@ -102,7 +116,8 @@ h1 {
     .content {
         margin-left: 0 !important;
     }
-    .sidebar.show ~ .content {
+    /* Elimina este bloque, ya que no queremos empujar el contenido */
+    /* .sidebar.show ~ .content {
         margin-left: 250px !important;
-    }
+    } */
 }
