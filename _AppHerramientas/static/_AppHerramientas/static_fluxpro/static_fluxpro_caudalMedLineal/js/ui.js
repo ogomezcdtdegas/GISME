@@ -21,7 +21,7 @@ const ui = {
         document.querySelectorAll('input.gas-input[type="number"]').forEach(input => {
             input.min = "0";
             input.max = "100";
-            input.step = "0.01";
+            input.step = "0.0001";
             input.value = "0";
         });
     },
