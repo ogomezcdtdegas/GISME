@@ -39,10 +39,10 @@ DENS_AIRE = 1.2192452 # kg/m3
 kg_per_m3_to_lb_per_ft3 = 0.062428
 
 def calcular_propiedades_gas(request_data):
-    Pb = unit_converters.psi_to_bar(float(request_data.get("presBs", 1.0)))
-    Tb = unit_converters.fahrenheit_to_celsius(float(request_data.get("tempBs", 15.0)))
-    P = unit_converters.psi_to_bar(float(request_data.get("pressure", 1.0)))
-    T = unit_converters.fahrenheit_to_celsius(float(request_data.get("temperature", 15.0)))
+    Pb = round(unit_converters.psi_to_bar(float(request_data.get("presBs", 1.0))),6)
+    Tb = round(unit_converters.fahrenheit_to_celsius(float(request_data.get("tempBs", 15.0))),4)
+    P = round(unit_converters.psi_to_bar(float(request_data.get("pressure", 1.0))),6)
+    T = round(unit_converters.fahrenheit_to_celsius(float(request_data.get("temperature", 15.0))),4)
     T_K = T + 273.15
     T_Kb = Tb + 273.15
 
@@ -78,22 +78,24 @@ def calcular_propiedades_gas(request_data):
     LHV_base = sum(xi * HEATING_VALUES[g]["LHV"] for g, xi in composition_frac.items() if g in HEATING_VALUES)
 
     # ----------- ajuste a condiciones reales (opcional) ----------
-    Z_real = gas_propertiesBas["z"]
-    factor = (Pb / P_BASE_BAR) * (Z_BASE / Z_real) * (T_BASE_K / T_Kb)
+    Z_real = gas_properties_detailBas["z"]
+    factor = round((Pb / round(P_BASE_BAR,6)) * (Z_BASE / Z_real) * (T_BASE_K / T_Kb),6)
     HHV_real = HHV_base * factor
     LHV_real = LHV_base * factor
 
     from pvtlib import thermodynamics
     gas_thermodynamics_detail = thermodynamics.natural_gas_viscosity_Lee_et_al(
-        T, gas_properties["mm"], gas_properties["rho"]
+        T, round(gas_properties_detail["mm"],6), round(gas_properties_detail["rho"],6)
     )
+
+    rho = round(gas_properties_detail["rho"], 6)
 
     return {
         "rho_gerg": f"{gas_properties['rho'] * kg_per_m3_to_lb_per_ft3:.6f}",
         "rho_gergRelative": f"{gas_propertiesBas['rho'] / DENS_AIRE:.6f}",
-        "rho_detail": f"{gas_properties_detail['rho'] * kg_per_m3_to_lb_per_ft3:.6f}",
-        "z_gerg": f"{gas_properties['z']:.6f}",
-        "z_gergBas": f"{gas_propertiesBas['z']:.6f}",
+        "rho_detail": f"{rho * kg_per_m3_to_lb_per_ft3:.6f}",
+        "z_gerg": f"{gas_properties_detail['z']:.6f}",
+        "z_gergBas": f"{gas_properties_detailBas['z']:.6f}",
         "z_detail": f"{gas_properties_detail['z']:.6f}",
         "cps": f"{gas_properties_detail['cp']:.6f} J/(mol·K)",
         "mm": f"{gas_properties_detail['mm']:.6f}",
