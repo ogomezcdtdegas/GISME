@@ -28,23 +28,69 @@ HEATING_VALUES = {
     "nC10": {"HHV": 7742.9, "LHV": 7189.9},
     "H2": {"HHV": 324.2, "LHV": 273.93},
     "CO": {"HHV": 320.5, "LHV": 320.5},
+    "H2S": {"HHV": 637.1, "LHV": 0},
+    "H2O": {"HHV": 50.312, "LHV": 0},
     # Otros gases sin poder calorífico quedan fuera del cálculo
+    "O2": {"HHV": 0, "LHV": 0},
+    "N2": {"HHV": 0, "LHV": 0},
+    "Ar": {"HHV": 0, "LHV": 0},
+    "He": {"HHV": 0, "LHV": 0},
+    "CO2": {"HHV": 0, "LHV": 0}
 }
+
+# Presión crítica (psia)
+P = [667, 492.8, 1070, 707.8, 615, 3200.1, 1300, 187.5, 506.8, 731.4,
+     527.9, 548.8, 490.4, 488.1, 436.9, 396.8, 360.7, 330.7, 304.6, 32.99, 706.9]
+#         CH4,   N2,   CO2,  C2H6, C3H8,  H2O,   H2S,   H2,   CO,   O2,
+#       iC4H10, nC4H10, iC5H12, nC5H12, nC6H14, nC7H16, nC8H18, nC9H20, nC10H22, He,   Ar
+
+# Temperatura crítica (°R)
+T = [343.01, 227.19, 547.4, 549.74, 665.6, 1164.77, 672.07, 59.37, 239.16, 278.27,
+     734.07, 765.19, 828.63, 845.37, 913.47, 972.47, 1023.82, 1070.39, 1111.77, 9.36, 271.47]
+#         CH4,   N2,   CO2,  C2H6, C3H8,  H2O,   H2S,   H2,   CO,   O2,
+#       iC4H10, nC4H10, iC5H12, nC5H12, nC6H14, nC7H16, nC8H18, nC9H20, nC10H22, He,   Ar
+
+# Factor Z crítico (adimensional)
+Z = [0.288, 0.29, 0.274, 0.285, 0.281, 0.229, 0.284, 0.305, 0.295, 0.288,
+     0.283, 0.274, 0.271, 0.262, 0.26, 0.263, 0.259, 0.26, 0.247, 0.301, 0.291]
+#         CH4,   N2,   CO2,  C2H6, C3H8,  H2O,   H2S,   H2,   CO,   O2,
+#       iC4H10, nC4H10, iC5H12, nC5H12, nC6H14, nC7H16, nC8H18, nC9H20, nC10H22, He,   Ar
+
+# Masa molar (g/mol)
+M = [16.043, 28.0135, 44.01, 30.07, 44.097, 18.0153, 34.082, 2.0159, 28.01, 31.9988,
+     58.123, 58.123, 72.15, 72.15, 86.177, 100.204, 114.231, 128.258, 142.285, 4.0026, 39.948]
+#         CH4,   N2,   CO2,  C2H6, C3H8,  H2O,   H2S,   H2,   CO,   O2,
+#       iC4H10, nC4H10, iC5H12, nC5H12, nC6H14, nC7H16, nC8H18, nC9H20, nC10H22, He,   Ar
+
+COMPONENT_KEYS = [
+    "C1", "N2", "CO2", "C2", "C3",
+    "H2O", "H2S", "H2", "CO", "O2",
+    "iC4", "nC4", "iC5", "nC5", "nC6",
+    "nC7", "nC8", "nC9", "nC10", "He", "Ar"
+]
+
+P_dict = dict(zip(COMPONENT_KEYS, P))  # Presión crítica
+T_dict = dict(zip(COMPONENT_KEYS, T))  # Temperatura crítica
+Z_dict = dict(zip(COMPONENT_KEYS, Z))  # Factor Z
+M_dict = dict(zip(COMPONENT_KEYS, M))  # Masa molar
 
 # Constantes base
 T_BASE_K = 288.5556      # 15 °C
 P_BASE_BAR = 1.01325353
 Z_BASE = 1
 DENS_AIRE = 1.2192452 # kg/m3
-kg_per_m3_to_lb_per_ft3 = 0.062428
+kg_per_m3_to_lb_per_ft3 = 0.06242796
+R_ConstanteGas = 8.314472  # J/(mol·K)
+Masa_Molar_AireSeco = 0.0289635  # kg/mol
 
 def calcular_propiedades_gas(request_data):
     Pb = round(unit_converters.psi_to_bar(float(request_data.get("presBs", 1.0))),6)
     Tb = round(unit_converters.fahrenheit_to_celsius(float(request_data.get("tempBs", 15.0))),4)
     P = round(unit_converters.psi_to_bar(float(request_data.get("pressure", 1.0))),6)
     T = round(unit_converters.fahrenheit_to_celsius(float(request_data.get("temperature", 15.0))),4)
-    T_K = T + 273.15
-    T_Kb = Tb + 273.15
+    
+    Tkb = (float(request_data.get("tempBs", 60)) - 32) * 5/9 + 273.15
+    Ppasb = float(request_data.get("presBs", 14.695)) * 6894.76
 
     composition = {}
     total_percentage = 0
@@ -75,13 +121,10 @@ def calcular_propiedades_gas(request_data):
 
     # ----------- HHV/LHV base -------------
     HHV_base = sum(xi * HEATING_VALUES[g]["HHV"] for g, xi in composition_frac.items() if g in HEATING_VALUES)
-    LHV_base = sum(xi * HEATING_VALUES[g]["LHV"] for g, xi in composition_frac.items() if g in HEATING_VALUES)
 
     # ----------- ajuste a condiciones reales (opcional) ----------
     Z_real = gas_properties_detailBas["z"]
-    factor = round((Pb / round(P_BASE_BAR,6)) * (Z_BASE / Z_real) * (T_BASE_K / T_Kb),6)
-    HHV_real = HHV_base * factor
-    LHV_real = LHV_base * factor
+    HHV_Calc = ((((HHV_base/round(Z_real,6)) * float(request_data.get("presBs", 14.696)))/14.696))
 
     from pvtlib import thermodynamics
     gas_thermodynamics_detail = thermodynamics.natural_gas_viscosity_Lee_et_al(
@@ -90,9 +133,59 @@ def calcular_propiedades_gas(request_data):
 
     rho = round(gas_properties_detail["rho"], 6)
 
+    #----------------------------------------------------------------------------------------------------------------------------------
+    '''-----------------------------------------------------------------------------------------------------------------------------'''
+    # Cálculo de densidad relativa Gr
+    '''Densidad del Gas'''
+    DensGas = (Ppasb * (round(gas_properties_detailBas['mm'], 6) / 1000)) / (round(gas_properties_detailBas['z'],6) * R_ConstanteGas * Tkb) # kg/m3
+
+    '''Densidad del Aire'''
+    DensAire = (Ppasb * Masa_Molar_AireSeco) / (1.0 * R_ConstanteGas * Tkb) # kg/m3
+
+    '''Densidad Relativa Gr'''
+    DensGr = DensGas / DensAire # Adimensional
+    '''-----------------------------------------------------------------------------------------------------------------------------'''
+    #----------------------------------------------------------------------------------------------------------------------------------
+
+    #----------------------------------------------------------------------------------------------------------------------------------
+    '''-----------------------------------------------------------------------------------------------------------------------------'''
+
+    # Cálculo de Viscosidad
+    Mwair = 28.963  # Masa molar del aire seco
+    Ppc = sum(xi * P_dict[g] for g, xi in composition_frac.items())
+    Tpc = sum(xi * T_dict[g] for g, xi in composition_frac.items())
+    Zpc = sum(xi * Z_dict[g] for g, xi in composition_frac.items())
+    Mwg = sum(xi * M_dict[g] for g, xi in composition_frac.items())
+
+    G = Mwg / Mwair  # Densidad relativa de masa molar
+
+    # Cálculo de densidad pseudoreducida y densidad relativa reducida
+    dpc = 2.698825 * ((G * Ppc) / (Zpc * Tpc))
+    dpr = round((rho * kg_per_m3_to_lb_per_ft3), 6) / dpc
+
+    # Factores empíricos A y B
+    A = ((1.023) + (0.23364 * dpr) + (0.58533 * (dpr ** 2)) -
+         (0.40758 * (dpr ** 3)) + (0.093324 * (dpr ** 4))) ** 4
+    Pcatm = Ppc / 14.696
+    Tkc = Tpc / 1.8
+    B = ((Tkc ** (1 / 6)) / ((Mwg ** 0.5) * (Pcatm ** (2 / 3))))
+
+    # Viscosidad base sin correcciones
+    ulc = ((1.709e-5) - (2.062e-6) * G) * (Tkb - 460) + (8.188e-3) - (6.15e-3) * math.log10(G)
+
+    # Correcciones por gases no ideales
+    CO2 = composition_frac.get("CO2", 0) * 1e-3 * ((9.08 * math.log10(G) + 6.24))
+    N2  = composition_frac.get("N2", 0)  * 1e-3 * ((8.48 * math.log10(G) + 9.59))
+    H2S = composition_frac.get("H2S", 0) * 1e-3 * ((8.49 * math.log10(G) + 3.73))
+
+    ul = ulc + CO2 + N2 + H2S
+    viscosidad = ul + (((A - 1) * 1e-4) / B)
+
+    '''-----------------------------------------------------------------------------------------------------------------------------'''
+    #----------------------------------------------------------------------------------------------------------------------------------
     return {
         "rho_gerg": f"{gas_properties['rho'] * kg_per_m3_to_lb_per_ft3:.6f}",
-        "rho_gergRelative": f"{gas_propertiesBas['rho'] / DENS_AIRE:.6f}",
+        "rho_gergRelative": f"{DensGr:.6f}", # Se debe cambiar el gerg por detail
         "rho_detail": f"{rho * kg_per_m3_to_lb_per_ft3:.6f}",
         "z_gerg": f"{gas_properties_detail['z']:.6f}",
         "z_gergBas": f"{gas_properties_detailBas['z']:.6f}",
@@ -102,10 +195,7 @@ def calcular_propiedades_gas(request_data):
         "mu": f"{gas_thermodynamics_detail:.6f}",
         "d": f"{gas_properties_detail['d']:.6f}",
         # ---- poder calorífico -----
-        "HHV_BTU_ft3_base": f"{HHV_base:.2f} BTU/ft³ (base 60 °F,14.696 psia)",
-        "LHV_BTU_ft3_base": f"{LHV_base:.2f} BTU/ft³ (base 60 °F,14.696 psia)",
-        "HHV_BTU_ft3_real": f"{HHV_real:.2f}",
-        "LHV_BTU_ft3_real": f"{LHV_real:.2f}",
-        "indice_Wobbe": f"{(HHV_real / math.sqrt(gas_propertiesBas['rho']/ DENS_AIRE)):.6f}",
+        "HHV_BTU_ft3_real": f"{HHV_Calc:.6f}",
+        "indice_Wobbe": f"{(HHV_Calc / math.sqrt(gas_propertiesBas['rho']/ DENS_AIRE)):.6f}",
         "Velocidad_sonido": f"{gas_properties_detail['w']:.6f} m/s",
     }
