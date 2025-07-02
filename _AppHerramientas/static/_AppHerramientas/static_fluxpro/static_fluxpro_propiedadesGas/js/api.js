@@ -22,7 +22,7 @@ const api = {
                 document.getElementById("ρ").value = data.rho_detail;
                 document.getElementById("Hv").value = data.HHV_BTU_ft3_real;
                 document.getElementById("dx").value = data.d;
-                document.getElementById("gr").value = data.rho_gergRelative;
+                document.getElementById("gr").value = data.rho_detailRelative;
                 document.getElementById("lw").value = data.indice_Wobbe;
             }
         });

@@ -12,7 +12,7 @@ GASES_OPCIONES = {
     "He": "Helium", "Ar": "Argon"
 }
 
-M_SEG_TO_FT_SEG = 3.28084  # Conversión de metros por segundo a pies por segundo
+M_SEG_TO_FT_SEG = 3.280839895  # Conversión de metros por segundo a pies por segundo
 
 def calcular_velSonido_gas(request_data):
     P = unit_converters.psi_to_bar(float(request_data.get("pressure", 1.0)))

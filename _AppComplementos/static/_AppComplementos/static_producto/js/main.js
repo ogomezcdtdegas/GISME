@@ -32,7 +32,7 @@ function populateTipoCriticidadDropdown(tipocriticidades) {
 }
 
 // Cargar criticidades basado en el tipo seleccionado
-async function loadCriticidadesByTipo() {
+async function loadCriticidadesByTipo(selectedCriticidadId = null) {
     const tipoSelect = document.getElementById('tipocriticidadDropdown');
     const critSelect = document.getElementById('criticidadDropdown');
     const tipoId = tipoSelect.value;
@@ -46,12 +46,14 @@ async function loadCriticidadesByTipo() {
     }
 
     const criticidades = await fetchCriticidadesByTipo(tipoId);
+
+    // Usa el parámetro si lo pasan, si no, usa el valor actual
+    const currentValue = selectedCriticidadId || critSelect.value;
     
     critSelect.innerHTML = '<option value="">Seleccione una criticidad</option>';
     criticidades.forEach(crit => {
-        const option = document.createElement('option');
-        option.value = crit.id;
-        option.textContent = crit.name;
+        const option = new Option(crit.name, crit.id);
+        if (crit.id == currentValue) option.selected = true;
         critSelect.appendChild(option);
     });
     

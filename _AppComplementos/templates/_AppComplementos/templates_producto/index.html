@@ -77,7 +77,13 @@
                     <td>{{ relacion.criticidad_name }}</td>
                     <td>
                         <button class="btn btn-primary btn-sm"
-                            onclick="openEditModal('{{ relacion.id }}', '{{ relacion.tipo_criticidad_name }}', '{{ relacion.criticidad }}')">
+                            onclick="openEditModal(
+                                '{{ relacion.id }}',
+                                '{{ relacion.producto_name }}',
+                                '{{ relacion.criticidad_name }}',
+                                '{{ relacion.tipo_criticidad_id }}',
+                                '{{ relacion.criticidad_id }}'
+                            )">
                             <i class="bi bi-pencil-square"></i>
                         </button>
                     </td>

@@ -38,6 +38,7 @@ async function openEditModal(id, productoName, criticidadName, tipoCriticidadId,
     // Setear valores básicos
     document.getElementById("editprodId").value = id;
     document.getElementById("editprodName").value = productoName;
+    document.getElementById("editCriticidad").value = criticidadId; 
     
     // Referencias a los selects
     const tipoCritSelect = document.getElementById("editTipoCriticidad");
@@ -67,10 +68,11 @@ async function openEditModal(id, productoName, criticidadName, tipoCriticidadId,
         // Limpiar y poblar criticidades
         critSelect.innerHTML = '';
         
+        /*
         // Agregar opción por defecto solo si no hay criticidad seleccionada
         if (!criticidadId) {
             critSelect.appendChild(new Option("Seleccione una criticidad", ""));
-        }
+        }*/
         
         // Poblar opciones
         criticidades.forEach(crit => {
@@ -81,34 +83,39 @@ async function openEditModal(id, productoName, criticidadName, tipoCriticidadId,
         
         critSelect.disabled = false;
     }
+
+    // Si hay un tipo seleccionado, cargar sus criticidades y seleccionar la correcta
+    if (tipoCriticidadId) {
+        await loadEditCriticidadesByTipo(criticidadId);
+    }
     
     // Mostrar modal
     new bootstrap.Modal(document.getElementById('editModal')).show();
 }
 
-async function loadEditCriticidadesByTipo() {
+async function loadEditCriticidadesByTipo(selectedCriticidadId = null) {
     const tipoId = document.getElementById("editTipoCriticidad").value;
     const critSelect = document.getElementById("editCriticidad");
-    
+
     critSelect.innerHTML = '<option value="">Cargando...</option>';
     critSelect.disabled = true;
-    
+
     if (!tipoId) {
         critSelect.innerHTML = '<option value="">Seleccione un tipo primero</option>';
         return;
     }
-    
+
     const criticidades = await fetchCriticidadesByTipo(tipoId);
-    
-    // Mantener la selección actual si existe
-    const currentValue = critSelect.value;
-    
+
     critSelect.innerHTML = '';
     criticidades.forEach(crit => {
         const option = new Option(crit.name, crit.id);
-        if (crit.id == currentValue) option.selected = true;
+        // Comparación robusta: ambos a string
+        if (String(crit.id) === String(selectedCriticidadId)) {
+            option.selected = true;
+        }
         critSelect.appendChild(option);
     });
-    
+
     critSelect.disabled = false;
 }

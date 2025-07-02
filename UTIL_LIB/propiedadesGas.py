@@ -89,6 +89,7 @@ def calcular_propiedades_gas(request_data):
     P = round(unit_converters.psi_to_bar(float(request_data.get("pressure", 1.0))),6)
     T = round(unit_converters.fahrenheit_to_celsius(float(request_data.get("temperature", 15.0))),4)
     
+    Tk = (float(request_data.get("temperature", 60)) - 32) * 5/9 + 273.15
     Tkb = (float(request_data.get("tempBs", 60)) - 32) * 5/9 + 273.15
     Ppasb = float(request_data.get("presBs", 14.695)) * 6894.76
 
@@ -126,15 +127,9 @@ def calcular_propiedades_gas(request_data):
     Z_real = gas_properties_detailBas["z"]
     HHV_Calc = ((((HHV_base/round(Z_real,6)) * float(request_data.get("presBs", 14.696)))/14.696))
 
-    from pvtlib import thermodynamics
-    gas_thermodynamics_detail = thermodynamics.natural_gas_viscosity_Lee_et_al(
-        T, round(gas_properties_detail["mm"],6), round(gas_properties_detail["rho"],6)
-    )
-
-    rho = round(gas_properties_detail["rho"], 6)
-
     #----------------------------------------------------------------------------------------------------------------------------------
-    '''-----------------------------------------------------------------------------------------------------------------------------'''
+    '''----------------------------------------- Cálculo de densidad relativa Gr ------------------------------------------------------'''
+    #----------------------------------------------------------------------------------------------------------------------------------
     # Cálculo de densidad relativa Gr
     '''Densidad del Gas'''
     DensGas = (Ppasb * (round(gas_properties_detailBas['mm'], 6) / 1000)) / (round(gas_properties_detailBas['z'],6) * R_ConstanteGas * Tkb) # kg/m3
@@ -144,58 +139,81 @@ def calcular_propiedades_gas(request_data):
 
     '''Densidad Relativa Gr'''
     DensGr = DensGas / DensAire # Adimensional
+    #----------------------------------------------------------------------------------------------------------------------------------
     '''-----------------------------------------------------------------------------------------------------------------------------'''
     #----------------------------------------------------------------------------------------------------------------------------------
 
     #----------------------------------------------------------------------------------------------------------------------------------
+    '''--------------------------------------------------------Indice de Woobe------------------------------------------------------'''
+    #----------------------------------------------------------------------------------------------------------------------------------
+    Iw = (HHV_Calc / math.sqrt(DensGr))  # Btu/ft3
+    #----------------------------------------------------------------------------------------------------------------------------------
     '''-----------------------------------------------------------------------------------------------------------------------------'''
+    #----------------------------------------------------------------------------------------------------------------------------------
 
+    #----------------------------------------------------------------------------------------------------------------------------------
+    '''-------------------------------------------------Cálculo de Viscocidad PVTLib------------------------------------------------'''
+    #----------------------------------------------------------------------------------------------------------------------------------
+    from pvtlib import thermodynamics
+    gas_thermodynamics_detail = thermodynamics.natural_gas_viscosity_Lee_et_al(
+        T, gas_properties_detail["mm"], gas_properties_detail["rho"]
+    )
+
+    rho = round(gas_properties_detail["rho"], 6)
+    #----------------------------------------------------------------------------------------------------------------------------------
+    '''-----------------------------------------------------------------------------------------------------------------------------'''
+    #----------------------------------------------------------------------------------------------------------------------------------
+
+    #----------------------------------------------------------------------------------------------------------------------------------
+    '''------------------------------------La viscosidad de un gas natural con la correlación de Carr-------------------------------'''
+    #----------------------------------------------------------------------------------------------------------------------------------
     # Cálculo de Viscosidad
-    Mwair = 28.963  # Masa molar del aire seco
-    Ppc = sum(xi * P_dict[g] for g, xi in composition_frac.items())
-    Tpc = sum(xi * T_dict[g] for g, xi in composition_frac.items())
-    Zpc = sum(xi * Z_dict[g] for g, xi in composition_frac.items())
-    Mwg = sum(xi * M_dict[g] for g, xi in composition_frac.items())
+    Mwair = 28.963
+    Ppc = sum(xi * P_dict[g] for g, xi in composition_frac.items())         # psia
+    Tpc = sum(xi * T_dict[g] for g, xi in composition_frac.items())         # °R
+    Zpc = sum(xi * Z_dict[g] for g, xi in composition_frac.items())         # adim
+    Mwg = sum(xi * M_dict[g] for g, xi in composition_frac.items())         # g/mol
 
-    G = Mwg / Mwair  # Densidad relativa de masa molar
+    # G = Peso molecular relativo
+    G = Mwg / Mwair
+    dpc = 2.698825 * ((G * Ppc) / (Zpc * Tpc)) # lb/ft³
+    dpr = (gas_properties_detail["rho"] * kg_per_m3_to_lb_per_ft3)/ dpc
 
-    # Cálculo de densidad pseudoreducida y densidad relativa reducida
-    dpc = 2.698825 * ((G * Ppc) / (Zpc * Tpc))
-    dpr = round((rho * kg_per_m3_to_lb_per_ft3), 6) / dpc
+    # Factor A
+    A = ((1.023) + (0.23364 * dpr) + (0.58533 * dpr**2) -
+        (0.40758 * dpr**3) + (0.093324 * dpr**4)) ** 4
 
-    # Factores empíricos A y B
-    A = ((1.023) + (0.23364 * dpr) + (0.58533 * (dpr ** 2)) -
-         (0.40758 * (dpr ** 3)) + (0.093324 * (dpr ** 4))) ** 4
+    # Factor B
     Pcatm = Ppc / 14.696
     Tkc = Tpc / 1.8
     B = ((Tkc ** (1 / 6)) / ((Mwg ** 0.5) * (Pcatm ** (2 / 3))))
 
-    # Viscosidad base sin correcciones
-    ulc = ((1.709e-5) - (2.062e-6) * G) * (Tkb - 460) + (8.188e-3) - (6.15e-3) * math.log10(G)
+    T_Rankine = Tk * 9 / 5
+    ulc = ((1.709e-5) - (2.062e-6) * G) * (T_Rankine - 460) + 0.008188 - 0.00615 * math.log10(G)
 
-    # Correcciones por gases no ideales
     CO2 = composition_frac.get("CO2", 0) * 1e-3 * ((9.08 * math.log10(G) + 6.24))
     N2  = composition_frac.get("N2", 0)  * 1e-3 * ((8.48 * math.log10(G) + 9.59))
     H2S = composition_frac.get("H2S", 0) * 1e-3 * ((8.49 * math.log10(G) + 3.73))
 
     ul = ulc + CO2 + N2 + H2S
     viscosidad = ul + (((A - 1) * 1e-4) / B)
-
+    #----------------------------------------------------------------------------------------------------------------------------------
     '''-----------------------------------------------------------------------------------------------------------------------------'''
     #----------------------------------------------------------------------------------------------------------------------------------
+
     return {
         "rho_gerg": f"{gas_properties['rho'] * kg_per_m3_to_lb_per_ft3:.6f}",
-        "rho_gergRelative": f"{DensGr:.6f}", # Se debe cambiar el gerg por detail
+        "rho_detailRelative": f"{DensGr:.6f}",
         "rho_detail": f"{rho * kg_per_m3_to_lb_per_ft3:.6f}",
         "z_gerg": f"{gas_properties_detail['z']:.6f}",
         "z_gergBas": f"{gas_properties_detailBas['z']:.6f}",
         "z_detail": f"{gas_properties_detail['z']:.6f}",
         "cps": f"{gas_properties_detail['cp']:.6f} J/(mol·K)",
         "mm": f"{gas_properties_detail['mm']:.6f}",
-        "mu": f"{gas_thermodynamics_detail:.6f}",
+        "mu": f"{viscosidad:.6f}",
         "d": f"{gas_properties_detail['d']:.6f}",
         # ---- poder calorífico -----
         "HHV_BTU_ft3_real": f"{HHV_Calc:.6f}",
-        "indice_Wobbe": f"{(HHV_Calc / math.sqrt(gas_propertiesBas['rho']/ DENS_AIRE)):.6f}",
+        "indice_Wobbe": f"{Iw:.6f}",
         "Velocidad_sonido": f"{gas_properties_detail['w']:.6f} m/s",
     }
