@@ -13,11 +13,12 @@ class CriticidadesPorTipoView(APIView):
             tipo_criticidad_id=tipo_id
         ).select_related('criticidad')
         
-        if not relaciones.exists():
-            return Response(
-                {"detail": "No se encontraron criticidades para este tipo"},
-                status=404
-            )
-        
+        # Serializar los datos
         serializer = CriticidadesPorTipoSerializer(relaciones, many=True)
-        return Response(serializer.data)
+        
+        # Devolver el formato esperado por el frontend
+        return Response({
+            'success': True,
+            'data': serializer.data,
+            'count': len(serializer.data)
+        })
