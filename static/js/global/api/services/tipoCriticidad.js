@@ -4,13 +4,20 @@ import { ENDPOINTS } from '../endpoints.js';
 import { CriticidadService } from './criticidad.js';
 
 export const TipoCriticidadService = {
-    async listarTodo(page = 1, perPage, ordering = 'tipo_criticidad__name') {
+    async listarTodo(page = 1, perPage, ordering = 'tipo_criticidad__name', search = '') {
         try {
-            const response = await BaseAPI.get(ENDPOINTS.TIPO_CRITICIDAD.LISTAR, { 
+            const params = { 
                 page, 
                 per_page: perPage,
                 ordering: ordering
-            });
+            };
+            
+            // Solo agregar el parámetro de búsqueda si no está vacío
+            if (search && search.trim()) {
+                params.search = search.trim();
+            }
+            
+            const response = await BaseAPI.get(ENDPOINTS.TIPO_CRITICIDAD.LISTAR, params);
             return response;
         } catch (error) {
             console.error('Error en listarTodo:', error);

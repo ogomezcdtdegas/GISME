@@ -11,6 +11,10 @@ class allTipCriticidadPag(BaseListView):
     def get_allowed_ordering_fields(self):
         return ['created_at', 'tipo_criticidad__name']
 
+    def apply_search_filters(self, queryset, search_query):
+        """Búsqueda personalizada en el campo tipo_criticidad__name"""
+        return queryset.filter(tipo_criticidad__name__icontains=search_query)
+
     def get(self, request):
         # Forzar 10 registros por página si no se especifica
         request.GET = request.GET.copy()

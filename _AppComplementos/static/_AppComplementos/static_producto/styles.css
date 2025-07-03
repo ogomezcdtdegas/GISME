@@ -56,3 +56,35 @@ h1 {
     text-overflow: ellipsis;
     overflow: hidden;
 }
+
+/* Estilos para la barra de búsqueda */
+.input-group .input-group-text {
+    background-color: #f8f9fa;
+    border-color: #dee2e6;
+    color: #6c757d;
+}
+
+.input-group .form-control {
+    border-color: #dee2e6;
+}
+
+.input-group .form-control:focus {
+    border-color: #86b7fe;
+    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+}
+
+.input-group .btn-outline-secondary {
+    border-color: #dee2e6;
+    color: #6c757d;
+}
+
+.input-group .btn-outline-secondary:hover {
+    background-color: #f8f9fa;
+    border-color: #dee2e6;
+    color: #495057;
+}
+
+#searchInput::placeholder {
+    color: #adb5bd;
+    font-style: italic;
+}

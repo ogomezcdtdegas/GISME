@@ -82,17 +82,33 @@ function actualizarPaginacion(response, currentPage, perPage) {
 }
 
 // Función para cargar las criticidades
-async function loadCriticidades(page = currentPage) {
+async function loadCriticidades(page = currentPage, search = '') {
     try {
         UI.loading.show('critTableBody');
         
         const perPage = parseInt(document.getElementById('recordsPerPage')?.value) || DEFAULT_PER_PAGE;
-        const response = await CriticidadService.listarTodo(page, perPage);
+        const searchQuery = search || document.getElementById('searchInput')?.value || '';
+        
+        const response = await CriticidadService.listarTodo(page, perPage, 'name', searchQuery);
         
         if (response && response.results) {
             actualizarTablaCriticidades(response.results);
             actualizarPaginacion(response, page, perPage);
             currentPage = page;
+            
+            // Mostrar mensaje si no hay resultados en la búsqueda
+            if (response.results.length === 0 && searchQuery) {
+                const tbody = document.getElementById('critTableBody');
+                if (tbody) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="3" class="text-center">
+                                <i class="bi bi-search"></i>
+                                No se encontraron criticidades que coincidan con "${searchQuery}"
+                            </td>
+                        </tr>`;
+                }
+            }
         } else {
             UI.toast.error("Error al cargar las criticidades");
         }
@@ -118,9 +134,50 @@ window.updatePagination = function() {
     loadCriticidades(1); // Ir a la primera página cuando cambia la cantidad de registros
 };
 
+// Funciones para la búsqueda
+let searchTimeout;
+
+function setupSearchFunctionality() {
+    const searchInput = document.getElementById('searchInput');
+    const clearSearchBtn = document.getElementById('clearSearch');
+    
+    if (searchInput) {
+        // Búsqueda en tiempo real con debounce
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                currentPage = 1; // Resetear a la primera página al buscar
+                loadCriticidades(1, this.value);
+            }, 300); // Esperar 300ms después de que el usuario deje de escribir
+        });
+        
+        // Limpiar búsqueda al presionar Enter
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                clearTimeout(searchTimeout);
+                currentPage = 1;
+                loadCriticidades(1, this.value);
+            }
+        });
+    }
+    
+    if (clearSearchBtn) {
+        // Botón para limpiar búsqueda
+        clearSearchBtn.addEventListener('click', function() {
+            if (searchInput) {
+                searchInput.value = '';
+                currentPage = 1;
+                loadCriticidades(1, '');
+            }
+        });
+    }
+}
+
 document.addEventListener("DOMContentLoaded", function () {
     console.log("🟢 Página de criticidades cargada - Inicializando...");
     loadCriticidades();
+    setupSearchFunctionality(); // Inicializar funcionalidad de búsqueda
 
     // Event Listeners
     document.getElementById('recordsPerPage')?.addEventListener('change', () => {

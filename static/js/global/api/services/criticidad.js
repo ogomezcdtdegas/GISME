@@ -3,12 +3,19 @@ import { BaseAPI } from '../base.js';
 import { ENDPOINTS } from '../endpoints.js';
 
 export const CriticidadService = {
-    async listarTodo(page = 1, perPage = 10, ordering = 'name') {
-        return BaseAPI.get(ENDPOINTS.CRITICIDAD.LISTAR, { 
+    async listarTodo(page = 1, perPage = 10, ordering = 'name', search = '') {
+        const params = { 
             page, 
             per_page: perPage,
             ordering: ordering
-        });
+        };
+        
+        // Solo agregar el parámetro de búsqueda si no está vacío
+        if (search && search.trim()) {
+            params.search = search.trim();
+        }
+        
+        return BaseAPI.get(ENDPOINTS.CRITICIDAD.LISTAR, params);
     },
 
     async listarTodosSinPaginacion(ordering = 'name') {

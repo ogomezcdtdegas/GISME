@@ -78,7 +78,14 @@ class BaseListView(APIView):
         if ordering.lstrip('-') not in allowed_fields:
             ordering = '-created_at'  # Fallback seguro
         
-        queryset = self.model.objects.all().order_by(ordering)
+        queryset = self.model.objects.all()
+        
+        # Aplicar filtros de búsqueda si están presentes
+        search_query = request.GET.get('search', '').strip()
+        if search_query:
+            queryset = self.apply_search_filters(queryset, search_query)
+        
+        queryset = queryset.order_by(ordering)
         per_page = int(request.GET.get('per_page', 10))
         page_number = int(request.GET.get('page', 1))
 
@@ -95,6 +102,7 @@ class BaseListView(APIView):
                 "next_page_number": page_obj.next_page_number() if page_obj.has_next() else None,
                 "current_page": page_obj.number,
                 "total_pages": paginator.num_pages,
+                "search_query": search_query,  # Incluir el término de búsqueda en la respuesta
             }, status=status.HTTP_200_OK)
 
         return render(request, self.template_name, {"objects": page_obj})
@@ -102,6 +110,13 @@ class BaseListView(APIView):
     def get_allowed_ordering_fields(self):
         """Devuelve los campos permitidos para ordenamiento. Override en subclases."""
         return ['created_at', 'name']
+    
+    def apply_search_filters(self, queryset, search_query):
+        """Aplica filtros de búsqueda al queryset. Override en subclases para búsqueda personalizada."""
+        # Implementación por defecto: buscar en el campo 'name' si existe
+        if hasattr(self.model, 'name'):
+            queryset = queryset.filter(name__icontains=search_query)
+        return queryset
 
 ''' XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX '''
 

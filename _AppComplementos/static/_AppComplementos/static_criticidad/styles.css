@@ -51,3 +51,27 @@ h1 {
     text-overflow: ellipsis;
     overflow: hidden;
 }
+
+/* Estilos para la barra de búsqueda */
+.input-group .input-group-text {
+    background-color: #f8f9fa;
+    border-color: #dee2e6;
+}
+
+#searchInput {
+    border-color: #dee2e6;
+}
+
+#searchInput:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+#clearSearch {
+    border-color: #dee2e6;
+}
+
+#clearSearch:hover {
+    background-color: #e9ecef;
+    border-color: #adb5bd;
+}

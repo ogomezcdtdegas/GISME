@@ -88,17 +88,33 @@ function actualizarPaginacion(response, currentPage, perPage) {
     });
 }
 
-async function loadProductos(page = currentPage) {
+async function loadProductos(page = currentPage, search = '') {
     try {
         UI.loading.show('prodTableBody');
         
         const perPage = parseInt(document.getElementById('recordsPerPage')?.value) || DEFAULT_PER_PAGE;
-        const response = await ProductosService.listarTodo(page, perPage);
+        const searchQuery = search || document.getElementById('searchInput')?.value || '';
+        
+        const response = await ProductosService.listarTodo(page, perPage, 'producto__name', searchQuery);
         
         if (response && response.results) {
             actualizarTablaProductos(response.results);
             actualizarPaginacion(response, page, perPage);
             currentPage = page;
+            
+            // Mostrar mensaje si no hay resultados en la búsqueda
+            if (response.results.length === 0 && searchQuery) {
+                const tbody = document.getElementById('prodTableBody');
+                if (tbody) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="4" class="text-center">
+                                <i class="bi bi-search"></i>
+                                No se encontraron productos que coincidan con "${searchQuery}"
+                            </td>
+                        </tr>`;
+                }
+            }
         } else {
             UI.toast.error("Error al cargar los productos");
         }
@@ -231,6 +247,31 @@ document.addEventListener("DOMContentLoaded", async function () {
         currentPage = 1;
         loadProductos();
     });
+
+    // Event listeners para búsqueda
+    let searchTimeout;
+    const searchInput = document.getElementById('searchInput');
+    const clearButton = document.getElementById('clearSearch');
+
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                currentPage = 1;
+                loadProductos(1, this.value);
+            }, 300); // Debounce de 300ms
+        });
+    }
+
+    if (clearButton) {
+        clearButton.addEventListener('click', function() {
+            if (searchInput) {
+                searchInput.value = '';
+                currentPage = 1;
+                loadProductos(1, '');
+            }
+        });
+    }
 
     // Event listener para el cambio de tipo de criticidad
     ['tipocriticidadDropdown', 'editTipoCriticidad'].forEach(dropdownId => {

@@ -90,17 +90,33 @@ function actualizarPaginacion(response, currentPage, perPage) {
     });
 }
 
-async function loadTipoCriticidades(page = currentPage) {
+async function loadTipoCriticidades(page = currentPage, search = '') {
     try {
         UI.loading.show('tipcritTableBody');
         
         const perPage = parseInt(document.getElementById('recordsPerPage')?.value) || DEFAULT_PER_PAGE;
-        const response = await TipoCriticidadService.listarTodo(page, perPage);
+        const searchQuery = search || document.getElementById('searchInput')?.value || '';
+        
+        const response = await TipoCriticidadService.listarTodo(page, perPage, 'tipo_criticidad__name', searchQuery);
         
         if (response && response.results) {
             actualizarTablaTipoCriticidades(response.results);
             actualizarPaginacion(response, page, perPage);
             currentPage = page;
+            
+            // Mostrar mensaje si no hay resultados en la búsqueda
+            if (response.results.length === 0 && searchQuery) {
+                const tbody = document.getElementById('tipcritTableBody');
+                if (tbody) {
+                    tbody.innerHTML = `
+                        <tr>
+                            <td colspan="4" class="text-center">
+                                <i class="bi bi-search"></i>
+                                No se encontraron tipos de criticidad que coincidan con "${searchQuery}"
+                            </td>
+                        </tr>`;
+                }
+            }
         } else {
             UI.toast.error("Error al cargar los tipos de criticidad");
         }
@@ -230,6 +246,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     console.log("🟢 Página de tipos de criticidad cargada - Inicializando...");
     await loadTipoCriticidades();
     await cargarCriticidades();
+    setupSearchFunctionality(); // Inicializar funcionalidad de búsqueda
 
     // Event Listeners
     document.getElementById('recordsPerPage')?.addEventListener('change', () => {
@@ -290,4 +307,46 @@ document.addEventListener("DOMContentLoaded", async function () {
     window.updatePagination = function() {
         loadTipoCriticidades(1); // Ir a la primera página cuando cambia la cantidad de registros
     };
+
+    // Funciones para la búsqueda
+    let searchTimeout;
+
+    function setupSearchFunctionality() {
+        const searchInput = document.getElementById('searchInput');
+        const clearSearchBtn = document.getElementById('clearSearch');
+        
+        if (searchInput) {
+            // Búsqueda en tiempo real con debounce
+            searchInput.addEventListener('input', function() {
+                clearTimeout(searchTimeout);
+                searchTimeout = setTimeout(() => {
+                    currentPage = 1; // Resetear a la primera página al buscar
+                    loadTipoCriticidades(1, this.value);
+                }, 300); // Esperar 300ms después de que el usuario deje de escribir
+            });
+            
+            // Limpiar búsqueda al presionar Enter
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    clearTimeout(searchTimeout);
+                    currentPage = 1;
+                    loadTipoCriticidades(1, this.value);
+                }
+            });
+        }
+        
+        if (clearSearchBtn) {
+            // Botón para limpiar búsqueda
+            clearSearchBtn.addEventListener('click', function() {
+                if (searchInput) {
+                    searchInput.value = '';
+                    currentPage = 1;
+                    loadTipoCriticidades(1, '');
+                }
+            });
+        }
+    }
+
+    setupSearchFunctionality();
 });
