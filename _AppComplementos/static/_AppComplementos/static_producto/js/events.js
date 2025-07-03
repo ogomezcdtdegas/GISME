@@ -65,15 +65,15 @@ document.addEventListener("DOMContentLoaded", function () {
             const data = await response.json();
             
             if (data.success) {
-                alert("✅ Producto actualizado correctamente");
+                alert(data.message || "✅ Producto actualizado correctamente");
                 loadProductosPag();
                 bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
             } else {
-                alert("❌ Error al actualizar: " + (data.error || "Error desconocido"));
+                alert(data.message || "❌ Error al actualizar el producto");
             }
         } catch (error) {
-            console.error("Error al actualizar producto:", error);
-            alert("❌ Error de conexión con el servidor");
+            console.error("Error:", error);
+            alert("❌ Error al procesar la solicitud");
         }
     });
 });

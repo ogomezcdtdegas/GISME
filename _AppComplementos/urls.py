@@ -10,6 +10,7 @@ from .views.views_tipoCriticidad.Queries import GetAllTipoCriticidadPagQuery, Ge
 
 ''' Producto '''
 from .views.views_Producto.Commands import CreateProductoCommand
+from .views.views_Producto.Commands import UpdateProductoCommand
 from .views.views_Producto.Queries import GetAllProductoPagQuery
 
 urlpatterns = [
@@ -26,5 +27,5 @@ urlpatterns = [
 
     path('listar-todo-productos/', GetAllProductoPagQuery.allProductosPag.as_view(), name='allProductosPag'),
     path('crear-producto-completo/', CreateProductoCommand.CrearProductoCompletoView.as_view(), name='crearProducto'),
-
+    path('editar-producto/<uuid:obj_id>/', UpdateProductoCommand.EditarProductoView.as_view(), name='editar_producto'),
 ]

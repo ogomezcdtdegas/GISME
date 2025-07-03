@@ -83,7 +83,6 @@ async function actualizarTipCriticidad(id, name, tipoCriticidadId, criticidadId,
     }
 }
 
-
 // Obtener criticidades por tipo de criticidad
 async function fetchCriticidadesByTipo(tipoId) {
     try {
@@ -130,5 +129,47 @@ async function crearProductoCompleto(name, tipoCriticidadId, criticidadId) {
     } catch (error) {
         console.error("❌ Error al crear producto:", error);
         return { success: false, error: "Error de conexión" };
+    }
+}
+
+// Actualizar producto existente
+async function actualizarProductoCompleto(id, name, tipoCriticidadId, criticidadId) {
+    try {
+        const response = await fetch(`/complementos/actualizar-producto/${id}/`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json",
+                "X-Requested-With": "XMLHttpRequest",
+                "X-CSRFToken": getCSRFToken(),
+            },
+            body: JSON.stringify({ 
+                name, 
+                tipo_criticidad_id: tipoCriticidadId,
+                criticidad_id: criticidadId 
+            }),
+        });
+        
+        const data = await response.json();
+        
+        // Si es un error de duplicado
+        if (response.status === 400 && data.error && data.error.includes('duplicate key value violates')) {
+            return {
+                success: false,
+                error: "Ya existe un producto con esta combinación de Tipo de Criticidad y Criticidad"
+            };
+        }
+        
+        // Si hay otros errores del servidor
+        if (!response.ok) {
+            return {
+                success: false,
+                error: data.error || "Error al actualizar el producto"
+            };
+        }
+
+        return data;
+    } catch (error) {
+        console.error("❌ Error al actualizar producto:", error);
+        return { success: false, error: "Error de conexión con el servidor" };
     }
 }
