@@ -3,12 +3,16 @@ import { BaseAPI } from '../base.js';
 import { ENDPOINTS } from '../endpoints.js';
 
 export const CriticidadService = {
-    async listarTodo(page = 1, perPage = 10) {
-        return BaseAPI.get(ENDPOINTS.CRITICIDAD.LISTAR, { page, per_page: perPage });
+    async listarTodo(page = 1, perPage = 10, ordering = 'name') {
+        return BaseAPI.get(ENDPOINTS.CRITICIDAD.LISTAR, { 
+            page, 
+            per_page: perPage,
+            ordering: ordering
+        });
     },
 
-    async listarTodosSinPaginacion() {
-        return BaseAPI.get(ENDPOINTS.CRITICIDAD.LISTAR_TODOS);
+    async listarTodosSinPaginacion(ordering = 'name') {
+        return BaseAPI.get(ENDPOINTS.CRITICIDAD.LISTAR_TODOS, { ordering: ordering });
     },
 
     async listarPorTipo(tipoId) {

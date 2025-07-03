@@ -8,6 +8,9 @@ class allCriticidadPag(BaseListView):
     serializer_class = CriticidadSerializer
     template_name = "_AppComplementos/templates_criticidad/index.html"
 
+    def get_allowed_ordering_fields(self):
+        return ['created_at', 'name']
+
     def get(self, request):
         # Forzar 10 registros por página si no se especifica
         request.GET = request.GET.copy()

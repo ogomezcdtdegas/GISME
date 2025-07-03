@@ -3,8 +3,12 @@ import { BaseAPI } from '../base.js';
 import { ENDPOINTS } from '../endpoints.js';
 
 export const ProductosService = {
-    async listarTodo(page = 1, perPage) {
-        return BaseAPI.get(ENDPOINTS.PRODUCTOS.LISTAR, { page, per_page: perPage });
+    async listarTodo(page = 1, perPage, ordering = 'producto__name') {
+        return BaseAPI.get(ENDPOINTS.PRODUCTOS.LISTAR, { 
+            page, 
+            per_page: perPage,
+            ordering: ordering
+        });
     },
 
     async crear(name, tipoCriticidadId, criticidadId) {

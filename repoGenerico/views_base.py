@@ -42,13 +42,25 @@ class BaseListAllView(APIView):
     template_name = None  # 🔹 Para renderizado en HTML (opcional)
 
     def get(self, request):
-        queryset = self.model.objects.all().order_by('-created_at')
+        # Obtener el ordenamiento desde los parámetros de la URL
+        ordering = request.GET.get('ordering', '-created_at')
+        
+        # Validar que el campo de ordenamiento sea seguro
+        allowed_fields = self.get_allowed_ordering_fields()
+        if ordering.lstrip('-') not in allowed_fields:
+            ordering = '-created_at'  # Fallback seguro
+        
+        queryset = self.model.objects.all().order_by(ordering)
 
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
             data = self.serializer_class(queryset, many=True).data
             return Response({"results": data}, status=status.HTTP_200_OK)
 
         return render(request, self.template_name, {"objects": queryset})
+    
+    def get_allowed_ordering_fields(self):
+        """Devuelve los campos permitidos para ordenamiento. Override en subclases."""
+        return ['created_at', 'name']
 
 ''' -------------------------------------------------------------------------------------------------------------------------------------------------------- '''
 
@@ -58,7 +70,15 @@ class BaseListView(APIView):
     template_name = None  # 🔹 Para renderizado en HTML
 
     def get(self, request):
-        queryset = self.model.objects.all().order_by('-created_at')
+        # Obtener el ordenamiento desde los parámetros de la URL
+        ordering = request.GET.get('ordering', '-created_at')
+        
+        # Validar que el campo de ordenamiento sea seguro
+        allowed_fields = self.get_allowed_ordering_fields()
+        if ordering.lstrip('-') not in allowed_fields:
+            ordering = '-created_at'  # Fallback seguro
+        
+        queryset = self.model.objects.all().order_by(ordering)
         per_page = int(request.GET.get('per_page', 10))
         page_number = int(request.GET.get('page', 1))
 
@@ -78,6 +98,10 @@ class BaseListView(APIView):
             }, status=status.HTTP_200_OK)
 
         return render(request, self.template_name, {"objects": page_obj})
+    
+    def get_allowed_ordering_fields(self):
+        """Devuelve los campos permitidos para ordenamiento. Override en subclases."""
+        return ['created_at', 'name']
 
 ''' XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX '''
 

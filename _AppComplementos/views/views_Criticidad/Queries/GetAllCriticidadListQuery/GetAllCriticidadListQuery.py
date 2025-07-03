@@ -6,3 +6,6 @@ from .....serializers import CriticidadSerializer
 class CriticidadListAllView(BaseListAllView):
     model = Criticidad
     serializer_class = CriticidadSerializer
+    
+    def get_allowed_ordering_fields(self):
+        return ['created_at', 'name']

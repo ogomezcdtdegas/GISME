@@ -4,9 +4,13 @@ import { ENDPOINTS } from '../endpoints.js';
 import { CriticidadService } from './criticidad.js';
 
 export const TipoCriticidadService = {
-    async listarTodo(page = 1, perPage) {
+    async listarTodo(page = 1, perPage, ordering = 'tipo_criticidad__name') {
         try {
-            const response = await BaseAPI.get(ENDPOINTS.TIPO_CRITICIDAD.LISTAR, { page, per_page: perPage });
+            const response = await BaseAPI.get(ENDPOINTS.TIPO_CRITICIDAD.LISTAR, { 
+                page, 
+                per_page: perPage,
+                ordering: ordering
+            });
             return response;
         } catch (error) {
             console.error('Error en listarTodo:', error);

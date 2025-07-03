@@ -8,6 +8,9 @@ class allTipCriticidadPag(BaseListView):
     serializer_class = TipoCriticidadCriticidadSerializer
     template_name = "_AppComplementos/templates_tipoCriticidad/index.html"
 
+    def get_allowed_ordering_fields(self):
+        return ['created_at', 'tipo_criticidad__name']
+
     def get(self, request):
         # Forzar 10 registros por página si no se especifica
         request.GET = request.GET.copy()
