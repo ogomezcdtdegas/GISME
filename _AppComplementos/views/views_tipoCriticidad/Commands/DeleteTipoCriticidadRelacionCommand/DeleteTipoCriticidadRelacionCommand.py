@@ -60,9 +60,13 @@ class DeleteTipoCriticidadRelacionCommand(APIView):
                     mensaje_productos = "\nProductos afectados:\n"
                     for prod_info in productos_info:
                         if prod_info['nombre'] in [p.name for p in productos_a_eliminar]:
-                            mensaje_productos += f"• {prod_info['nombre']} (eliminado por quedar sin relaciones)\n"
+                            # Separar la barra invertida de la f-string
+                            linea_producto = f"• {prod_info['nombre']} (eliminado por quedar sin relaciones)"
+                            mensaje_productos += f"{linea_producto}\n"
                         else:
-                            mensaje_productos += f"• {prod_info['nombre']} (actualizado)\n"
+                            # Separar la barra invertida de la f-string
+                            linea_producto = f"• {prod_info['nombre']} (actualizado)"
+                            mensaje_productos += f"{linea_producto}\n"
 
                 # 4. Realizar las eliminaciones
                 if was_last_relation:
@@ -82,11 +86,12 @@ class DeleteTipoCriticidadRelacionCommand(APIView):
                     'tipo_criticidad_id': tipo_criticidad_id,
                     'productos_eliminados': [p.name for p in productos_a_eliminar],
                     'message': (
+                        # Separar las barras invertidas de las f-strings
                         f'Se ha eliminado el tipo de criticidad "{info["tipo_criticidad"]}" completamente ya que esta era su última relación.\n\n'
                         if was_last_relation else
                         f'Se ha eliminado la relación del tipo de criticidad "{info["tipo_criticidad"]}".\n\n'
                     ) + (
-                        'Se eliminó la siguiente relación:\n'
+                        'Se eliminó la siguiente relación:\n' +
                         f'• Criticidad: {info["criticidad"]}\n\n'
                     ) + (
                         'Como era la última relación, el tipo de criticidad ha sido eliminado del sistema.\n\n'

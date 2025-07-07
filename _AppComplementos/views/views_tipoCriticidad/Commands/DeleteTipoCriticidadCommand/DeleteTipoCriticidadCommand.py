@@ -77,9 +77,13 @@ class DeleteTipoCriticidadCommand(APIView):
                     mensaje_productos = "\n\nProductos afectados:"
                     for prod in productos_info:
                         if prod['estado'] == 'eliminado':
-                            mensaje_productos += f"\n• {prod['nombre']} (eliminado por quedar sin relaciones)"
+                            # Separar la barra invertida de la f-string
+                            linea_producto = f"• {prod['nombre']} (eliminado por quedar sin relaciones)"
+                            mensaje_productos += f"\n{linea_producto}"
                         else:
-                            mensaje_productos += f"\n• {prod['nombre']} (actualizado, mantiene {prod['relaciones_restantes']} relaciones)"
+                            # Separar la barra invertida de la f-string
+                            linea_producto = f"• {prod['nombre']} (actualizado, mantiene {prod['relaciones_restantes']} relaciones)"
+                            mensaje_productos += f"\n{linea_producto}"
 
                 return Response({
                     'success': True,
