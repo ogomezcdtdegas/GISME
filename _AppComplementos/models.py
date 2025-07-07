@@ -35,7 +35,7 @@ class Producto(BaseModel):
     
 class TipoCriticidadCriticidad(BaseModel):
     tipo_criticidad = models.ForeignKey(TipoCriticidad, on_delete=models.CASCADE)
-    criticidad = models.ForeignKey(Criticidad, on_delete=models.CASCADE)
+    criticidad = models.ForeignKey(Criticidad, on_delete=models.CASCADE, related_name='tipo_criticidad_relaciones')
 
     class Meta:
         unique_together = ('tipo_criticidad', 'criticidad')  # Evita duplicados
@@ -45,7 +45,7 @@ class TipoCriticidadCriticidad(BaseModel):
     
 class ProductoTipoCritCrit(BaseModel):
     producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
-    relacion_tipo_criticidad = models.ForeignKey(TipoCriticidadCriticidad, on_delete=models.CASCADE)  # 🔥 Conexión directa
+    relacion_tipo_criticidad = models.ForeignKey(TipoCriticidadCriticidad, on_delete=models.CASCADE, related_name='productos')
 
     class Meta:
         unique_together = ('producto', 'relacion_tipo_criticidad')  # Evita duplicados
@@ -53,3 +53,24 @@ class ProductoTipoCritCrit(BaseModel):
     def __str__(self):
         relacion = self.relacion_tipo_criticidad
         return f"{self.producto.name} - {relacion.tipo_criticidad.name} ({relacion.criticidad.name})"
+    
+class TipoEquipo(BaseModel):
+    name = models.CharField(max_length=100, unique=True)
+
+    class Meta:
+        verbose_name = "Tipo de Equipo"
+        verbose_name_plural = "Tipos de Equipo"
+
+    def __str__(self):
+        return f"{self.name}"
+
+class TipoEquipoProducto(BaseModel):
+    tipo_equipo = models.ForeignKey(TipoEquipo, on_delete=models.CASCADE)
+    relacion_producto = models.ForeignKey(ProductoTipoCritCrit, on_delete=models.CASCADE, related_name='tipos_equipo')
+
+    class Meta:
+        unique_together = ('tipo_equipo', 'relacion_producto')  # Evita duplicados
+
+    def __str__(self):
+        relacion = self.relacion_producto
+        return f"{self.tipo_equipo.name} - {relacion.producto.name} ({relacion.relacion_tipo_criticidad.tipo_criticidad.name} - {relacion.relacion_tipo_criticidad.criticidad.name})"

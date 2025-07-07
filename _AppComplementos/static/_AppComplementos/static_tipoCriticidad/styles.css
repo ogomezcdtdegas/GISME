@@ -1,3 +1,87 @@
 h1 {
     color: #007bff;
 }
+
+/* Contenedor de tabla responsivo */
+.table-responsive {
+    overflow-x: auto;
+}
+
+/* Fijar el ancho de la columna de acciones y prevenir el desbordamiento */
+.table th:last-child,
+.table td:last-child {
+    width: 120px;
+    min-width: 120px;
+    max-width: 120px;
+    white-space: nowrap;
+    text-align: center;
+    vertical-align: middle;
+}
+
+/* Asegurar que los botones no causen desbordamiento */
+.table td:last-child .btn {
+    padding: 0.375rem 0.5rem;
+    font-size: 0.875rem;
+    white-space: nowrap;
+}
+
+/* Configurar el layout de la tabla */
+.table {
+    table-layout: fixed;
+    width: 100%;
+    margin-bottom: 0;
+}
+
+/* Configurar las columnas de contenido */
+.table th:nth-child(1),
+.table td:nth-child(1) {
+    width: 30%;
+}
+
+.table th:nth-child(2),
+.table td:nth-child(2) {
+    width: 30%;
+}
+
+.table th:nth-child(3),
+.table td:nth-child(3) {
+    width: 20%;
+}
+
+/* Permitir que las columnas de texto se ajusten pero mantengan un tamaño mínimo */
+.table th:not(:last-child),
+.table td:not(:last-child) {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+/* Espaciado para la paginación */
+nav .pagination {
+    margin-top: 1.5rem;
+}
+
+/* Estilos para la barra de búsqueda */
+.input-group .input-group-text {
+    background-color: #f8f9fa;
+    border-color: #dee2e6;
+}
+
+#searchInput {
+    border-color: #dee2e6;
+}
+
+#searchInput:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+#clearSearch {
+    border-color: #dee2e6;
+}
+
+#clearSearch:hover {
+    background-color: #e9ecef;
+    border-color: #adb5bd;
+}

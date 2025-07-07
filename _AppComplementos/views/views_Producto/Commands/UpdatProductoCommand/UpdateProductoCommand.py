@@ -1,85 +1,75 @@
 from repoGenerico.views_base import BaseRetrieveUpdateView, BaseReadForIdView
-from .....models import TipoCriticidadCriticidad, TipoCriticidad
-from .....serializers import TipoCriticidadCriticidadSerializer
+from .....models import Producto, ProductoTipoCritCrit, TipoCriticidadCriticidad
+from .....serializers import ProductoTipoCriticiddadSerializer
 from django.http import JsonResponse
+from django.db import transaction
 from rest_framework import status
 
-class editarTipCriticidad(BaseRetrieveUpdateView, BaseReadForIdView):  
-    model = TipoCriticidadCriticidad
-    serializer_class = TipoCriticidadCriticidadSerializer
+class EditarProductoView(BaseRetrieveUpdateView, BaseReadForIdView):
+    model = ProductoTipoCritCrit
+    serializer_class = ProductoTipoCriticiddadSerializer
 
     def put(self, request, *args, **kwargs):
-        relacion_id = kwargs.get("obj_id")
+        producto_id = kwargs.get("obj_id")
         data = request.data
 
-        if not relacion_id:
-            return JsonResponse({'success': False, 'error': 'ID de relación requerido'}, status=400)
+        if not producto_id:
+            return JsonResponse({'success': False, 'error': 'ID de producto requerido'}, status=400)
 
         try:
-            relacion_actual = self.get_object_by_id(TipoCriticidadCriticidad, relacion_id, "Relación no existe")
-            tipo_criticidad_actual = relacion_actual.tipo_criticidad  # Objeto TipoCriticidad actual
-            criticidad_id_actual = relacion_actual.criticidad_id
+            with transaction.atomic():  # Usar transacción para consistencia
+                # 1. Obtener producto actual y sus datos
+                relacion_actual = self.get_object_by_id(ProductoTipoCritCrit, producto_id, "Producto no existe")
+                producto_actual = relacion_actual.producto
 
-            # Datos del formulario
-            nuevo_nombre = data.get('name', tipo_criticidad_actual.name)
-            nueva_criticidad_id = data.get('criticidad_id', criticidad_id_actual)
+                # Datos del formulario
+                nuevo_nombre = data.get('name', producto_actual.name)
+                nuevo_tipo_criticidad_id = data.get('tipo_criticidad_id')
+                nueva_criticidad_id = data.get('criticidad_id')
 
-            # --- 1. Verificar si el nombre ya existe en otro TipoCriticidad ---
-            tipo_criticidad_existente = TipoCriticidad.objects.filter(name=nuevo_nombre).exclude(id=tipo_criticidad_actual.id).first()
-
-            if tipo_criticidad_existente:
-                # --- Caso: El nombre existe en otro registro ---
-                # Verificar si la relación M:N ya existe con el TipoCriticidad existente
-                if TipoCriticidadCriticidad.objects.filter(
-                    tipo_criticidad_id=tipo_criticidad_existente.id,
-                    criticidad_id=nueva_criticidad_id
-                ).exists():
+                # 2. Verificar que la combinación tipo-criticidad existe
+                try:
+                    nueva_relacion_tipo_crit = TipoCriticidadCriticidad.objects.get(
+                        tipo_criticidad_id=nuevo_tipo_criticidad_id,
+                        criticidad_id=nueva_criticidad_id
+                    )
+                except TipoCriticidadCriticidad.DoesNotExist:
                     return JsonResponse({
                         'success': False,
-                        'error': 'Esta combinación (nombre + criticidad) ya existe.'
+                        'error': 'La combinación de tipo y criticidad no es válida'
                     }, status=400)
+
+                # 3. Verificar si ya existe otro producto con esta combinación
+                existe_combinacion = ProductoTipoCritCrit.objects.filter(
+                    producto__name=nuevo_nombre,
+                    relacion_tipo_criticidad=nueva_relacion_tipo_crit
+                ).exclude(producto_id=producto_actual.id).exists()
+
+                if existe_combinacion:
+                    return JsonResponse({
+                        'success': False,
+                        'error': 'Ya existe un producto con esta combinación de tipo y criticidad'
+                    }, status=400)
+
+                # 4. Actualizar el producto
+                if nuevo_nombre != producto_actual.name:
+                    producto_actual.name = nuevo_nombre
+                    producto_actual.save()
+
+                # 5. Actualizar la relación
+                cambios = []
+                if (relacion_actual.relacion_tipo_criticidad_id != nueva_relacion_tipo_crit.id):
+                    relacion_actual.relacion_tipo_criticidad = nueva_relacion_tipo_crit
+                    cambios.append("Se actualizó la relación tipo-criticidad")
                 
-                # --- Si no existe la relación, actualizar la tabla intermedia ---
-                relacion_actual.tipo_criticidad = tipo_criticidad_existente  # 🔄 Usar el TipoCriticidad existente
-                relacion_actual.criticidad_id = nueva_criticidad_id
                 relacion_actual.save()
 
                 return JsonResponse({
                     'success': True,
-                    'message': 'Se asoció al TipoCriticidad existente y se actualizó la relación.',
+                    'message': 'Producto actualizado correctamente',
                     'cambios': [
-                        f"TipoCriticidad reasignado: {tipo_criticidad_existente.id}",
-                        f"Criticidad actualizada: {nueva_criticidad_id}"
-                    ]
-                }, status=200)
-
-            else:
-                # --- Caso: El nombre NO existe en otro registro (o es el mismo) ---
-                # Validar cambios en el nombre (si es diferente)
-                if nuevo_nombre != tipo_criticidad_actual.name:
-                    tipo_criticidad_actual.name = nuevo_nombre
-                    tipo_criticidad_actual.save()
-
-                # Validar cambios en la criticidad (si es diferente)
-                if str(nueva_criticidad_id) != str(criticidad_id_actual):
-                    if TipoCriticidadCriticidad.objects.filter(
-                        tipo_criticidad_id=tipo_criticidad_actual.id,
-                        criticidad_id=nueva_criticidad_id
-                    ).exists():
-                        return JsonResponse({
-                            'success': False,
-                            'error': 'Esta combinación (nombre + criticidad) ya existe.'
-                        }, status=400)
-                    
-                    relacion_actual.criticidad_id = nueva_criticidad_id
-                    relacion_actual.save()
-
-                return JsonResponse({
-                    'success': True,
-                    'message': 'Actualizado correctamente.',
-                    'cambios': [
-                        f"Nombre actualizado: {nuevo_nombre}" if nuevo_nombre != tipo_criticidad_actual.name else None,
-                        f"Criticidad actualizada: {nueva_criticidad_id}" if str(nueva_criticidad_id) != str(criticidad_id_actual) else None
+                        f"Nombre actualizado: {nuevo_nombre}" if nuevo_nombre != producto_actual.name else None,
+                        *cambios
                     ]
                 }, status=200)
 

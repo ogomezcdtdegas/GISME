@@ -1,0 +1,1 @@
+from .DeleteTipoEquipoCommand import DeleteTipoEquipoCommand, DeleteTipoEquipoRelacionCommand

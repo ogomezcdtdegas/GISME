@@ -17,7 +17,11 @@
     <!-- Estilos Globales -->
     <link rel="stylesheet" href="{% static 'css/global.css' %}">
     
+    <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css">
+    
+    <!-- SweetAlert2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css" rel="stylesheet">
 
     {% block extra_css %}{% endblock %}
 </head>
@@ -61,7 +65,7 @@
             <a href="{% url 'allCriticidadesPag' %}" class="{% if active_section == 'complementos_criticidad' %}active{% endif %}"><i class="bi bi-exclamation-triangle"></i> Criticidad</a>
             <a href="{% url 'allTipCriticidadesPag' %}"><i class="bi bi-tags"></i> Tipo de Criticidad</a>
             <a href="{% url 'allProductosPag' %}"><i class="bi bi-tags"></i> Producto</a>
-            <a href="#"><i class="bi bi-tags"></i> Tipo de Equipo</a>
+            <a href="{% url 'allTiposEquipoPag' %}"><i class="bi bi-tags"></i> Tipo de Equipo</a>
             <a href="#"><i class="bi bi-tags"></i> Tecnología</a> 
         </div>
 
@@ -80,26 +84,74 @@
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- SweetAlert2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <!-- Script Global -->
-    <!-- <script src="{% static 'js/global.js' %}"></script> -->
+    <!-- Scripts Globales -->
+    <!-- Base API y Utilidades -->
+    <script type="module" src="{% static 'js/global/utils/ui.js' %}"></script>
+    <script type="module" src="{% static 'js/global/api/base.js' %}"></script>
+    <script type="module" src="{% static 'js/global/api/endpoints.js' %}"></script>
+    
+    <!-- Servicios de API -->
+    <script type="module" src="{% static 'js/global/api/services/productos.js' %}"></script>
+    <script type="module" src="{% static 'js/global/api/services/criticidad.js' %}"></script>
+    <script type="module" src="{% static 'js/global/api/services/tipoCriticidad.js' %}"></script>
+    
+    <!-- Punto de entrada API -->
+    <script type="module" src="{% static 'js/global/api/index.js' %}"></script>
 
-    <script src="{% static 'js/api.js' %}"></script>
-    <script src="{% static 'js/ui.js' %}"></script>
-    <script src="{% static 'js/events.js' %}"></script>
-    <script src="{% static 'js/main.js' %}"></script>
-
+    <!-- Scripts de la barra lateral -->
     <script>
     function isMobile() {
         return window.innerWidth <= 768;
     }
 
-    document.getElementById("toggleSidebar").addEventListener("click", function() {
-        const sidebar = document.querySelector(".sidebar");
-        if (isMobile()) {
-            sidebar.classList.toggle("show");
+    // Función para manejar el toggle de los submenús
+    function toggleSubmenu(submenuId) {
+        const submenu = document.getElementById(submenuId);
+        if (submenu) {
+            submenu.classList.toggle("show");
         }
+    }
+
+    // Event Listeners para la barra lateral
+    document.addEventListener('DOMContentLoaded', function() {
+        // Toggle del botón de la barra lateral
+        document.getElementById("toggleSidebar").addEventListener("click", function() {
+            const sidebar = document.querySelector(".sidebar");
+            if (isMobile()) {
+                sidebar.classList.toggle("show");
+            }
+        });
+
+        // Toggle de los submenús
+        document.getElementById("toggleHerramientas").addEventListener("click", function(e) {
+            e.preventDefault();
+            toggleSubmenu("herramientasSubmenu");
+        });
+
+        document.getElementById("toggleComplementos").addEventListener("click", function(e) {
+            e.preventDefault();
+            toggleSubmenu("complementosSubmenu");
+        });
+
+        document.getElementById("toggleAdministracion").addEventListener("click", function(e) {
+            e.preventDefault();
+            toggleSubmenu("administracionSubmenu");
+        });
+
+        document.getElementById("toggleCalculoCaudal")?.addEventListener("click", function(e) {
+            e.preventDefault();
+            const submenu = document.getElementById("calculoCaudalSubmenu");
+            if (submenu) {
+                submenu.style.display = submenu.style.display === "none" ? "block" : "none";
+            }
+        });
     });
+
+    // Evento de resize para la barra lateral
     window.addEventListener("resize", function() {
         const sidebar = document.querySelector(".sidebar");
         if (!isMobile()) {
@@ -107,7 +159,7 @@
         }
     });
     </script>
-
+    
     {% block extra_js %}{% endblock %}
 </body>
 </html>
