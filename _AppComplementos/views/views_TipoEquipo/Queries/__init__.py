@@ -1,0 +1,1 @@
+from .GetAllTipoEquipoPagQuery import allTipoEquiposPag

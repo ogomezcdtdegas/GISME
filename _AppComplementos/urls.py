@@ -19,6 +19,15 @@ from .views.views_Producto.Commands import (
 )
 from .views.views_Producto.Queries import GetAllProductoPagQuery
 
+''' Tipo Equipo '''
+from .views.views_TipoEquipo.Commands import (
+    crearTipoEquipo,
+    EditarTipoEquipoView,
+    DeleteTipoEquipoCommand,
+    DeleteTipoEquipoRelacionCommand
+)
+from .views.views_TipoEquipo.Queries import allTipoEquiposPag
+
 urlpatterns = [
     path('', GetAllCriticidadPagQuery.allCriticidadPag.as_view(), name='allCriticidadesPag'),
     path('listar-todo-criticidad/', GetAllCriticidadListQuery.CriticidadListAllView.as_view(), name='listarTodoCriticidad'),
@@ -40,4 +49,11 @@ urlpatterns = [
     path('editar-producto/<uuid:obj_id>/', UpdateProductoCommand.EditarProductoView.as_view(), name='editar_producto'),
     path('eliminar-producto/<uuid:obj_id>/', DeleteProductoCommand.as_view(), name='eliminarProducto'),
     path('eliminar-producto-relacion/<uuid:obj_id>/', DeleteProductoRelacionCommand.as_view(), name='eliminarProductoRelacion'),
+    
+    # Tipo Equipo URLs
+    path('tipoEquipos/', allTipoEquiposPag.as_view(), name='allTiposEquipoPag'),
+    path('crear-tipoEquipo/', crearTipoEquipo.as_view(), name='crearTipoEquipo'),
+    path('editar-tipoEquipo/<uuid:obj_id>/', EditarTipoEquipoView.as_view(), name='editarTipoEquipo'),
+    path('eliminar-tipo-equipo/<uuid:obj_id>/', DeleteTipoEquipoCommand.as_view(), name='eliminarTipoEquipo'),
+    path('eliminar-tipo-equipo-relacion/<uuid:obj_id>/', DeleteTipoEquipoRelacionCommand.as_view(), name='eliminarTipoEquipoRelacion'),
 ]

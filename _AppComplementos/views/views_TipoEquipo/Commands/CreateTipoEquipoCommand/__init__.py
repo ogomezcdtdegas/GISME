@@ -1,0 +1,1 @@
+from .CreateTipoEquipoCommand import crearTipoEquipo
