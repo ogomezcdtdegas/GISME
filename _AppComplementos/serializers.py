@@ -33,7 +33,6 @@ class TipoCriticidadCriticidadSerializer(serializers.ModelSerializer):
 
     def get_total_relations(self, obj):
         # Contar cuántos productos están relacionados con esta relación específica tipo_criticidad-criticidad
-        from .models import ProductoTipoCritCrit
         return ProductoTipoCritCrit.objects.filter(relacion_tipo_criticidad=obj).count()
 
     class Meta:

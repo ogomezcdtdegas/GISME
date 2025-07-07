@@ -1,2 +1,2 @@
-from .GetAllTipoCriticidadPagQuery import GetAllTipoCriticidadPagQuery
+from .GetAllTipoCriticidadPagQuery.GetAllTipoCriticidadPagQuery import allTipCriticidadPag as GetAllTipoCriticidadPagQuery
 from .GetAllTipoCriticidadListQuery import GetAllTipoCriticidadListQuery

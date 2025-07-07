@@ -1,5 +1,4 @@
 from repoGenerico.views_base import BaseListView
-from django.db.models import Count, F
 from .....models import TipoCriticidadCriticidad
 from .....serializers import TipoCriticidadCriticidadSerializer
 
@@ -8,12 +7,6 @@ class allTipCriticidadPag(BaseListView):
     model = TipoCriticidadCriticidad
     serializer_class = TipoCriticidadCriticidadSerializer
     template_name = "_AppComplementos/templates_tipoCriticidad/index.html"
-
-    def get_queryset(self):
-        """Obtener el queryset base y anotar el total de relaciones para cada tipo de criticidad"""
-        return super().get_queryset().select_related('tipo_criticidad', 'criticidad').annotate(
-            total_relations=Count('productos')
-        ).order_by('tipo_criticidad__name')
 
     def get_allowed_ordering_fields(self):
         return ['created_at', 'tipo_criticidad__name']
@@ -27,4 +20,14 @@ class allTipCriticidadPag(BaseListView):
         request.GET = request.GET.copy()
         if 'per_page' not in request.GET:
             request.GET['per_page'] = '10'  # Valor por defecto
+        
+        # Forzar ordenamiento por tipo_criticidad__name
+        if 'ordering' not in request.GET:
+            request.GET['ordering'] = 'tipo_criticidad__name'
+        
         return super().get(request)
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["active_section"] = "complementos_tipocriticidad"
+        return context
