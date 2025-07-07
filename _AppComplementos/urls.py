@@ -38,7 +38,7 @@ urlpatterns = [
 
     path('listar-todo-tipocriticidad/', GetAllTipoCriticidadListQuery.TipoCriticidadListAllView.as_view(), name='listarTipoCriticidad'),
     path('tipos-criticidad-unicos/', GetAllTipoCriticidadListQuery.TiposCriticidadUnicosView.as_view(), name='tiposCriticidadUnicos'),
-    path('tipCriticidades/', GetAllTipoCriticidadPagQuery.allTipCriticidadPag.as_view(), name='allTipCriticidadesPag'),
+    path('tipCriticidades/', GetAllTipoCriticidadPagQuery.as_view(), name='allTipCriticidadesPag'),
     path('crear-tipCriticidad/', CreateTipoCriticidadCommand.crearTipCriticidad.as_view(), name='crearTipCriticidad'),
     path('editar-tipCriticidad/<uuid:obj_id>/', UpdateTipoCriticidadCommand.editarTipCriticidad.as_view(), name='editarTipCriticidad'),
     path('eliminar-tipo-criticidad/<uuid:obj_id>/', DeleteTipoCriticidadCommand.as_view(), name='eliminarTipoCriticidad'),
