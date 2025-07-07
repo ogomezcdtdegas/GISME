@@ -44,5 +44,13 @@ export const TipoCriticidadService = {
 
     async actualizar(id, data) {
         return BaseAPI.put(ENDPOINTS.TIPO_CRITICIDAD.ACTUALIZAR(id), data);
+    },
+
+    async eliminarTipo(id) {
+        return BaseAPI.delete(ENDPOINTS.TIPO_CRITICIDAD.ELIMINAR(id));
+    },
+
+    async eliminarRelacion(id) {
+        return BaseAPI.delete(ENDPOINTS.TIPO_CRITICIDAD.ELIMINAR_RELACION(id));
     }
 };

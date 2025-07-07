@@ -60,5 +60,9 @@ export const CriticidadService = {
 
     async actualizar(id, name) {
         return BaseAPI.put(ENDPOINTS.CRITICIDAD.ACTUALIZAR(id), { name });
+    },
+
+    async eliminar(id) {
+        return BaseAPI.delete(ENDPOINTS.CRITICIDAD.ELIMINAR(id));
     }
 };

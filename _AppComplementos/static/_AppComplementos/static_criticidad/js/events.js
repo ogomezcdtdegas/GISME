@@ -5,6 +5,67 @@ import { UI } from '../../../../static/js/global/utils/ui.js';
 let currentPage = 1;
 const DEFAULT_PER_PAGE = 10;
 
+// Exponer la función deleteCriticidad al ámbito global primero
+window.deleteCriticidad = async function(id, name) {
+    try {
+        // Primero, mostrar el diálogo de confirmación con advertencia
+        const result = await Swal.fire({
+            title: '¿Está seguro?',
+            html: `<div class="text-start">
+                <p>Va a eliminar la criticidad <strong>"${name}"</strong>.</p>
+                <p class="text-danger"><i class="bi bi-exclamation-triangle-fill"></i> ADVERTENCIA:</p>
+                <p>Esta acción también eliminará:</p>
+                <ul>
+                    <li>Todas las relaciones con tipos de criticidad</li>
+                    <li>Todas las asignaciones en productos que usen esta criticidad</li>
+                </ul>
+                <p>Esta acción no se puede deshacer.</p>
+            </div>`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sí, eliminar todo',
+            cancelButtonText: 'Cancelar',
+            width: '42em'
+        });
+
+        if (result.isConfirmed) {
+            const response = await CriticidadService.eliminar(id);
+            
+            if (response.success) {
+                // Mostrar resumen de lo que se eliminó
+                await Swal.fire({
+                    title: '¡Eliminación Completada!',
+                    html: `<div class="text-start">${response.message.replace(/\n/g, '<br>')}</div>`,
+                    icon: 'success',
+                    width: '42em'
+                });
+                await loadCriticidades(currentPage);
+            } else {
+                throw new Error(response.message || 'Error al eliminar');
+            }
+        }
+    } catch (error) {
+        if (error.response?.status === 400) {
+            await Swal.fire({
+                title: 'No se puede eliminar',
+                html: error.response.data.message,
+                icon: 'error',
+                confirmButtonColor: '#3085d6'
+            });
+        } else {
+            await Swal.fire({
+                title: 'Error',
+                text: error.message || 'Error al eliminar la criticidad',
+                icon: 'error',
+                confirmButtonColor: '#3085d6'
+            });
+        }
+        console.error('Error:', error);
+    }
+}
+
 // Función para actualizar la tabla de criticidades
 function actualizarTablaCriticidades(data) {
     const tbody = document.getElementById('critTableBody');
@@ -22,13 +83,22 @@ function actualizarTablaCriticidades(data) {
 
     data.forEach(criticidad => {
         const row = document.createElement('tr');
+        // Escapar el nombre para usar en atributos HTML
+        const nombreEscapado = criticidad.name.replace(/'/g, '&#39;');
         row.innerHTML = `
-            <td>${criticidad.name}</td>
+            <td>${UI.utils.escapeHtml(criticidad.name)}</td>
             <td>${criticidad.created_at}</td>
             <td>
-                <button class="btn btn-primary btn-sm" onclick="openEditModal('${criticidad.id}', '${criticidad.name}')">
-                    <i class="bi bi-pencil-square"></i>
-                </button>
+                <div class="btn-group" role="group">
+                    <button class="btn btn-primary btn-sm me-1" 
+                        onclick="openEditModal('${criticidad.id}', '${nombreEscapado}')">
+                        <i class="bi bi-pencil-square"></i>
+                    </button>
+                    <button class="btn btn-danger btn-sm" 
+                        onclick="deleteCriticidad('${criticidad.id}', '${nombreEscapado}')">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
             </td>
         `;
         tbody.appendChild(row);

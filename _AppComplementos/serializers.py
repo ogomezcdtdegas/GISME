@@ -28,10 +28,15 @@ class TipoCriticidadSerializer(serializers.ModelSerializer):
 class TipoCriticidadCriticidadSerializer(serializers.ModelSerializer):
     tipo_criticidad_name = serializers.CharField(source="tipo_criticidad.name", read_only=True)
     criticidad_name = serializers.CharField(source="criticidad.name", read_only=True)
+    tipo_criticidad_id = serializers.UUIDField(source="tipo_criticidad.id", read_only=True)
+    total_relations = serializers.SerializerMethodField()
+
+    def get_total_relations(self, obj):
+        return TipoCriticidadCriticidad.objects.filter(tipo_criticidad=obj.tipo_criticidad).count()
 
     class Meta:
         model = TipoCriticidadCriticidad
-        fields = ['id', 'tipo_criticidad', 'tipo_criticidad_name', 'criticidad', 'criticidad_name', 'created_at']
+        fields = ['id', 'tipo_criticidad', 'tipo_criticidad_id', 'tipo_criticidad_name', 'criticidad', 'criticidad_name', 'created_at', 'total_relations']
 '''xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'''
 
 
@@ -51,11 +56,16 @@ class ProductoTipoCriticiddadSerializer(serializers.ModelSerializer):
     tipo_criticidad_name = serializers.CharField(source='relacion_tipo_criticidad.tipo_criticidad.name')
     criticidad_name = serializers.CharField(source='relacion_tipo_criticidad.criticidad.name')
     tipo_criticidad_id = serializers.UUIDField(source='relacion_tipo_criticidad.tipo_criticidad.id')
-    criticidad_id = serializers.UUIDField(source='relacion_tipo_criticidad.criticidad.id')  # <-- AGREGA ESTA LÍNEA
+    criticidad_id = serializers.UUIDField(source='relacion_tipo_criticidad.criticidad.id')
+    producto_id = serializers.UUIDField(source='producto.id')
+    total_relations = serializers.SerializerMethodField()
+
+    def get_total_relations(self, obj):
+        return ProductoTipoCritCrit.objects.filter(producto=obj.producto).count()
     
     class Meta:
         model = ProductoTipoCritCrit
-        fields = ['id', 'producto_name', 'tipo_criticidad_name', 'criticidad_name', 'tipo_criticidad_id', 'criticidad_id']
+        fields = ['id', 'producto_id', 'producto_name', 'tipo_criticidad_name', 'criticidad_name', 'tipo_criticidad_id', 'criticidad_id', 'total_relations']
 
 class CriticidadesPorTipoSerializer(serializers.ModelSerializer):
     value = serializers.UUIDField(source='criticidad.id')  # Cambiado a UUIDField

@@ -35,7 +35,7 @@ class Producto(BaseModel):
     
 class TipoCriticidadCriticidad(BaseModel):
     tipo_criticidad = models.ForeignKey(TipoCriticidad, on_delete=models.CASCADE)
-    criticidad = models.ForeignKey(Criticidad, on_delete=models.CASCADE)
+    criticidad = models.ForeignKey(Criticidad, on_delete=models.CASCADE, related_name='tipo_criticidad_relaciones')
 
     class Meta:
         unique_together = ('tipo_criticidad', 'criticidad')  # Evita duplicados
@@ -45,7 +45,7 @@ class TipoCriticidadCriticidad(BaseModel):
     
 class ProductoTipoCritCrit(BaseModel):
     producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
-    relacion_tipo_criticidad = models.ForeignKey(TipoCriticidadCriticidad, on_delete=models.CASCADE)  # 🔥 Conexión directa
+    relacion_tipo_criticidad = models.ForeignKey(TipoCriticidadCriticidad, on_delete=models.CASCADE, related_name='productos')
 
     class Meta:
         unique_together = ('producto', 'relacion_tipo_criticidad')  # Evita duplicados

@@ -32,5 +32,13 @@ export const ProductosService = {
 
     async obtenerPorId(id) {
         return BaseAPI.get(ENDPOINTS.PRODUCTOS.POR_ID(id));
+    },
+
+    async eliminar(id) {
+        return BaseAPI.delete(ENDPOINTS.PRODUCTOS.ELIMINAR(id));
+    },
+
+    async eliminarRelacion(id) {
+        return BaseAPI.delete(ENDPOINTS.PRODUCTOS.ELIMINAR_RELACION(id));
     }
 };

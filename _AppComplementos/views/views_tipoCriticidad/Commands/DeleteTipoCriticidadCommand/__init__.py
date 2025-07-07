@@ -1,0 +1,1 @@
+from .DeleteTipoCriticidadCommand import DeleteTipoCriticidadCommand

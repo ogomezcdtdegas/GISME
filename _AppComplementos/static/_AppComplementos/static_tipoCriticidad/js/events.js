@@ -26,18 +26,28 @@ function actualizarTablaTipoCriticidades(data) {
         const criticidadId = String(item.criticidad_id || item.criticidad);
         
         row.innerHTML = `
-            <td>${UI.utils.escapeHtml(item.tipo_criticidad_name)}</td>
+            <td>
+                ${UI.utils.escapeHtml(item.tipo_criticidad_name)}
+                ${item.total_relations > 1 ? `<span class="badge bg-info ms-2" title="Este tipo tiene ${item.total_relations} relaciones">${item.total_relations}</span>` : ''}
+            </td>
             <td>${UI.utils.escapeHtml(item.criticidad_name)}</td>
             <td>${UI.utils.formatDate(item.created_at)}</td>
             <td class="text-center">
-                <button class="btn btn-primary btn-sm d-inline-block" 
-                    data-id="${item.id}"
-                    data-tipo-name="${UI.utils.escapeHtml(item.tipo_criticidad_name)}"
-                    data-criticidad-id="${criticidadId}"
-                    onclick="window.openEditModal(this.dataset.id, this.dataset.tipoName, this.dataset.criticidadId)"
-                    style="white-space: nowrap;">
-                    <i class="bi bi-pencil-square"></i>
-                </button>
+                <div class="btn-group" role="group">
+                    <button class="btn btn-primary btn-sm me-1" 
+                        data-id="${item.id}"
+                        data-tipo-name="${UI.utils.escapeHtml(item.tipo_criticidad_name)}"
+                        data-criticidad-id="${criticidadId}"
+                        onclick="openEditModal(this.dataset.id, this.dataset.tipoName, this.dataset.criticidadId)"
+                        style="white-space: nowrap;">
+                        <i class="bi bi-pencil-square"></i>
+                    </button>
+                    <button class="btn btn-danger btn-sm" 
+                        onclick="deleteTipoCriticidad('${item.tipo_criticidad_id}', '${UI.utils.escapeHtml(item.tipo_criticidad_name)}', '${item.id}')"
+                        title="${item.total_relations > 1 ? 'Eliminar relación o tipo completo' : 'Eliminar tipo de criticidad'}">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </div>
             </td>
         `;
         tbody.appendChild(row);
@@ -135,7 +145,7 @@ window.openEditModal = async function(id, name, criticidadId) {
             id: id,
             name: name,
             criticidadId: criticidadId,
-            criticidadIdType: typeof criticidadId
+            criticidadId: typeof criticidadId
         });
 
         const modalElement = document.getElementById('editModal');
@@ -350,3 +360,129 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     setupSearchFunctionality();
 });
+
+// Función para manejar la eliminación de tipos de criticidad
+window.deleteTipoCriticidad = async function(tipoId, tipoName, relacionId) {
+    try {
+        let deleteType;
+
+        // Obtener el total de relaciones del tipo
+        const tipoDetails = await TipoCriticidadService.listarTodo(1, 1000);
+        const tipoInfo = tipoDetails.results.find(t => String(t.tipo_criticidad_id) === String(tipoId));
+        const hasMultipleRelations = tipoInfo?.total_relations > 1;
+
+        if (hasMultipleRelations) {
+            // Si tiene múltiples relaciones, mostrar diálogo con opciones
+            const result = await Swal.fire({
+                title: `¿Qué desea eliminar?`,
+                html: `
+                    <div class="text-start">
+                        <p>El tipo de criticidad "${tipoName}" tiene ${tipoInfo.total_relations} relaciones.</p>
+                        <p class="text-warning">
+                            <i class="bi bi-exclamation-triangle"></i> 
+                            Nota: Los productos que solo usen este tipo de criticidad serán eliminados automáticamente.
+                        </p>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="deleteType" id="deleteRelation" value="relation" checked>
+                            <label class="form-check-label" for="deleteRelation">
+                                Solo eliminar esta relación
+                            </label>
+                        </div>
+                        <div class="form-check mt-2">
+                            <input class="form-check-input" type="radio" name="deleteType" id="deleteTipo" value="tipo">
+                            <label class="form-check-label" for="deleteTipo">
+                                Eliminar el tipo y todas sus relaciones
+                            </label>
+                        </div>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Eliminar',
+                cancelButtonText: 'Cancelar',
+                preConfirm: () => {
+                    return document.querySelector('input[name="deleteType"]:checked')?.value;
+                }
+            });
+
+            if (result.isDismissed) return;
+            deleteType = result.value;
+        } else {
+            // Si solo tiene una relación, confirmar la eliminación simple
+            const result = await Swal.fire({
+                title: '¿Está seguro?',
+                html: `
+                    <div class="text-start">
+                        <p>Esta es la última relación del tipo "${tipoName}".</p>
+                        <p>El tipo de criticidad será eliminado completamente.</p>
+                        <p class="text-warning">
+                            <i class="bi bi-exclamation-triangle"></i> 
+                            Nota: Los productos que solo usen este tipo de criticidad serán eliminados automáticamente.
+                        </p>
+                    </div>
+                `,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            });
+
+            if (result.isDismissed) return;
+            deleteType = 'relation'; // Para una sola relación, usamos DeleteRelacionCommand
+        }
+
+        UI.loading.show();
+
+        let response;
+        if (deleteType === 'tipo') {
+            response = await TipoCriticidadService.eliminarTipo(tipoId);
+        } else {
+            response = await TipoCriticidadService.eliminarRelacion(relacionId);
+        }
+
+        if (response?.success) {
+            UI.toast.success(response.message);
+            
+            // Si se eliminaron productos o es eliminación completa del tipo, actualizar tabla de productos
+            if (deleteType === 'tipo' || response.detalles?.productos_eliminados?.length > 0) {
+                const productosTabla = document.getElementById('prodTableBody');
+                if (productosTabla) {
+                    // Intentar recargar la tabla de productos si existe
+                    try {
+                        window.loadProductos?.();
+                    } catch (error) {
+                        console.log('La tabla de productos no está disponible en esta vista');
+                    }
+                }
+                
+                // Actualizar dropdowns de productos si existen
+                const productosDropdowns = document.querySelectorAll('[id^=productoDropdown]');
+                productosDropdowns.forEach(dropdown => {
+                    try {
+                        window.cargarProductos?.(dropdown.id);
+                    } catch (error) {
+                        console.log('Error al actualizar dropdown de productos:', error);
+                    }
+                });
+            }
+            
+            // Si era la última relación o se eliminó el tipo completo, actualizar las listas
+            if (response.was_last_relation || deleteType === 'tipo') {
+                // Recargar los dropdowns de tipos si están presentes
+                const dropdowns = document.querySelectorAll('[id^=tipocriticidadDropdown]');
+                for (const dropdown of dropdowns) {
+                    await cargarTiposCriticidad(dropdown.id);
+                }
+            }
+
+            // Recargar la tabla de tipos de criticidad
+            await loadTipoCriticidades(currentPage);
+        } else {
+            UI.toast.error(response?.message || 'Error al eliminar el tipo de criticidad');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        UI.toast.error('Error al procesar la solicitud');
+    } finally {
+        UI.loading.hide();
+    }
+};
