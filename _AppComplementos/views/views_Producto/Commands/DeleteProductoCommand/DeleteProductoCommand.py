@@ -29,13 +29,16 @@ class DeleteProductoCommand(APIView):
                 
                 # Preparar el mensaje de resumen
                 if asignaciones:
+                    # Separar el formateo de la lista para evitar el error de f-string
+                    asignaciones_texto = "\n  - ".join(asignaciones)
+                    mensaje = (
+                        f'Se ha eliminado el producto "{nombre_producto}" y todas sus relaciones:\n\n'
+                        '• Se eliminaron las siguientes asignaciones de criticidad:\n'
+                        f'  - {asignaciones_texto}'
+                    )
                     return Response({
                         'success': True,
-                        'message': (
-                            f'Se ha eliminado el producto "{nombre_producto}" y todas sus relaciones:\n\n'
-                            '• Se eliminaron las siguientes asignaciones de criticidad:\n'
-                            f'  - {"\n  - ".join(asignaciones)}'
-                        ),
+                        'message': mensaje,
                         'detalles': {
                             'asignaciones_eliminadas': asignaciones
                         }
