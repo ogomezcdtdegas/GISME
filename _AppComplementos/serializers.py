@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Criticidad, TipoCriticidad, Producto, TipoCriticidadCriticidad, ProductoTipoCritCrit, TipoEquipo, TipoEquipoProducto, TipoEquipo, TipoEquipoProducto
+from .models import Criticidad, TipoCriticidad, Producto, TipoCriticidadCriticidad, ProductoTipoCritCrit, TipoEquipo, TipoEquipoProducto, Tecnologia, TecnologiaTipoEquipo, Tecnologia, TecnologiaTipoEquipo
 
 
 '''xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'''
@@ -104,5 +104,38 @@ class TipoEquipoProductoSerializer(serializers.ModelSerializer):
     class Meta:
         model = TipoEquipoProducto
         fields = ['id', 'tipo_equipo_id', 'tipo_equipo_name', 'producto_id', 'producto_name', 
+                 'tipo_criticidad_name', 'criticidad_name', 'tipo_criticidad_id', 'criticidad_id', 'total_relations']
+'''xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'''
+
+'''xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'''
+'''                                                   Serializer de Tecnología                                                       '''
+'''xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'''
+class TecnologiaSerializer(serializers.ModelSerializer):
+    created_at = serializers.DateTimeField(format="%d-%m-%Y %H:%M", required=False, read_only=True)  
+
+    class Meta:
+        model = Tecnologia
+        fields = ["id", "name", "created_at"]
+
+class TecnologiaTipoEquipoSerializer(serializers.ModelSerializer):
+    tecnologia_name = serializers.CharField(source='tecnologia.name', read_only=True)
+    tipo_equipo_name = serializers.CharField(source='relacion_tipo_equipo.tipo_equipo.name', read_only=True)
+    producto_name = serializers.CharField(source='relacion_tipo_equipo.relacion_producto.producto.name', read_only=True)
+    tipo_criticidad_name = serializers.CharField(source='relacion_tipo_equipo.relacion_producto.relacion_tipo_criticidad.tipo_criticidad.name', read_only=True)
+    criticidad_name = serializers.CharField(source='relacion_tipo_equipo.relacion_producto.relacion_tipo_criticidad.criticidad.name', read_only=True)
+    
+    tecnologia_id = serializers.UUIDField(source='tecnologia.id')
+    tipo_equipo_id = serializers.UUIDField(source='relacion_tipo_equipo.tipo_equipo.id')
+    producto_id = serializers.UUIDField(source='relacion_tipo_equipo.relacion_producto.producto.id')
+    tipo_criticidad_id = serializers.UUIDField(source='relacion_tipo_equipo.relacion_producto.relacion_tipo_criticidad.tipo_criticidad.id')
+    criticidad_id = serializers.UUIDField(source='relacion_tipo_equipo.relacion_producto.relacion_tipo_criticidad.criticidad.id')
+    total_relations = serializers.SerializerMethodField()
+
+    def get_total_relations(self, obj):
+        return TecnologiaTipoEquipo.objects.filter(tecnologia=obj.tecnologia).count()
+    
+    class Meta:
+        model = TecnologiaTipoEquipo
+        fields = ['id', 'tecnologia_id', 'tecnologia_name', 'tipo_equipo_id', 'tipo_equipo_name', 'producto_id', 'producto_name', 
                  'tipo_criticidad_name', 'criticidad_name', 'tipo_criticidad_id', 'criticidad_id', 'total_relations']
 '''xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'''

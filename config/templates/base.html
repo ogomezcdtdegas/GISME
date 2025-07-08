@@ -61,12 +61,12 @@
 
         <!-- Menú desplegable -->
         <a href="#" id="toggleComplementos"><i class="bi bi-grid"></i> Complementos <i class="bi bi-chevron-down float-end"></i></a>
-        <div class="submenu collapse {% if active_section in 'complementos_criticidad complementos_tipo complementos_producto' %}show{% endif %}" id="complementosSubmenu">
-            <a href="{% url 'allCriticidadesPag' %}" class="{% if active_section == 'complementos_criticidad' %}active{% endif %}"><i class="bi bi-exclamation-triangle"></i> Criticidad</a>
-            <a href="{% url 'allTipCriticidadesPag' %}"><i class="bi bi-tags"></i> Tipo de Criticidad</a>
-            <a href="{% url 'allProductosPag' %}"><i class="bi bi-tags"></i> Producto</a>
-            <a href="{% url 'allTiposEquipoPag' %}"><i class="bi bi-tags"></i> Tipo de Equipo</a>
-            <a href="#"><i class="bi bi-tags"></i> Tecnología</a> 
+        <div class="submenu collapse {% if active_section in 'complementos_criticidad complementos_tipo complementos_producto complementos_tecnologia' %}show{% endif %}" id="complementosSubmenu">
+            <a href="{% url 'allCriticidadesPag' %}" class="{% if active_section == 'complementos_criticidad' %}active{% endif %}"><i class="bi bi-shield-exclamation"></i> Criticidad</a>
+            <a href="{% url 'allTipCriticidadesPag' %}"><i class="bi bi-clipboard-check"></i> Tipo de Criticidad</a>
+            <a href="{% url 'allProductosPag' %}"><i class="bi bi-droplet"></i> Producto</a>
+            <a href="{% url 'allTiposEquipoPag' %}"><i class="bi bi-gear"></i> Tipo de Equipo</a>
+            <a href="{% url 'allTecnologiasPag' %}" class="{% if active_section == 'complementos_tecnologia' %}active{% endif %}"><i class="bi bi-diagram-3"></i> Tecnología</a> 
         </div>
 
         <!-- Botón de Logout -->
@@ -98,6 +98,7 @@
     <script type="module" src="{% static 'js/global/api/services/productos.js' %}"></script>
     <script type="module" src="{% static 'js/global/api/services/criticidad.js' %}"></script>
     <script type="module" src="{% static 'js/global/api/services/tipoCriticidad.js' %}"></script>
+    <script type="module" src="{% static 'js/global/api/services/tecnologia.js' %}"></script>
     
     <!-- Punto de entrada API -->
     <script type="module" src="{% static 'js/global/api/index.js' %}"></script>

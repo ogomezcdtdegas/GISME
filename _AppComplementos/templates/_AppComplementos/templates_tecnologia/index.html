@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% load static %} 
+
+{% block title %}Tecnologías - GISME{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <h1 class="text-center">Gestión de Tecnologías</h1>
+
+    <!-- Formulario de Registro -->
+    <div class="card p-4 mt-4">
+        <form id="tecnologiaForm" class="row g-3">
+            {% csrf_token %}
+
+            <div class="row align-items-end">
+                <!-- Campo Nombre -->
+                <div class="col-md-3 mb-3">
+                    <label for="name" class="form-label">Nombre</label>
+                    <input type="text" class="form-control" name="name" id="name" required>
+                </div>
+
+                <!-- Dropdown Tipo de Equipo -->
+                <div class="col-md-2 mb-3">
+                    <label for="tipoEquipoDropdown" class="form-label">Tipo Equipo</label>
+                    <select id="tipoEquipoDropdown" class="form-select" required>
+                        <option value="">Seleccione tipo</option>
+                    </select>
+                </div>
+
+                <!-- Dropdown Producto -->
+                <div class="col-md-2 mb-3">
+                    <label for="productoDropdown" class="form-label">Producto</label>
+                    <select id="productoDropdown" class="form-select" disabled required>
+                        <option value="">Seleccione producto</option>
+                    </select>
+                </div>
+
+                <!-- Dropdown Tipo de Criticidad -->
+                <div class="col-md-3 mb-3">
+                    <label for="tipoCriticidadDropdown" class="form-label">Tipo Criticidad</label>
+                    <select id="tipoCriticidadDropdown" class="form-select" disabled required>
+                        <option value="">Seleccione tipo</option>
+                    </select>
+                </div>
+
+                <!-- Dropdown Criticidad -->
+                <div class="col-md-2 mb-3">
+                    <label for="criticidadDropdown" class="form-label">Criticidad</label>
+                    <select id="criticidadDropdown" class="form-select" disabled required>
+                        <option value="">Seleccione criticidad</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="col-12 text-center mt-3">
+                <button type="submit" class="btn btn-success">Registrar Tecnología</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Contenedor para título y selector de registros por página -->
+    <div class="d-flex justify-content-between align-items-center mt-5">
+        <h2 class="">Lista de Tecnologías</h2>
+        <div>
+            <label for="recordsPerPage" class="me-2">Mostrar</label>
+            <select id="recordsPerPage" class="form-select d-inline-block w-auto" onchange="updatePagination()">
+                <option value="5">5</option>
+                <option value="10" selected>10</option>
+                <option value="20">20</option>
+                <option value="50">50</option>
+            </select>
+            <label>registros por página</label>
+        </div>
+    </div>
+
+    <!-- Barra de búsqueda -->
+    <div class="row mt-3 mb-3">
+        <div class="col-md-6">
+            <div class="input-group">
+                <span class="input-group-text">
+                    <i class="bi bi-search"></i>
+                </span>
+                <input type="text" id="searchInput" class="form-control" placeholder="Buscar por tecnología..." autocomplete="off">
+                <button class="btn btn-outline-secondary" type="button" id="clearSearch">
+                    <i class="bi bi-x-lg"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla de Tecnologías Registradas -->
+    <div class="mt-3">
+        <div class="table-responsive">
+            <table class="table table-striped table-bordered text-center">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Tecnología</th>
+                        <th>Tipo Equipo</th>
+                        <th>Producto</th>
+                        <th>Tipo Criticidad</th>
+                        <th>Criticidad</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tecnologiaTableBody">
+                    <!-- Las filas se cargarán dinámicamente con JavaScript -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Controles de paginación -->
+    <nav>
+        <ul class="pagination justify-content-center">
+            <!-- La paginación se cargará dinámicamente con JavaScript -->
+        </ul>
+    </nav>
+</div>
+
+<!-- Modales -->
+{% include '_AppComplementos/templates_tecnologia/_modal_editarTecnologia.html' %}
+
+{% endblock %}
+
+{% block extra_css %}
+    <link rel="stylesheet" href="{% static '_AppComplementos/static_tecnologia/css/styles.css' %}">
+{% endblock %}
+
+{% block extra_js %}
+<script type="module" src="{% static '_AppComplementos/static_tecnologia/js/events.js' %}"></script>
+{% endblock %}

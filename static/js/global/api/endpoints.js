@@ -5,6 +5,7 @@ export const ENDPOINTS = {
         LISTAR: '/complementos/listar-todo-productos/',
         CREAR: '/complementos/crear-producto-completo/',
         ACTUALIZAR: (id) => `/complementos/editar-producto/${id}/`,
+        POR_ID: (id) => `/complementos/editar-producto/${id}/`,
         ELIMINAR: (id) => `/complementos/eliminar-producto/${id}/`,
         ELIMINAR_RELACION: (id) => `/complementos/eliminar-producto-relacion/${id}/`
     },
@@ -33,5 +34,11 @@ export const ENDPOINTS = {
         ACTUALIZAR: (id) => `/complementos/editar-tipoEquipo/${id}/`,
         ELIMINAR: (id) => `/complementos/eliminar-tipo-equipo/${id}/`,
         ELIMINAR_RELACION: (id) => `/complementos/eliminar-tipo-equipo-relacion/${id}/`
+    },
+    TECNOLOGIA: {
+        LISTAR: '/complementos/tecnologias/',
+        CREAR: '/complementos/crear-tecnologia/',
+        ACTUALIZAR: (id) => `/complementos/editar-tecnologia/${id}/`,
+        ELIMINAR: (id) => `/complementos/eliminar-tecnologia/${id}/`
     }
 };

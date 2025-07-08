@@ -128,11 +128,11 @@ async function loadTipoCriticidades(page = currentPage, search = '') {
                 }
             }
         } else {
-            UI.toast.error("Error al cargar los tipos de criticidad");
+            UI.showAlert("Error al cargar los tipos de criticidad", 'error');
         }
     } catch (error) {
         console.error("Error:", error);
-        UI.toast.error("Error al cargar los datos");
+        UI.showAlert("Error al cargar los datos", 'error');
     } finally {
         UI.loading.hide('tipcritTableBody');
     }
@@ -160,7 +160,7 @@ window.openEditModal = async function(id, name, criticidadId) {
         
         if (!cleanCriticidadId || cleanCriticidadId === 'undefined' || cleanCriticidadId === 'null') {
             console.error('ID de criticidad inválido:', { original: criticidadId, converted: cleanCriticidadId });
-            UI.toast.error('Error al cargar los datos de criticidad');
+            UI.showAlert('Error al cargar los datos de criticidad', 'error');
             return;
         }
         
@@ -183,7 +183,7 @@ window.openEditModal = async function(id, name, criticidadId) {
         modal.show();
     } catch (error) {
         console.error('Error al abrir el modal:', error);
-        UI.toast.error('Error al cargar los datos para edición');
+        UI.showAlert('Error al cargar los datos para edición', 'error');
     }
 };
 
@@ -247,7 +247,7 @@ async function cargarCriticidades(dropdownId = 'criticidadDropdown', selectedVal
         return response.results;
     } catch (error) {
         console.error('Error al cargar criticidades:', error);
-        UI.toast.error('Error al cargar las criticidades');
+        UI.showAlert('Error al cargar las criticidades');
         return [];
     }
 }
@@ -271,18 +271,18 @@ document.addEventListener("DOMContentLoaded", async function () {
         const criticidadId = UI.form.getValue('criticidadDropdown');
     
         if (!criticidadId) {
-            UI.toast.warning("Debes seleccionar una criticidad");
+            UI.showAlert("Debes seleccionar una criticidad");
             return;
         }
     
         const response = await TipoCriticidadService.crear(name, criticidadId);
         
         if (response.success) {
-            UI.toast.success(response.message || "Tipo de criticidad creado exitosamente");
+            UI.showAlert(response.message || "Tipo de criticidad creado exitosamente");
             loadTipoCriticidades();
             UI.form.reset('tipcritForm');
         } else {
-            UI.toast.error(response.error || "Error al crear el tipo de criticidad");
+            UI.showAlert(response.error || "Error al crear el tipo de criticidad");
         }
     });
 
@@ -295,7 +295,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         const criticidadId = UI.form.getValue("editCriticidad");
 
         if (!name || !criticidadId) {
-            UI.toast.warning("Todos los campos son obligatorios");
+            UI.showAlert("Todos los campos son obligatorios");
             return;
         }
 
@@ -305,11 +305,11 @@ document.addEventListener("DOMContentLoaded", async function () {
         });
         
         if (response.success) {
-            UI.toast.success(response.message || "Tipo de criticidad actualizado exitosamente");
+            UI.showAlert(response.message || "Tipo de criticidad actualizado exitosamente");
             bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
             loadTipoCriticidades(currentPage);
         } else {
-            UI.toast.error(response.error || "Error al actualizar el tipo de criticidad");
+            UI.showAlert(response.error || "Error al actualizar el tipo de criticidad");
         }
     });
 
@@ -440,7 +440,7 @@ window.deleteTipoCriticidad = async function(tipoId, tipoName, relacionId) {
         }
 
         if (response?.success) {
-            UI.toast.success(response.message);
+            UI.showAlert(response.message);
             
             // Si se eliminaron productos o es eliminación completa del tipo, actualizar tabla de productos
             if (deleteType === 'tipo' || response.detalles?.productos_eliminados?.length > 0) {
@@ -477,11 +477,11 @@ window.deleteTipoCriticidad = async function(tipoId, tipoName, relacionId) {
             // Recargar la tabla de tipos de criticidad
             await loadTipoCriticidades(currentPage);
         } else {
-            UI.toast.error(response?.message || 'Error al eliminar el tipo de criticidad');
+            UI.showAlert(response?.message || 'Error al eliminar el tipo de criticidad');
         }
     } catch (error) {
         console.error('Error:', error);
-        UI.toast.error('Error al procesar la solicitud');
+        UI.showAlert('Error al procesar la solicitud');
     } finally {
         UI.loading.hide();
     }

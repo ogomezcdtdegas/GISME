@@ -74,3 +74,24 @@ class TipoEquipoProducto(BaseModel):
     def __str__(self):
         relacion = self.relacion_producto
         return f"{self.tipo_equipo.name} - {relacion.producto.name} ({relacion.relacion_tipo_criticidad.tipo_criticidad.name} - {relacion.relacion_tipo_criticidad.criticidad.name})"
+    
+class Tecnologia(BaseModel):
+    name = models.CharField(max_length=100, unique=True)
+
+    class Meta:
+        verbose_name = "Tecnología"
+        verbose_name_plural = "Tecnologías"
+
+    def __str__(self):
+        return f"{self.name}"
+
+class TecnologiaTipoEquipo(BaseModel):
+    tecnologia = models.ForeignKey(Tecnologia, on_delete=models.CASCADE)
+    relacion_tipo_equipo = models.ForeignKey(TipoEquipoProducto, on_delete=models.CASCADE, related_name='tecnologias')
+
+    class Meta:
+        unique_together = ('tecnologia', 'relacion_tipo_equipo')  # Evita duplicados
+
+    def __str__(self):
+        relacion = self.relacion_tipo_equipo
+        return f"{self.tecnologia.name} - {relacion.tipo_equipo.name} ({relacion.relacion_producto.producto.name} - {relacion.relacion_producto.relacion_tipo_criticidad.tipo_criticidad.name} - {relacion.relacion_producto.relacion_tipo_criticidad.criticidad.name})"

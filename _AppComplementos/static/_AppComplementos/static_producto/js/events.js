@@ -33,7 +33,7 @@ function actualizarTablaProductos(data) {
             <td class="text-center">
                 <div class="btn-group" role="group">
                     <button class="btn btn-primary btn-sm me-1" 
-                        data-id="${item.producto_id}"
+                        data-id="${item.id}"
                         data-producto-name="${UI.utils.escapeHtml(item.producto_name)}"
                         data-tipo-criticidad-id="${item.tipo_criticidad_id}"
                         data-criticidad-id="${item.criticidad_id}"
@@ -127,11 +127,11 @@ async function loadProductos(page = currentPage, search = '') {
                 }
             }
         } else {
-            UI.toast.error("Error al cargar los productos");
+            UI.showAlert("Error al cargar los productos", 'error');
         }
     } catch (error) {
         console.error("Error:", error);
-        UI.toast.error("Error al cargar los datos");
+        UI.showAlert("Error al cargar los datos", 'error');
     } finally {
         UI.loading.hide('prodTableBody');
     }
@@ -164,7 +164,7 @@ async function cargarTiposCriticidad(dropdownId = 'tipocriticidadDropdown', sele
         });
     } catch (error) {
         console.error('Error al cargar tipos de criticidad:', error);
-        UI.toast.error('Error al cargar los tipos de criticidad');
+        UI.showAlert('Error al cargar los tipos de criticidad', 'error');
     }
 }
 
@@ -212,7 +212,7 @@ async function cargarCriticidadesPorTipo(tipoId, dropdownId = 'criticidadDropdow
             dropdown.innerHTML = '<option value="">Error al cargar</option>';
             dropdown.disabled = true;
         }
-        UI.toast.error('Error al cargar las criticidades');
+        UI.showAlert('Error al cargar las criticidades', 'error');
     }
 }
 
@@ -252,34 +252,44 @@ async function cargarProductos(dropdownId = 'productoDropdown', selectedValue = 
         });
     } catch (error) {
         console.error('Error al cargar productos:', error);
-        UI.toast.error('Error al cargar los productos');
+        UI.showAlert('Error al cargar los productos', 'error');
     }
 }
 
 // Función global para abrir el modal de edición
-window.openEditModal = async function(id, name, tipoCriticidadId, criticidadId) {
+window.openEditModal = async function(relacionId, name, tipoCriticidadId, criticidadId) {
     try {
-        console.log('Abriendo modal con:', { id, name, tipoCriticidadId, criticidadId });
+        console.log('Abriendo modal con:', { relacionId, name, tipoCriticidadId, criticidadId });
         
         const modalElement = document.getElementById('editModal');
         
+        // Obtener los datos completos de la relación
+        const response = await ProductosService.obtenerPorId(relacionId);
+        
+        if (!response.success) {
+            UI.showAlert('Error al cargar los datos del producto', 'error');
+            return;
+        }
+        
+        const data = response.data;
+        
         // Configurar valores básicos del formulario
-        UI.form.setValue('editprodId', id);
-        UI.form.setValue('editprodName', name);
+        UI.form.setValue('editprodId', relacionId);
+        UI.form.setValue('editprodName', data.producto_name);
         
         // Cargar tipos de criticidad primero
-        await cargarTiposCriticidad('editTipoCriticidad', tipoCriticidadId);
+        await cargarTiposCriticidad('editTipoCriticidad', data.tipo_criticidad_id);
         
         // Luego cargar criticidades para ese tipo y seleccionar la correcta
-        if (tipoCriticidadId) {
-            await cargarCriticidadesPorTipo(tipoCriticidadId, 'editCriticidad', criticidadId);
+        if (data.tipo_criticidad_id) {
+            await cargarCriticidadesPorTipo(data.tipo_criticidad_id, 'editCriticidad', data.criticidad_id);
         }
         
         const modal = new bootstrap.Modal(modalElement);
         modal.show();
     } catch (error) {
         console.error('Error al abrir el modal:', error);
-        UI.toast.error('Error al cargar los datos para edición');
+        UI.showAlert('Error al cargar los datos para edición', 'error');
     }
 };
 
@@ -354,7 +364,7 @@ window.deleteProducto = async function(relacionId, productoId, productoName) {
         }
 
         if (response?.success) {
-            UI.toast.success(response.message);
+            UI.showAlert(response.message, 'success');
             
             // Si era la última relación o se eliminó el producto completo, actualizar las listas
             if (response.was_last_relation || deleteType === 'product') {
@@ -368,11 +378,11 @@ window.deleteProducto = async function(relacionId, productoId, productoName) {
             // Recargar la tabla de productos
             await loadProductos(currentPage);
         } else {
-            UI.toast.error(response?.message || 'Error al eliminar el producto');
+            UI.showAlert(response?.message || 'Error al eliminar el producto', 'error');
         }
     } catch (error) {
         console.error('Error:', error);
-        UI.toast.error('Error al procesar la solicitud');
+        UI.showAlert('Error al procesar la solicitud', 'error');
     } finally {
         UI.loading.hide();
     }
@@ -430,20 +440,20 @@ document.addEventListener("DOMContentLoaded", async function () {
         const criticidadId = UI.form.getValue('criticidadDropdown');
         
         if (!name || !tipoId || !criticidadId) {
-            UI.toast.warning("Todos los campos son obligatorios");
+            UI.showAlert("Todos los campos son obligatorios", 'warning');
             return;
         }
         
         const response = await ProductosService.crear(name, tipoId, criticidadId);
         
         if (response.success) {
-            UI.toast.success(response.message || "Producto creado exitosamente");
+            UI.showAlert(response.message || "Producto creado exitosamente", 'success');
             loadProductos();
             UI.form.reset('prodForm');
             document.getElementById('criticidadDropdown').disabled = true;
             document.getElementById('criticidadDropdown').innerHTML = '<option value="">Seleccione un tipo primero</option>';
         } else {
-            UI.toast.error(response.error || "Error al crear el producto");
+            UI.showAlert(response.error || "Error al crear el producto", 'error');
         }
     });
 
@@ -456,7 +466,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         const criticidadId = UI.form.getValue("editCriticidad");
         
         if (!name || !tipoCriticidadId || !criticidadId) {
-            UI.toast.warning("Todos los campos son obligatorios");
+            UI.showAlert("Todos los campos son obligatorios", 'warning');
             return;
         }
         
@@ -467,11 +477,11 @@ document.addEventListener("DOMContentLoaded", async function () {
         });
         
         if (response.success) {
-            UI.toast.success(response.message || "Producto actualizado exitosamente");
+            UI.showAlert(response.message || "Producto actualizado exitosamente", 'success');
             bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
             loadProductos(currentPage);
         } else {
-            UI.toast.error(response.error || "Error al actualizar el producto");
+            UI.showAlert(response.error || "Error al actualizar el producto", 'error');
         }
     });
 });
