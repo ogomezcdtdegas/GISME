@@ -7,8 +7,13 @@ const DEFAULT_PER_PAGE = 10;
 
 // Función para actualizar la tabla de tipos de criticidad con agrupación
 function actualizarTablaTipoCriticidades(data) {
+    console.log('🔍 actualizarTablaTipoCriticidades - Datos recibidos:', data);
+    
     const tbody = document.getElementById('tipcritTableBody');
-    if (!tbody) return;
+    if (!tbody) {
+        console.error('❌ No se encontró el tbody con ID "tipcritTableBody"');
+        return;
+    }
 
     tbody.innerHTML = '';
     
@@ -20,9 +25,10 @@ function actualizarTablaTipoCriticidades(data) {
         return;
     }
 
-    // Agrupar datos por tipo_criticidad_id
+    // Agrupar datos por tipo_criticidad_id (lógica original)
     const groupedData = {};
     data.forEach(item => {
+        console.log('📊 Procesando item:', item);
         if (!groupedData[item.tipo_criticidad_id]) {
             groupedData[item.tipo_criticidad_id] = {
                 tipo_criticidad_name: item.tipo_criticidad_name,
@@ -33,13 +39,15 @@ function actualizarTablaTipoCriticidades(data) {
         groupedData[item.tipo_criticidad_id].relations.push(item);
     });
 
+    console.log('📦 Datos agrupados:', groupedData);
+
     // Renderizar filas agrupadas
     Object.values(groupedData).forEach((tipoGroup, groupIndex) => {
         const firstRelation = tipoGroup.relations[0];
         const hasMultipleRelations = tipoGroup.total_relations > 1;
         const groupClass = groupIndex % 2 === 0 ? 'group-odd' : 'group-even';
         
-        // Crear la primera fila con el nombre del tipo
+        // Crear la primera fila con el nombre del tipo de criticidad
         const firstRow = document.createElement('tr');
         firstRow.className = `${groupClass} ${hasMultipleRelations ? 'group-start' : ''}`;
         firstRow.innerHTML = `
@@ -429,7 +437,7 @@ window.deleteTipoCriticidad = async function(tipoId, tipoName, relacionId) {
                         <p>El tipo de criticidad "${tipoName}" tiene ${tipoInfo.total_relations} relaciones.</p>
                         <p class="text-warning">
                             <i class="bi bi-exclamation-triangle"></i> 
-                            Nota: Los productos que solo usen este tipo de criticidad serán eliminados automáticamente.
+                            Nota: Esta acción eliminará en cascada todos los elementos que dependan de este tipo de criticidad (productos, tipos de equipo y tecnologías que queden sin relaciones).
                         </p>
                         <div class="form-check">
                             <input class="form-check-input" type="radio" name="deleteType" id="deleteRelation" value="relation" checked>
@@ -465,7 +473,7 @@ window.deleteTipoCriticidad = async function(tipoId, tipoName, relacionId) {
                         <p>El tipo de criticidad será eliminado completamente.</p>
                         <p class="text-warning">
                             <i class="bi bi-exclamation-triangle"></i> 
-                            Nota: Los productos que solo usen este tipo de criticidad serán eliminados automáticamente.
+                            Nota: Esta acción eliminará en cascada todos los elementos que dependan de este tipo de criticidad (productos, tipos de equipo y tecnologías que queden sin relaciones).
                         </p>
                     </div>
                 `,

@@ -16,7 +16,7 @@ class allTipCriticidadPag(BaseListView):
             'criticidad'
         ).annotate(
             total_relations=Count('tipo_criticidad__tipocriticidadcriticidad')
-        ).order_by('tipo_criticidad__name')
+        ).order_by('tipo_criticidad__name', 'criticidad__name')
 
     def get_allowed_ordering_fields(self):
         return ['created_at', 'tipo_criticidad__name']
@@ -31,7 +31,7 @@ class allTipCriticidadPag(BaseListView):
         if 'per_page' not in request.GET:
             request.GET['per_page'] = '10'  # Valor por defecto
         
-        # Forzar ordenamiento por tipo_criticidad__name
+        # Forzar ordenamiento por tipo_criticidad__name para agrupar
         if 'ordering' not in request.GET:
             request.GET['ordering'] = 'tipo_criticidad__name'
         

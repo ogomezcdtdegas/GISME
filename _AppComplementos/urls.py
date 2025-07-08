@@ -1,16 +1,16 @@
 from django.urls import path
 
-''' Criticidad '''
+# Criticidad
 from .views.views_Criticidad.Commands import CreateCriticidadCommand, UpdateCriticidadCommand
 from .views.views_Criticidad.Queries import GetAllCriticidadPagQuery, GetAllCriticidadListQuery, GetCriticidadPorTipoCritQuery
 from .views.views_Criticidad.Commands.DeleteCriticidadCommand.DeleteCriticidadCommand import DeleteCriticidadCommand
 
-''' Tipo Criticidad '''
+# Tipo Criticidad
 from .views.views_tipoCriticidad.Commands import CreateTipoCriticidadCommand, UpdateTipoCriticidadCommand, DeleteTipoCriticidadCommand
 from .views.views_tipoCriticidad.Commands.DeleteTipoCriticidadRelacionCommand.DeleteTipoCriticidadRelacionCommand import DeleteTipoCriticidadRelacionCommand
 from .views.views_tipoCriticidad.Queries import GetAllTipoCriticidadPagQuery, GetAllTipoCriticidadListQuery
 
-''' Producto '''
+# Producto
 from .views.views_Producto.Commands import (
     CreateProductoCommand, 
     UpdateProductoCommand, 
@@ -19,7 +19,7 @@ from .views.views_Producto.Commands import (
 )
 from .views.views_Producto.Queries import GetAllProductoPagQuery
 
-''' Tipo Equipo '''
+# Tipo Equipo
 from .views.views_TipoEquipo.Commands import (
     crearTipoEquipo,
     EditarTipoEquipoView,
@@ -28,12 +28,13 @@ from .views.views_TipoEquipo.Commands import (
 )
 from .views.views_TipoEquipo.Queries import allTipoEquiposPag
 
-''' Tecnología '''
+# Tecnología
 from .views.views_Tecnologia.Commands import (
     crearTecnologia,
     EditarTecnologiaView,
     DeleteTecnologiaCommand
 )
+from .views.views_Tecnologia.Commands.DeleteTecnologiaRelacionCommand.DeleteTecnologiaRelacionCommand import DeleteTecnologiaRelacionCommand
 from .views.views_Tecnologia.Queries import allTecnologiasPag
 
 urlpatterns = [
@@ -70,4 +71,5 @@ urlpatterns = [
     path('crear-tecnologia/', crearTecnologia.as_view(), name='crearTecnologia'),
     path('editar-tecnologia/<uuid:obj_id>/', EditarTecnologiaView.as_view(), name='editarTecnologia'),
     path('eliminar-tecnologia/<uuid:obj_id>/', DeleteTecnologiaCommand.as_view(), name='eliminarTecnologia'),
+    path('eliminar-tecnologia-relacion/<uuid:obj_id>/', DeleteTecnologiaRelacionCommand.as_view(), name='eliminarTecnologiaRelacion'),
 ]

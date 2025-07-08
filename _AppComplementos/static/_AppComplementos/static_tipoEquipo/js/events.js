@@ -89,7 +89,8 @@ function actualizarTablaTiposEquipo(response) {
                                         <i class="bi bi-pencil-square"></i>
                                     </button>
                                     <button class="btn btn-danger btn-sm" 
-                                        onclick="window.deleteTipoEquipo('${item.id || ''}', '${UI.utils.escapeHtml(item.tipo_equipo_name || '')}')"
+                                        onclick="window.deleteTipoEquipo('${item.id || ''}', '${item.tipo_equipo_id || ''}', '${UI.utils.escapeHtml(item.tipo_equipo_name || '')}')"
+                                        title="${cantidadItems > 1 ? 'Eliminar esta combinación' : 'Eliminar tipo de equipo'}"
                                         style="white-space: nowrap;">
                                         <i class="bi bi-trash"></i>
                                     </button>
@@ -117,7 +118,8 @@ function actualizarTablaTiposEquipo(response) {
                                         <i class="bi bi-pencil-square"></i>
                                     </button>
                                     <button class="btn btn-danger btn-sm" 
-                                        onclick="window.deleteTipoEquipo('${item.id || ''}', '${UI.utils.escapeHtml(item.tipo_equipo_name || '')}')"
+                                        onclick="window.deleteTipoEquipo('${item.id || ''}', '${item.tipo_equipo_id || ''}', '${UI.utils.escapeHtml(item.tipo_equipo_name || '')}')"
+                                        title="Eliminar esta combinación"
                                         style="white-space: nowrap;">
                                         <i class="bi bi-trash"></i>
                                     </button>
@@ -410,32 +412,105 @@ window.updatePagination = function() {
 };
 
 // Función para manejar la eliminación de tipos de equipo
-window.deleteTipoEquipo = async function(id, name) {
+window.deleteTipoEquipo = async function(relacionId, tipoEquipoId, tipoEquipoName) {
     try {
-        const result = await Swal.fire({
-            title: `¿Eliminar tipo de equipo "${name}"?`,
-            text: "Esta acción no se puede deshacer",
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#d33',
-            cancelButtonColor: '#3085d6',
-            confirmButtonText: 'Sí, eliminar',
-            cancelButtonText: 'Cancelar'
-        });
+        let deleteType;
 
-        if (result.isConfirmed) {
-            const response = await TipoEquipoService.eliminar(id);
+        // Obtener el total de relaciones del tipo de equipo
+        const tipoEquipoDetails = await TipoEquipoService.listar(1, 1000); // Temporal: Get all to count relations
+        const tipoEquipoInfo = tipoEquipoDetails.results?.find(t => String(t.tipo_equipo_id) === String(tipoEquipoId));
+        const hasMultipleRelations = tipoEquipoInfo?.total_relations > 1;
+
+        if (hasMultipleRelations) {
+            // Si tiene múltiples relaciones, mostrar diálogo con opciones
+            const result = await Swal.fire({
+                title: `¿Qué desea eliminar?`,
+                html: `
+                    <div class="text-start">
+                        <p>El tipo de equipo "${tipoEquipoName}" tiene ${tipoEquipoInfo.total_relations} relaciones.</p>
+                        <p class="text-warning">
+                            <i class="bi bi-exclamation-triangle"></i> 
+                            Nota: Esta acción eliminará en cascada todas las tecnologías que dependan únicamente de este tipo de equipo.
+                        </p>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="deleteType" id="deleteRelation" value="relation" checked>
+                            <label class="form-check-label" for="deleteRelation">
+                                Solo eliminar esta relación
+                            </label>
+                        </div>
+                        <div class="form-check mt-2">
+                            <input class="form-check-input" type="radio" name="deleteType" id="deleteTipoEquipo" value="tipoEquipo">
+                            <label class="form-check-label" for="deleteTipoEquipo">
+                                Eliminar el tipo de equipo y todas sus relaciones
+                            </label>
+                        </div>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Eliminar',
+                cancelButtonText: 'Cancelar',
+                preConfirm: () => {
+                    return document.querySelector('input[name="deleteType"]:checked')?.value;
+                }
+            });
+
+            if (result.isDismissed) return;
+            deleteType = result.value;
+        } else {
+            // Si solo tiene una relación, confirmar la eliminación simple
+            const result = await Swal.fire({
+                title: '¿Está seguro?',
+                html: `
+                    <div class="text-start">
+                        <p>Esta es la última relación del tipo de equipo "${tipoEquipoName}".</p>
+                        <p>El tipo de equipo será eliminado completamente.</p>
+                        <p class="text-warning">
+                            <i class="bi bi-exclamation-triangle"></i> 
+                            Nota: También se eliminarán en cascada todas las tecnologías que dependan únicamente de este tipo de equipo.
+                        </p>
+                    </div>
+                `,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            });
+
+            if (result.isDismissed) return;
+            deleteType = 'relation'; // For single relation, we use DeleteRelacionCommand and let backend handle it
+        }
+
+        UI.loading.show();
+
+        let response;
+        if (deleteType === 'tipoEquipo') {
+            response = await TipoEquipoService.eliminarTipoEquipo(tipoEquipoId);
+        } else {
+            response = await TipoEquipoService.eliminarRelacion(relacionId);
+        }
+
+        if (response?.success) {
+            UI.showAlert(response.message, 'success');
             
-            if (response.success) {
-                UI.showAlert(response.message || 'Tipo de equipo eliminado correctamente', 'success');
-                await loadTiposEquipo(currentPage);
-            } else {
-                UI.showAlert(response.error || 'Error al eliminar el tipo de equipo', 'error');
+            // Si era la última relación o se eliminó el tipo de equipo completo, actualizar las listas
+            if (response.was_last_relation || deleteType === 'tipoEquipo') {
+                // Recargar los dropdowns de tipos de equipo si están presentes
+                const dropdowns = document.querySelectorAll('[id^=tipoEquipoDropdown]');
+                for (const dropdown of dropdowns) {
+                    await cargarTiposEquipo(dropdown.id);
+                }
             }
+
+            // Recargar la tabla de tipos de equipo
+            await loadTiposEquipo(currentPage);
+        } else {
+            UI.showAlert(response?.message || 'Error al eliminar el tipo de equipo', 'error');
         }
     } catch (error) {
-        console.error('Error al eliminar:', error);
-        UI.showAlert('Error al eliminar el tipo de equipo', 'error');
+        console.error('Error:', error);
+        UI.showAlert('Error al procesar la solicitud', 'error');
+    } finally {
+        UI.loading.hide();
     }
 };
 

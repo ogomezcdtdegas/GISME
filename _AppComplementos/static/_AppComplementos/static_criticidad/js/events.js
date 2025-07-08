@@ -18,6 +18,16 @@ window.deleteCriticidad = async function(id, name) {
                 <ul>
                     <li>Todas las relaciones con tipos de criticidad</li>
                     <li>Todas las asignaciones en productos que usen esta criticidad</li>
+                    <li>Todas las relaciones con tipos de equipo que dependan de esta criticidad</li>
+                    <li>Todas las tecnologías que dependan de esta criticidad</li>
+                </ul>
+                <p class="text-warning"><i class="bi bi-info-circle-fill"></i> ADEMÁS:</p>
+                <p>Si algún elemento queda sin relaciones después de esta eliminación, también será eliminado automáticamente:</p>
+                <ul>
+                    <li>Tipos de criticidad que solo tenían esta criticidad</li>
+                    <li>Productos que solo usaban esta criticidad</li>
+                    <li>Tipos de equipo que solo tenían productos con esta criticidad</li>
+                    <li>Tecnologías que solo tenían tipos de equipo con esta criticidad</li>
                 </ul>
                 <p>Esta acción no se puede deshacer.</p>
             </div>`,

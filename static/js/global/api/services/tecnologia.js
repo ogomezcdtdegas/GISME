@@ -34,6 +34,14 @@ export const TecnologiaService = {
         return BaseAPI.delete(ENDPOINTS.TECNOLOGIA.ELIMINAR(id));
     },
 
+    async eliminarTecnologia(id) {
+        return BaseAPI.delete(ENDPOINTS.TECNOLOGIA.ELIMINAR(id));
+    },
+
+    async eliminarRelacion(id) {
+        return BaseAPI.delete(ENDPOINTS.TECNOLOGIA.ELIMINAR_RELACION(id));
+    },
+
     // Métodos para dropdowns encadenados
     async getTiposEquipoUnicos() {
         // Usar el endpoint de tipo equipo con parámetro para obtener todos los registros

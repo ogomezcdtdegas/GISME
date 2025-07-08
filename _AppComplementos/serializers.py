@@ -35,7 +35,7 @@ class TipoCriticidadCriticidadSerializer(serializers.ModelSerializer):
         """Método de respaldo en caso de que no haya anotación"""
         if hasattr(obj, 'total_relations'):
             return obj.total_relations
-        return ProductoTipoCritCrit.objects.filter(relacion_tipo_criticidad=obj).count()
+        return TipoCriticidadCriticidad.objects.filter(tipo_criticidad=obj.tipo_criticidad).count()
     
     def to_representation(self, instance):
         data = super().to_representation(instance)
