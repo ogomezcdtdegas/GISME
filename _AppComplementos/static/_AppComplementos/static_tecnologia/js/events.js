@@ -5,7 +5,7 @@ import { UI } from '../../../../static/js/global/utils/ui.js';
 let currentPage = 1;
 const DEFAULT_PER_PAGE = 10;
 
-// Función para actualizar la tabla de tecnologías
+// Función para actualizar la tabla de tecnologías con agrupación visual
 function actualizarTablaTecnologias(data) {
     const tbody = document.getElementById('tecnologiaTableBody');
     if (!tbody) return;
@@ -20,29 +20,114 @@ function actualizarTablaTecnologias(data) {
         return;
     }
 
-    data.forEach(tecnologia => {
-        const badge = tecnologia.total_relations > 1 ? 
-            `<span class="badge badge-total-relations">${tecnologia.total_relations}</span>` : '';
+    // Agrupar por tecnologia_id
+    const grupos = {};
+    data.forEach(item => {
+        const grupoId = item.tecnologia_id || 'sin_grupo';
+        if (!grupos[grupoId]) {
+            grupos[grupoId] = {
+                nombre: item.tecnologia_name || '',
+                items: []
+            };
+        }
+        grupos[grupoId].items.push(item);
+    });
+
+    let htmlContent = '';
+    let isOddGroup = true;
+
+    Object.keys(grupos).forEach(grupoId => {
+        const grupo = grupos[grupoId];
+        const groupClass = isOddGroup ? 'group-odd' : 'group-even';
+        const cantidadItems = grupo.items.length;
         
-        const row = `
-            <tr>
-                <td>${tecnologia.tecnologia_name}${badge}</td>
-                <td>${tecnologia.tipo_equipo_name}</td>
-                <td>${tecnologia.producto_name}</td>
-                <td>${tecnologia.tipo_criticidad_name}</td>
-                <td>${tecnologia.criticidad_name}</td>
-                <td>
-                    <button class="btn btn-primary btn-sm me-1" 
-                            onclick="openEditTecnologiaModal('${tecnologia.id}')">
-                        <i class="bi bi-pencil-square"></i>
-                    </button>
-                    <button class="btn btn-danger btn-sm" 
-                            onclick="deleteTecnologia('${tecnologia.id}')">
-                        <i class="bi bi-trash"></i>
-                    </button>
-                </td>
-            </tr>`;
-        tbody.innerHTML += row;
+        // Badge: mismo color que en productos (bg-info)
+        const badgeText = cantidadItems === 1 ? '1 combinación' : `${cantidadItems} combinaciones`;
+        
+        grupo.items.forEach((item, index) => {
+            if (index === 0) {
+                // Primera fila del grupo: mostrar nombre con rowspan y badge (igual que productos)
+                htmlContent += `
+                    <tr class="${groupClass}" data-group-id="${grupoId}">
+                        <td class="align-middle main-name-cell" rowspan="${cantidadItems}">
+                            <div class="name-container">
+                                <span class="main-name">${item.tecnologia_name}</span>
+                                <br><span class="badge bg-info mt-1" title="Esta tecnología tiene ${cantidadItems} ${cantidadItems === 1 ? 'combinación' : 'combinaciones'}">${badgeText}</span>
+                            </div>
+                        </td>
+                        <td>${item.tipo_equipo_name}</td>
+                        <td>${item.producto_name}</td>
+                        <td>${item.tipo_criticidad_name}</td>
+                        <td>${item.criticidad_name}</td>
+                        <td>
+                            <button class="btn btn-primary btn-sm me-1" 
+                                    onclick="openEditTecnologiaModal('${item.id}')">
+                                <i class="bi bi-pencil-square"></i>
+                            </button>
+                            <button class="btn btn-danger btn-sm" 
+                                    onclick="deleteTecnologia('${item.id}')">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            } else {
+                // Filas adicionales del grupo: solo combinaciones
+                htmlContent += `
+                    <tr class="${groupClass}" data-group-id="${grupoId}">
+                        <td>${item.tipo_equipo_name}</td>
+                        <td>${item.producto_name}</td>
+                        <td>${item.tipo_criticidad_name}</td>
+                        <td>${item.criticidad_name}</td>
+                        <td>
+                            <button class="btn btn-primary btn-sm me-1" 
+                                    onclick="openEditTecnologiaModal('${item.id}')">
+                                <i class="bi bi-pencil-square"></i>
+                            </button>
+                            <button class="btn btn-danger btn-sm" 
+                                    onclick="deleteTecnologia('${item.id}')">
+                                <i class="bi bi-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }
+        });
+        
+        isOddGroup = !isOddGroup; // Alternar para el próximo grupo
+    });
+
+    tbody.innerHTML = htmlContent;
+    
+    // Aplicar efectos de hover por grupo
+    aplicarEfectosHover();
+}
+
+// Función para aplicar efectos de hover por grupo
+function aplicarEfectosHover() {
+    const tbody = document.getElementById('tecnologiaTableBody');
+    if (!tbody) return;
+
+    const rows = tbody.querySelectorAll('tr[data-group-id]');
+    
+    rows.forEach(row => {
+        const groupId = row.dataset.groupId;
+        
+        row.addEventListener('mouseenter', () => {
+            // Resaltar todas las filas del mismo grupo
+            const groupRows = tbody.querySelectorAll(`tr[data-group-id="${groupId}"]`);
+            groupRows.forEach(groupRow => {
+                groupRow.classList.add('group-hover');
+            });
+        });
+        
+        row.addEventListener('mouseleave', () => {
+            // Quitar resaltado de todas las filas del mismo grupo
+            const groupRows = tbody.querySelectorAll(`tr[data-group-id="${groupId}"]`);
+            groupRows.forEach(groupRow => {
+                groupRow.classList.remove('group-hover');
+            });
+        });
     });
 }
 

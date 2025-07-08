@@ -1,12 +1,24 @@
 from repoGenerico.views_base import BaseListView
 from .....models import ProductoTipoCritCrit
 from .....serializers import ProductoTipoCriticiddadSerializer
+from django.db.models import Count
 
 # 🔹 Listado paginado
 class allProductosPag(BaseListView):
     model = ProductoTipoCritCrit
     serializer_class = ProductoTipoCriticiddadSerializer
     template_name = "_AppComplementos/templates_producto/index.html"
+
+    def get_queryset(self):
+        """Optimizar consultas con select_related y anotaciones para evitar N+1"""
+        return ProductoTipoCritCrit.objects.select_related(
+            'producto',
+            'relacion_tipo_criticidad',
+            'relacion_tipo_criticidad__tipo_criticidad',
+            'relacion_tipo_criticidad__criticidad'
+        ).annotate(
+            total_relations=Count('producto__productotipocritcrit')
+        ).order_by('producto__name', 'relacion_tipo_criticidad__tipo_criticidad__name')
 
     def get_allowed_ordering_fields(self):
         return ['created_at', 'producto__name']

@@ -5,7 +5,7 @@ import { UI } from '../../../../static/js/global/utils/ui.js';
 let currentPage = 1;
 const DEFAULT_PER_PAGE = 10;
 
-// Función para actualizar la tabla de tipos de criticidad
+// Función para actualizar la tabla de tipos de criticidad con agrupación
 function actualizarTablaTipoCriticidades(data) {
     const tbody = document.getElementById('tipcritTableBody');
     if (!tbody) return;
@@ -20,38 +20,89 @@ function actualizarTablaTipoCriticidades(data) {
         return;
     }
 
+    // Agrupar datos por tipo_criticidad_id
+    const groupedData = {};
     data.forEach(item => {
-        const row = document.createElement('tr');
-        // Mantener los IDs como strings (UUIDs)
-        const criticidadId = String(item.criticidad_id || item.criticidad);
+        if (!groupedData[item.tipo_criticidad_id]) {
+            groupedData[item.tipo_criticidad_id] = {
+                tipo_criticidad_name: item.tipo_criticidad_name,
+                total_relations: item.total_relations,
+                relations: []
+            };
+        }
+        groupedData[item.tipo_criticidad_id].relations.push(item);
+    });
+
+    // Renderizar filas agrupadas
+    Object.values(groupedData).forEach((tipoGroup, groupIndex) => {
+        const firstRelation = tipoGroup.relations[0];
+        const hasMultipleRelations = tipoGroup.total_relations > 1;
+        const groupClass = groupIndex % 2 === 0 ? 'group-odd' : 'group-even';
         
-        row.innerHTML = `
-            <td>
-                ${UI.utils.escapeHtml(item.tipo_criticidad_name)}
-                ${item.total_relations > 1 ? `<span class="badge bg-info ms-2" title="Este tipo tiene ${item.total_relations} relaciones">${item.total_relations}</span>` : ''}
+        // Crear la primera fila con el nombre del tipo
+        const firstRow = document.createElement('tr');
+        firstRow.className = `${groupClass} ${hasMultipleRelations ? 'group-start' : ''}`;
+        firstRow.innerHTML = `
+            <td class="align-middle type-name-cell" ${hasMultipleRelations ? `rowspan="${tipoGroup.relations.length}"` : ''}>
+                <div class="type-name-container">
+                    <span class="type-name">${UI.utils.escapeHtml(tipoGroup.tipo_criticidad_name)}</span>
+                    <br><span class="badge bg-info mt-1" title="Este tipo tiene ${tipoGroup.total_relations} ${tipoGroup.total_relations === 1 ? 'relación' : 'relaciones'}">${tipoGroup.total_relations} ${tipoGroup.total_relations === 1 ? 'relación' : 'relaciones'}</span>
+                </div>
             </td>
-            <td>${UI.utils.escapeHtml(item.criticidad_name)}</td>
-            <td>${UI.utils.formatDate(item.created_at)}</td>
-            <td class="text-center">
+            <td class="relation-cell">${UI.utils.escapeHtml(firstRelation.criticidad_name)}</td>
+            <td class="relation-cell">${UI.utils.formatDate(firstRelation.created_at)}</td>
+            <td class="text-center action-cell">
                 <div class="btn-group" role="group">
                     <button class="btn btn-primary btn-sm me-1" 
-                        data-id="${item.id}"
-                        data-tipo-name="${UI.utils.escapeHtml(item.tipo_criticidad_name)}"
-                        data-criticidad-id="${criticidadId}"
+                        data-id="${firstRelation.id}"
+                        data-tipo-name="${UI.utils.escapeHtml(tipoGroup.tipo_criticidad_name)}"
+                        data-criticidad-id="${String(firstRelation.criticidad_id || firstRelation.criticidad)}"
                         onclick="openEditModal(this.dataset.id, this.dataset.tipoName, this.dataset.criticidadId)"
-                        style="white-space: nowrap;">
+                        title="Editar esta relación">
                         <i class="bi bi-pencil-square"></i>
                     </button>
                     <button class="btn btn-danger btn-sm" 
-                        onclick="deleteTipoCriticidad('${item.tipo_criticidad_id}', '${UI.utils.escapeHtml(item.tipo_criticidad_name)}', '${item.id}')"
-                        title="${item.total_relations > 1 ? 'Eliminar relación o tipo completo' : 'Eliminar tipo de criticidad'}">
+                        onclick="deleteTipoCriticidad('${firstRelation.tipo_criticidad_id}', '${UI.utils.escapeHtml(tipoGroup.tipo_criticidad_name)}', '${firstRelation.id}')"
+                        title="${hasMultipleRelations ? 'Eliminar esta relación' : 'Eliminar tipo de criticidad'}">
                         <i class="bi bi-trash"></i>
                     </button>
                 </div>
             </td>
         `;
-        tbody.appendChild(row);
+        tbody.appendChild(firstRow);
+
+        // Crear filas adicionales para las demás relaciones
+        for (let i = 1; i < tipoGroup.relations.length; i++) {
+            const relation = tipoGroup.relations[i];
+            const additionalRow = document.createElement('tr');
+            additionalRow.className = `${groupClass} group-continuation`;
+            additionalRow.innerHTML = `
+                <td class="relation-cell">${UI.utils.escapeHtml(relation.criticidad_name)}</td>
+                <td class="relation-cell">${UI.utils.formatDate(relation.created_at)}</td>
+                <td class="text-center action-cell">
+                    <div class="btn-group" role="group">
+                        <button class="btn btn-primary btn-sm me-1" 
+                            data-id="${relation.id}"
+                            data-tipo-name="${UI.utils.escapeHtml(tipoGroup.tipo_criticidad_name)}"
+                            data-criticidad-id="${String(relation.criticidad_id || relation.criticidad)}"
+                            onclick="openEditModal(this.dataset.id, this.dataset.tipoName, this.dataset.criticidadId)"
+                            title="Editar esta relación">
+                            <i class="bi bi-pencil-square"></i>
+                        </button>
+                        <button class="btn btn-danger btn-sm" 
+                            onclick="deleteTipoCriticidad('${relation.tipo_criticidad_id}', '${UI.utils.escapeHtml(tipoGroup.tipo_criticidad_name)}', '${relation.id}')"
+                            title="Eliminar esta relación">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(additionalRow);
+        }
     });
+    
+    // Agregar efecto hover para grupos completos
+    aplicarEfectosHover();
 }
 
 function actualizarPaginacion(response, currentPage, perPage) {
@@ -486,3 +537,31 @@ window.deleteTipoCriticidad = async function(tipoId, tipoName, relacionId) {
         UI.loading.hide();
     }
 };
+
+// Función para aplicar efectos de hover por grupo
+function aplicarEfectosHover() {
+    const tbody = document.getElementById('tipoCriticidadTableBody');
+    if (!tbody) return;
+
+    const rows = tbody.querySelectorAll('tr[data-group-id]');
+    
+    rows.forEach(row => {
+        const groupId = row.dataset.groupId;
+        
+        row.addEventListener('mouseenter', () => {
+            // Resaltar todas las filas del mismo grupo
+            const groupRows = tbody.querySelectorAll(`tr[data-group-id="${groupId}"]`);
+            groupRows.forEach(groupRow => {
+                groupRow.classList.add('group-hover');
+            });
+        });
+        
+        row.addEventListener('mouseleave', () => {
+            // Quitar resaltado de todas las filas del mismo grupo
+            const groupRows = tbody.querySelectorAll(`tr[data-group-id="${groupId}"]`);
+            groupRows.forEach(groupRow => {
+                groupRow.classList.remove('group-hover');
+            });
+        });
+    });
+}

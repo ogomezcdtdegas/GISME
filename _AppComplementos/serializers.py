@@ -29,16 +29,24 @@ class TipoCriticidadCriticidadSerializer(serializers.ModelSerializer):
     tipo_criticidad_name = serializers.CharField(source="tipo_criticidad.name", read_only=True)
     criticidad_name = serializers.CharField(source="criticidad.name", read_only=True)
     tipo_criticidad_id = serializers.UUIDField(source="tipo_criticidad.id", read_only=True)
-    total_relations = serializers.SerializerMethodField()
+    total_relations = serializers.IntegerField(read_only=True)
 
-    def get_total_relations(self, obj):
-        # Contar cuántos productos están relacionados con esta relación específica tipo_criticidad-criticidad
+    def get_total_relations_fallback(self, obj):
+        """Método de respaldo en caso de que no haya anotación"""
+        if hasattr(obj, 'total_relations'):
+            return obj.total_relations
         return ProductoTipoCritCrit.objects.filter(relacion_tipo_criticidad=obj).count()
+    
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        # Si no hay anotación, usar el método de respaldo
+        if not hasattr(instance, 'total_relations') or instance.total_relations is None:
+            data['total_relations'] = self.get_total_relations_fallback(instance)
+        return data
 
     class Meta:
         model = TipoCriticidadCriticidad
         fields = ['id', 'tipo_criticidad', 'tipo_criticidad_id', 'tipo_criticidad_name', 'criticidad', 'criticidad_name', 'created_at', 'total_relations']
-'''xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'''
 
 
 
@@ -59,10 +67,20 @@ class ProductoTipoCriticiddadSerializer(serializers.ModelSerializer):
     tipo_criticidad_id = serializers.UUIDField(source='relacion_tipo_criticidad.tipo_criticidad.id')
     criticidad_id = serializers.UUIDField(source='relacion_tipo_criticidad.criticidad.id')
     producto_id = serializers.UUIDField(source='producto.id')
-    total_relations = serializers.SerializerMethodField()
+    total_relations = serializers.IntegerField(read_only=True)
 
-    def get_total_relations(self, obj):
+    def get_total_relations_fallback(self, obj):
+        """Método de respaldo en caso de que no haya anotación"""
+        if hasattr(obj, 'total_relations'):
+            return obj.total_relations
         return ProductoTipoCritCrit.objects.filter(producto=obj.producto).count()
+    
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        # Si no hay anotación, usar el método de respaldo
+        if not hasattr(instance, 'total_relations') or instance.total_relations is None:
+            data['total_relations'] = self.get_total_relations_fallback(instance)
+        return data
     
     class Meta:
         model = ProductoTipoCritCrit
@@ -96,10 +114,20 @@ class TipoEquipoProductoSerializer(serializers.ModelSerializer):
     producto_id = serializers.UUIDField(source='relacion_producto.producto.id')
     tipo_criticidad_id = serializers.UUIDField(source='relacion_producto.relacion_tipo_criticidad.tipo_criticidad.id')
     criticidad_id = serializers.UUIDField(source='relacion_producto.relacion_tipo_criticidad.criticidad.id')
-    total_relations = serializers.SerializerMethodField()
+    total_relations = serializers.IntegerField(read_only=True)
 
-    def get_total_relations(self, obj):
+    def get_total_relations_fallback(self, obj):
+        """Método de respaldo en caso de que no haya anotación"""
+        if hasattr(obj, 'total_relations'):
+            return obj.total_relations
         return TipoEquipoProducto.objects.filter(tipo_equipo=obj.tipo_equipo).count()
+    
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        # Si no hay anotación, usar el método de respaldo
+        if not hasattr(instance, 'total_relations') or instance.total_relations is None:
+            data['total_relations'] = self.get_total_relations_fallback(instance)
+        return data
     
     class Meta:
         model = TipoEquipoProducto
@@ -129,13 +157,22 @@ class TecnologiaTipoEquipoSerializer(serializers.ModelSerializer):
     producto_id = serializers.UUIDField(source='relacion_tipo_equipo.relacion_producto.producto.id')
     tipo_criticidad_id = serializers.UUIDField(source='relacion_tipo_equipo.relacion_producto.relacion_tipo_criticidad.tipo_criticidad.id')
     criticidad_id = serializers.UUIDField(source='relacion_tipo_equipo.relacion_producto.relacion_tipo_criticidad.criticidad.id')
-    total_relations = serializers.SerializerMethodField()
+    total_relations = serializers.IntegerField(read_only=True)
 
-    def get_total_relations(self, obj):
+    def get_total_relations_fallback(self, obj):
+        """Método de respaldo en caso de que no haya anotación"""
+        if hasattr(obj, 'total_relations'):
+            return obj.total_relations
         return TecnologiaTipoEquipo.objects.filter(tecnologia=obj.tecnologia).count()
+    
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        # Si no hay anotación, usar el método de respaldo
+        if not hasattr(instance, 'total_relations') or instance.total_relations is None:
+            data['total_relations'] = self.get_total_relations_fallback(instance)
+        return data
     
     class Meta:
         model = TecnologiaTipoEquipo
         fields = ['id', 'tecnologia_id', 'tecnologia_name', 'tipo_equipo_id', 'tipo_equipo_name', 'producto_id', 'producto_name', 
                  'tipo_criticidad_name', 'criticidad_name', 'tipo_criticidad_id', 'criticidad_id', 'total_relations']
-'''xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'''
