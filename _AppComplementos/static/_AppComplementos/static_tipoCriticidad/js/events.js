@@ -15,7 +15,7 @@ function actualizarTablaTipoCriticidades(data) {
     if (!data || data.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="4" class="text-center">No hay tipos de criticidad registrados</td>
+                <td colspan="3" class="text-center">No hay tipos de criticidad registrados</td>
             </tr>`;
         return;
     }
@@ -50,7 +50,6 @@ function actualizarTablaTipoCriticidades(data) {
                 </div>
             </td>
             <td class="relation-cell">${UI.utils.escapeHtml(firstRelation.criticidad_name)}</td>
-            <td class="relation-cell">${UI.utils.formatDate(firstRelation.created_at)}</td>
             <td class="text-center action-cell">
                 <div class="btn-group" role="group">
                     <button class="btn btn-primary btn-sm me-1" 
@@ -78,7 +77,6 @@ function actualizarTablaTipoCriticidades(data) {
             additionalRow.className = `${groupClass} group-continuation`;
             additionalRow.innerHTML = `
                 <td class="relation-cell">${UI.utils.escapeHtml(relation.criticidad_name)}</td>
-                <td class="relation-cell">${UI.utils.formatDate(relation.created_at)}</td>
                 <td class="text-center action-cell">
                     <div class="btn-group" role="group">
                         <button class="btn btn-primary btn-sm me-1" 
@@ -171,7 +169,7 @@ async function loadTipoCriticidades(page = currentPage, search = '') {
                 if (tbody) {
                     tbody.innerHTML = `
                         <tr>
-                            <td colspan="4" class="text-center">
+                            <td colspan="3" class="text-center">
                                 <i class="bi bi-search"></i>
                                 No se encontraron tipos de criticidad que coincidan con "${searchQuery}"
                             </td>
