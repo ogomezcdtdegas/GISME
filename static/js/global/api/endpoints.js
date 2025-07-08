@@ -39,6 +39,7 @@ export const ENDPOINTS = {
         LISTAR: '/complementos/tecnologias/',
         CREAR: '/complementos/crear-tecnologia/',
         ACTUALIZAR: (id) => `/complementos/editar-tecnologia/${id}/`,
-        ELIMINAR: (id) => `/complementos/eliminar-tecnologia/${id}/`
+        ELIMINAR: (id) => `/complementos/eliminar-tecnologia/${id}/`,
+        ELIMINAR_RELACION: (id) => `/complementos/eliminar-tecnologia-relacion/${id}/`
     }
 };

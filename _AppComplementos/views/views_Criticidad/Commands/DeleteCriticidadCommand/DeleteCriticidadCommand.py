@@ -3,7 +3,11 @@ from rest_framework.response import Response
 from rest_framework import status
 from django.db import transaction
 from django.db.models import Count, Q
-from _AppComplementos.models import Criticidad, TipoCriticidadCriticidad, TipoCriticidad, ProductoTipoCritCrit, Producto
+from _AppComplementos.models import (
+    Criticidad, TipoCriticidadCriticidad, TipoCriticidad, 
+    ProductoTipoCritCrit, Producto, TipoEquipoProducto, 
+    TipoEquipo, TecnologiaTipoEquipo, Tecnologia
+)
 
 class DeleteCriticidadCommand(APIView):
     def delete(self, request, obj_id):
@@ -13,7 +17,7 @@ class DeleteCriticidadCommand(APIView):
                 criticidad = Criticidad.objects.get(id=obj_id)
                 nombre_criticidad = criticidad.name
 
-                # 2. Obtener todos los tipos y productos que serán afectados antes de eliminar
+                # 2. Obtener todos los elementos afectados en la cadena ANTES de eliminar
                 tipos_afectados = list(TipoCriticidadCriticidad.objects.filter(
                     criticidad=criticidad
                 ).values_list('tipo_criticidad', flat=True).distinct())
@@ -22,21 +26,26 @@ class DeleteCriticidadCommand(APIView):
                     relacion_tipo_criticidad__criticidad=criticidad
                 ).values_list('producto', flat=True).distinct())
 
+                tipos_equipo_afectados = list(TipoEquipoProducto.objects.filter(
+                    relacion_producto__relacion_tipo_criticidad__criticidad=criticidad
+                ).values_list('tipo_equipo', flat=True).distinct())
+
+                tecnologias_afectadas = list(TecnologiaTipoEquipo.objects.filter(
+                    relacion_tipo_equipo__relacion_producto__relacion_tipo_criticidad__criticidad=criticidad
+                ).values_list('tecnologia', flat=True).distinct())
+
                 # 3. Eliminar la criticidad (esto eliminará las relaciones TipoCriticidadCriticidad en cascada)
                 criticidad.delete()
 
                 # 4. Verificar y limpiar tipos que quedaron sin relaciones
                 tipos_eliminados = []
                 if tipos_afectados:
-                    # Buscar tipos sin relaciones después de eliminar la criticidad
                     for tipo_id in tipos_afectados:
-                        # Verificar si el tipo todavía tiene relaciones
                         tiene_relaciones = TipoCriticidadCriticidad.objects.filter(
                             tipo_criticidad_id=tipo_id
                         ).exists()
                         
                         if not tiene_relaciones:
-                            # El tipo no tiene relaciones, eliminarlo
                             try:
                                 tipo = TipoCriticidad.objects.get(id=tipo_id)
                                 tipos_eliminados.append({
@@ -45,20 +54,17 @@ class DeleteCriticidadCommand(APIView):
                                 })
                                 tipo.delete()
                             except TipoCriticidad.DoesNotExist:
-                                pass  # Ya fue eliminado
+                                pass
 
                 # 5. Verificar y limpiar productos que quedaron sin relaciones
                 productos_eliminados = []
                 if productos_afectados:
-                    # Buscar productos sin relaciones después de eliminar la criticidad
                     for producto_id in productos_afectados:
-                        # Verificar si el producto todavía tiene relaciones
                         tiene_relaciones = ProductoTipoCritCrit.objects.filter(
                             producto_id=producto_id
                         ).exists()
                         
                         if not tiene_relaciones:
-                            # El producto no tiene relaciones, eliminarlo
                             try:
                                 producto = Producto.objects.get(id=producto_id)
                                 productos_eliminados.append({
@@ -67,9 +73,47 @@ class DeleteCriticidadCommand(APIView):
                                 })
                                 producto.delete()
                             except Producto.DoesNotExist:
-                                pass  # Ya fue eliminado
+                                pass
 
-                # 6. Construir mensaje detallado
+                # 6. Verificar y limpiar tipos de equipo que quedaron sin relaciones
+                tipos_equipo_eliminados = []
+                if tipos_equipo_afectados:
+                    for tipo_equipo_id in tipos_equipo_afectados:
+                        tiene_relaciones = TipoEquipoProducto.objects.filter(
+                            tipo_equipo_id=tipo_equipo_id
+                        ).exists()
+                        
+                        if not tiene_relaciones:
+                            try:
+                                tipo_equipo = TipoEquipo.objects.get(id=tipo_equipo_id)
+                                tipos_equipo_eliminados.append({
+                                    'nombre': tipo_equipo.name,
+                                    'motivo': 'no quedaron relaciones'
+                                })
+                                tipo_equipo.delete()
+                            except TipoEquipo.DoesNotExist:
+                                pass
+
+                # 7. Verificar y limpiar tecnologías que quedaron sin relaciones
+                tecnologias_eliminadas = []
+                if tecnologias_afectadas:
+                    for tecnologia_id in tecnologias_afectadas:
+                        tiene_relaciones = TecnologiaTipoEquipo.objects.filter(
+                            tecnologia_id=tecnologia_id
+                        ).exists()
+                        
+                        if not tiene_relaciones:
+                            try:
+                                tecnologia = Tecnologia.objects.get(id=tecnologia_id)
+                                tecnologias_eliminadas.append({
+                                    'nombre': tecnologia.name,
+                                    'motivo': 'no quedaron relaciones'
+                                })
+                                tecnologia.delete()
+                            except Tecnologia.DoesNotExist:
+                                pass
+
+                # 8. Construir mensaje detallado
                 mensaje = f'Se ha eliminado la criticidad "{nombre_criticidad}".'
 
                 if tipos_eliminados:
@@ -82,15 +126,27 @@ class DeleteCriticidadCommand(APIView):
                     for producto in productos_eliminados:
                         mensaje += f"\n• {producto['nombre']} ({producto['motivo']})"
 
-                if not tipos_eliminados and not productos_eliminados:
-                    mensaje += "\nNo se eliminaron tipos ni productos adicionales."
+                if tipos_equipo_eliminados:
+                    mensaje += "\n\nTipos de equipo eliminados por quedar sin relaciones:"
+                    for tipo_equipo in tipos_equipo_eliminados:
+                        mensaje += f"\n• {tipo_equipo['nombre']} ({tipo_equipo['motivo']})"
+
+                if tecnologias_eliminadas:
+                    mensaje += "\n\nTecnologías eliminadas por quedar sin relaciones:"
+                    for tecnologia in tecnologias_eliminadas:
+                        mensaje += f"\n• {tecnologia['nombre']} ({tecnologia['motivo']})"
+
+                if not any([tipos_eliminados, productos_eliminados, tipos_equipo_eliminados, tecnologias_eliminadas]):
+                    mensaje += "\nNo se eliminaron elementos adicionales."
 
                 return Response({
                     'success': True,
                     'message': mensaje,
                     'detalles': {
                         'tipos_eliminados': [t['nombre'] for t in tipos_eliminados],
-                        'productos_eliminados': [p['nombre'] for p in productos_eliminados]
+                        'productos_eliminados': [p['nombre'] for p in productos_eliminados],
+                        'tipos_equipo_eliminados': [te['nombre'] for te in tipos_equipo_eliminados],
+                        'tecnologias_eliminadas': [t['nombre'] for t in tecnologias_eliminadas]
                     }
                 }, status=status.HTTP_200_OK)
 

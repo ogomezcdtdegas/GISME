@@ -26,11 +26,16 @@ export const TipoEquipoService = {
         return BaseAPI.put(ENDPOINTS.TIPO_EQUIPO.ACTUALIZAR(id), data);
     },
 
-    async eliminarTipo(id) {
+    async eliminarTipoEquipo(id) {
         return BaseAPI.delete(ENDPOINTS.TIPO_EQUIPO.ELIMINAR(id));
     },
 
     async eliminarRelacion(id) {
         return BaseAPI.delete(ENDPOINTS.TIPO_EQUIPO.ELIMINAR_RELACION(id));
+    },
+
+    // Mantener compatibilidad con funciones anteriores
+    async eliminar(id) {
+        return this.eliminarRelacion(id);
     }
 };

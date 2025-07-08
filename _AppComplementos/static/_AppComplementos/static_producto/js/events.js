@@ -431,6 +431,10 @@ window.deleteProducto = async function(relacionId, productoId, productoName) {
                 html: `
                     <div class="text-start">
                         <p>El producto "${productoName}" tiene ${productoInfo.total_relations} relaciones.</p>
+                        <p class="text-warning">
+                            <i class="bi bi-exclamation-triangle"></i> 
+                            Nota: Esta acción eliminará en cascada todos los elementos que dependan de este producto (tipos de equipo y tecnologías que queden sin relaciones).
+                        </p>
                         <div class="form-check">
                             <input class="form-check-input" type="radio" name="deleteType" id="deleteRelation" value="relation" checked>
                             <label class="form-check-label" for="deleteRelation">

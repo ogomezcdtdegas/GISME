@@ -65,7 +65,8 @@ function actualizarTablaTecnologias(data) {
                                 <i class="bi bi-pencil-square"></i>
                             </button>
                             <button class="btn btn-danger btn-sm" 
-                                    onclick="deleteTecnologia('${item.id}')">
+                                    onclick="deleteTecnologia('${item.id}', '${item.tecnologia_id}', '${UI.utils.escapeHtml(item.tecnologia_name)}')"
+                                    title="${cantidadItems > 1 ? 'Eliminar esta combinación' : 'Eliminar tecnología'}">
                                 <i class="bi bi-trash"></i>
                             </button>
                         </td>
@@ -85,7 +86,8 @@ function actualizarTablaTecnologias(data) {
                                 <i class="bi bi-pencil-square"></i>
                             </button>
                             <button class="btn btn-danger btn-sm" 
-                                    onclick="deleteTecnologia('${item.id}')">
+                                    onclick="deleteTecnologia('${item.id}', '${item.tecnologia_id}', '${UI.utils.escapeHtml(item.tecnologia_name)}')"
+                                    title="Eliminar esta combinación">
                                 <i class="bi bi-trash"></i>
                             </button>
                         </td>
@@ -311,21 +313,105 @@ window.openEditTecnologiaModal = async function(tecnologiaId) {
 };
 
 // Función para eliminar tecnología
-window.deleteTecnologia = async function(tecnologiaId) {
-    if (confirm('¿Está seguro de que desea eliminar esta tecnología?')) {
-        try {
-            const response = await TecnologiaService.delete(tecnologiaId);
-            
-            if (response.success) {
-                UI.showAlert(response.message, 'success');
-                cargarTecnologias(currentPage);
-            } else {
-                UI.showAlert(response.error || 'Error al eliminar la tecnología', 'error');
-            }
-        } catch (error) {
-            console.error('Error al eliminar tecnología:', error);
-            UI.showAlert('Error al eliminar la tecnología', 'error');
+window.deleteTecnologia = async function(relacionId, tecnologiaId, tecnologiaName) {
+    try {
+        let deleteType;
+
+        // Obtener el total de relaciones de la tecnología
+        const tecnologiaDetails = await TecnologiaService.getAll(1, 1000); // Temporal: Get all to count relations
+        const tecnologiaInfo = tecnologiaDetails.results?.find(t => String(t.tecnologia_id) === String(tecnologiaId));
+        const hasMultipleRelations = tecnologiaInfo?.total_relations > 1;
+
+        if (hasMultipleRelations) {
+            // Si tiene múltiples relaciones, mostrar diálogo con opciones
+            const result = await Swal.fire({
+                title: `¿Qué desea eliminar?`,
+                html: `
+                    <div class="text-start">
+                        <p>La tecnología "${tecnologiaName}" tiene ${tecnologiaInfo.total_relations} relaciones.</p>
+                        <p class="text-info">
+                            <i class="bi bi-info-circle"></i> 
+                            Nota: La tecnología es el último nivel de la jerarquía, por lo que no hay elementos dependientes que se eliminen en cascada.
+                        </p>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="deleteType" id="deleteRelation" value="relation" checked>
+                            <label class="form-check-label" for="deleteRelation">
+                                Solo eliminar esta relación
+                            </label>
+                        </div>
+                        <div class="form-check mt-2">
+                            <input class="form-check-input" type="radio" name="deleteType" id="deleteTecnologia" value="tecnologia">
+                            <label class="form-check-label" for="deleteTecnologia">
+                                Eliminar la tecnología y todas sus relaciones
+                            </label>
+                        </div>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'Eliminar',
+                cancelButtonText: 'Cancelar',
+                preConfirm: () => {
+                    return document.querySelector('input[name="deleteType"]:checked')?.value;
+                }
+            });
+
+            if (result.isDismissed) return;
+            deleteType = result.value;
+        } else {
+            // Si solo tiene una relación, confirmar la eliminación simple
+            const result = await Swal.fire({
+                title: '¿Está seguro?',
+                html: `
+                    <div class="text-start">
+                        <p>Esta es la última relación de la tecnología "${tecnologiaName}".</p>
+                        <p>La tecnología será eliminada completamente.</p>
+                        <p class="text-info">
+                            <i class="bi bi-info-circle"></i> 
+                            Nota: La tecnología es el último nivel de la jerarquía, por lo que no hay elementos dependientes que se eliminen en cascada.
+                        </p>
+                    </div>
+                `,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            });
+
+            if (result.isDismissed) return;
+            deleteType = 'relation'; // For single relation, we use DeleteRelacionCommand and let backend handle it
         }
+
+        UI.loading.show();
+
+        let response;
+        if (deleteType === 'tecnologia') {
+            response = await TecnologiaService.eliminarTecnologia(tecnologiaId);
+        } else {
+            response = await TecnologiaService.eliminarRelacion(relacionId);
+        }
+
+        if (response?.success) {
+            UI.showAlert(response.message, 'success');
+            
+            // Si era la última relación o se eliminó la tecnología completa, actualizar las listas
+            if (response.was_last_relation || deleteType === 'tecnologia') {
+                // Recargar los dropdowns de tecnologías si están presentes
+                const dropdowns = document.querySelectorAll('[id^=tecnologiaDropdown]');
+                for (const dropdown of dropdowns) {
+                    await cargarTecnologias(dropdown.id);
+                }
+            }
+
+            // Recargar la tabla de tecnologías
+            await cargarTecnologias(currentPage);
+        } else {
+            UI.showAlert(response?.message || 'Error al eliminar la tecnología', 'error');
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        UI.showAlert('Error al procesar la solicitud', 'error');
+    } finally {
+        UI.loading.hide();
     }
 };
 
