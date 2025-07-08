@@ -76,7 +76,7 @@ function actualizarTablaCriticidades(data) {
     if (data.length === 0) {
         tbody.innerHTML = `
             <tr>
-                <td colspan="3">No hay criticidades registradas</td>
+                <td colspan="2">No hay criticidades registradas</td>
             </tr>`;
         return;
     }
@@ -87,7 +87,6 @@ function actualizarTablaCriticidades(data) {
         const nombreEscapado = criticidad.name.replace(/'/g, '&#39;');
         row.innerHTML = `
             <td>${UI.utils.escapeHtml(criticidad.name)}</td>
-            <td>${criticidad.created_at}</td>
             <td>
                 <div class="btn-group" role="group">
                     <button class="btn btn-primary btn-sm me-1" 
@@ -172,7 +171,7 @@ async function loadCriticidades(page = currentPage, search = '') {
                 if (tbody) {
                     tbody.innerHTML = `
                         <tr>
-                            <td colspan="3" class="text-center">
+                            <td colspan="2" class="text-center">
                                 <i class="bi bi-search"></i>
                                 No se encontraron criticidades que coincidan con "${searchQuery}"
                             </td>
