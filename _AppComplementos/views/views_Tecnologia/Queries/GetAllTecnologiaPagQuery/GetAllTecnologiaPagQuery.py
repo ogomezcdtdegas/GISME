@@ -1,12 +1,25 @@
 from repoGenerico.views_base import BaseListView
 from .....models import TecnologiaTipoEquipo
 from .....serializers import TecnologiaTipoEquipoSerializer
+from django.db.models import Count
 
 # 🔹 Listado paginado
 class allTecnologiasPag(BaseListView):
     model = TecnologiaTipoEquipo
     serializer_class = TecnologiaTipoEquipoSerializer
     template_name = "_AppComplementos/templates_tecnologia/index.html"
+
+    def get_queryset(self):
+        """Optimizar consultas con select_related y anotaciones para evitar N+1"""
+        return TecnologiaTipoEquipo.objects.select_related(
+            'tecnologia',
+            'relacion_tipo_equipo__tipo_equipo',
+            'relacion_tipo_equipo__relacion_producto__producto',
+            'relacion_tipo_equipo__relacion_producto__relacion_tipo_criticidad__tipo_criticidad',
+            'relacion_tipo_equipo__relacion_producto__relacion_tipo_criticidad__criticidad'
+        ).annotate(
+            total_relations=Count('tecnologia__tecnologiatipoequipo')
+        ).order_by('tecnologia__name')
 
     def get_allowed_ordering_fields(self):
         return ['created_at', 'tecnologia__name']
