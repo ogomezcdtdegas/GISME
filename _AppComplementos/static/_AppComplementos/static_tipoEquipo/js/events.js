@@ -18,11 +18,11 @@ async function loadTiposEquipo(page = currentPage, search = '') {
             actualizarTablaTiposEquipo(response);
             actualizarPaginacion(response, page, perPage);
         } else {
-            UI.toast.error(response.error || "Error al cargar los tipos de equipo");
+            UI.showAlert(response.error || "Error al cargar los tipos de equipo", 'error');
         }
     } catch (error) {
         console.error("Error:", error);
-        UI.toast.error("Error al cargar los datos");
+        UI.showAlert("Error al cargar los datos", 'error');
     } finally {
         UI.loading.hide('tipoEquipoTableBody');
     }
@@ -178,7 +178,7 @@ async function cargarProductos(dropdownId = 'productoDropdown', selectedValue = 
         });
     } catch (error) {
         console.error('Error al cargar productos:', error);
-        UI.toast.error('Error al cargar los productos');
+        UI.showAlert('Error al cargar los productos', 'error');
     }
 }
 
@@ -227,7 +227,7 @@ async function cargarTiposCriticidadPorProducto(productoId, dropdownId = 'tipoCr
         dropdown.disabled = false;
     } catch (error) {
         console.error('Error al cargar tipos de criticidad:', error);
-        UI.toast.error('Error al cargar los tipos de criticidad');
+        UI.showAlert('Error al cargar los tipos de criticidad', 'error');
     }
 }
 
@@ -276,7 +276,7 @@ async function cargarCriticidadesPorTipo(tipoCriticidadId, dropdownId = 'critici
         dropdown.disabled = false;
     } catch (error) {
         console.error('Error al cargar criticidades:', error);
-        UI.toast.error('Error al cargar las criticidades');
+        UI.showAlert('Error al cargar las criticidades', 'error');
     }
 }
 
@@ -308,7 +308,7 @@ window.openEditModal = async function(id, name, productoId, tipoCriticidadId, cr
         modal.show();
     } catch (error) {
         console.error('Error al abrir el modal:', error);
-        UI.toast.error('Error al cargar los datos para edición');
+        UI.showAlert('Error al cargar los datos para edición', 'error');
     }
 };
 
@@ -335,15 +335,15 @@ window.deleteTipoEquipo = async function(id, name) {
             const response = await TipoEquipoService.eliminar(id);
             
             if (response.success) {
-                UI.toast.success(response.message || 'Tipo de equipo eliminado correctamente');
+                UI.showAlert(response.message || 'Tipo de equipo eliminado correctamente', 'success');
                 await loadTiposEquipo(currentPage);
             } else {
-                UI.toast.error(response.error || 'Error al eliminar el tipo de equipo');
+                UI.showAlert(response.error || 'Error al eliminar el tipo de equipo', 'error');
             }
         }
     } catch (error) {
         console.error('Error al eliminar:', error);
-        UI.toast.error('Error al eliminar el tipo de equipo');
+        UI.showAlert('Error al eliminar el tipo de equipo', 'error');
     }
 };
 
@@ -428,7 +428,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         const criticidadId = UI.form.getValue('criticidadDropdown');
 
         if (!name || !productoId || !tipoCriticidadId || !criticidadId) {
-            UI.toast.warning("Todos los campos son obligatorios");
+            UI.showAlert("Todos los campos son obligatorios", 'warning');
             return;
         }
 
@@ -440,7 +440,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         });
         
         if (response.success) {
-            UI.toast.success(response.message || "Tipo de equipo registrado exitosamente");
+            UI.showAlert(response.message || "Tipo de equipo registrado exitosamente", 'success');
             this.reset();
             
             // Resetear dropdowns
@@ -449,7 +449,7 @@ document.addEventListener("DOMContentLoaded", async function () {
             
             loadTiposEquipo(currentPage);
         } else {
-            UI.toast.error(response.error || "Error al registrar el tipo de equipo");
+            UI.showAlert(response.error || "Error al registrar el tipo de equipo", 'error');
         }
     });
 
@@ -464,7 +464,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         const criticidadId = UI.form.getValue('editCriticidad');
 
         if (!name || !productoId || !tipoCriticidadId || !criticidadId) {
-            UI.toast.warning("Todos los campos son obligatorios");
+            UI.showAlert("Todos los campos son obligatorios", 'warning');
             return;
         }
 
@@ -476,11 +476,11 @@ document.addEventListener("DOMContentLoaded", async function () {
         });
         
         if (response.success) {
-            UI.toast.success(response.message || "Tipo de equipo actualizado exitosamente");
+            UI.showAlert(response.message || "Tipo de equipo actualizado exitosamente", 'success');
             bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
             loadTiposEquipo(currentPage);
         } else {
-            UI.toast.error(response.error || "Error al actualizar el tipo de equipo");
+            UI.showAlert(response.error || "Error al actualizar el tipo de equipo", 'error');
         }
     });
 

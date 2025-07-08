@@ -28,6 +28,14 @@ from .views.views_TipoEquipo.Commands import (
 )
 from .views.views_TipoEquipo.Queries import allTipoEquiposPag
 
+''' Tecnología '''
+from .views.views_Tecnologia.Commands import (
+    crearTecnologia,
+    EditarTecnologiaView,
+    DeleteTecnologiaCommand
+)
+from .views.views_Tecnologia.Queries import allTecnologiasPag
+
 urlpatterns = [
     path('', GetAllCriticidadPagQuery.allCriticidadPag.as_view(), name='allCriticidadesPag'),
     path('listar-todo-criticidad/', GetAllCriticidadListQuery.CriticidadListAllView.as_view(), name='listarTodoCriticidad'),
@@ -56,4 +64,10 @@ urlpatterns = [
     path('editar-tipoEquipo/<uuid:obj_id>/', EditarTipoEquipoView.as_view(), name='editarTipoEquipo'),
     path('eliminar-tipo-equipo/<uuid:obj_id>/', DeleteTipoEquipoCommand.as_view(), name='eliminarTipoEquipo'),
     path('eliminar-tipo-equipo-relacion/<uuid:obj_id>/', DeleteTipoEquipoRelacionCommand.as_view(), name='eliminarTipoEquipoRelacion'),
+
+    # Tecnología URLs
+    path('tecnologias/', allTecnologiasPag.as_view(), name='allTecnologiasPag'),
+    path('crear-tecnologia/', crearTecnologia.as_view(), name='crearTecnologia'),
+    path('editar-tecnologia/<uuid:obj_id>/', EditarTecnologiaView.as_view(), name='editarTecnologia'),
+    path('eliminar-tecnologia/<uuid:obj_id>/', DeleteTecnologiaCommand.as_view(), name='eliminarTecnologia'),
 ]

@@ -180,11 +180,11 @@ async function loadCriticidades(page = currentPage, search = '') {
                 }
             }
         } else {
-            UI.toast.error("Error al cargar las criticidades");
+            UI.showAlert("Error al cargar las criticidades", 'error');
         }
     } catch (error) {
         console.error("Error:", error);
-        UI.toast.error("Error al cargar los datos");
+        UI.showAlert("Error al cargar los datos", 'error');
     } finally {
         UI.loading.hide('critTableBody');
     }
@@ -261,11 +261,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const response = await CriticidadService.crear(name);
         if (response.success) {
-            UI.toast.success(response.message || "Criticidad creada exitosamente");
+            UI.showAlert(response.message || "Criticidad creada exitosamente", 'success');
             loadCriticidades();
             UI.form.reset('critForm');
         } else {
-            UI.toast.error(response.error || "Error al registrar criticidad");
+            UI.showAlert(response.error || "Error al registrar criticidad", 'error');
         }
     });
 
@@ -276,11 +276,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
         const response = await CriticidadService.actualizar(id, name);
         if (response.success) {
-            UI.toast.success("Criticidad actualizada correctamente");
+            UI.showAlert("Criticidad actualizada correctamente", 'success');
             loadCriticidades();
             bootstrap.Modal.getInstance(document.getElementById('editModal')).hide();
         } else {
-            UI.toast.error(response.error || "Error al actualizar la criticidad");
+            UI.showAlert(response.error || "Error al actualizar la criticidad", 'error');
         }
     });
 

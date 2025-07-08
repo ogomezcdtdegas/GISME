@@ -1,0 +1,1 @@
+from .GetAllTecnologiaPagQuery.GetAllTecnologiaPagQuery import allTecnologiasPag

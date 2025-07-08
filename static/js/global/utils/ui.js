@@ -87,6 +87,40 @@ export const UI = {
         }
     },
 
+    // Alert notifications using SweetAlert2
+    showAlert(message, type = 'info') {
+        const config = {
+            text: message,
+            confirmButtonText: 'OK'
+        };
+
+        switch (type) {
+            case 'success':
+                config.icon = 'success';
+                config.title = '¡Éxito!';
+                break;
+            case 'error':
+                config.icon = 'error';
+                config.title = 'Error';
+                break;
+            case 'warning':
+                config.icon = 'warning';
+                config.title = 'Advertencia';
+                break;
+            default:
+                config.icon = 'info';
+                config.title = 'Información';
+        }
+
+        // Verificar si SweetAlert2 está disponible
+        if (typeof Swal !== 'undefined') {
+            Swal.fire(config);
+        } else {
+            // Fallback a alert nativo
+            alert(`${config.title}: ${message}`);
+        }
+    },
+
     // Loading state
     loading: {
         show(elementId) {
