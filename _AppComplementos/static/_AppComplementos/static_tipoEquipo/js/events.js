@@ -28,7 +28,7 @@ async function loadTiposEquipo(page = currentPage, search = '') {
     }
 }
 
-// Función para actualizar la tabla de tipos de equipo
+// Función para actualizar la tabla de tipos de equipo con agrupación visual
 function actualizarTablaTiposEquipo(response) {
     const tbody = document.getElementById('tipoEquipoTableBody');
     
@@ -38,39 +38,103 @@ function actualizarTablaTiposEquipo(response) {
     const data = response.results || response;
     
     if (data && data.length > 0) {
-        tbody.innerHTML = data.map(item => {
-            const hasMultipleRelations = item.total_relations > 1;
-            return `
-                <tr>
-                    <td>
-                        ${UI.utils.escapeHtml(item.tipo_equipo_name || '')}
-                        ${hasMultipleRelations ? `<span class="badge bg-info ms-2" title="Este tipo de equipo tiene ${item.total_relations} relaciones">${item.total_relations}</span>` : ''}
-                    </td>
-                    <td>${UI.utils.escapeHtml(item.producto_name || '')}</td>
-                    <td>${UI.utils.escapeHtml(item.tipo_criticidad_name || '')}</td>
-                    <td>${UI.utils.escapeHtml(item.criticidad_name || '')}</td>
-                    <td class="text-center">
-                        <div class="btn-group" role="group">
-                            <button class="btn btn-primary btn-sm me-1" 
-                                data-id="${item.id || ''}"
-                                data-tipo-equipo-name="${UI.utils.escapeHtml(item.tipo_equipo_name || '')}"
-                                data-producto-id="${item.producto_id || ''}"
-                                data-tipo-criticidad-id="${item.tipo_criticidad_id || ''}"
-                                data-criticidad-id="${item.criticidad_id || ''}"
-                                onclick="window.openEditModal(this.dataset.id, this.dataset.tipoEquipoName, this.dataset.productoId, this.dataset.tipoCriticidadId, this.dataset.criticidadId)"
-                                style="white-space: nowrap;">
-                                <i class="bi bi-pencil-square"></i>
-                            </button>
-                            <button class="btn btn-danger btn-sm" 
-                                onclick="window.deleteTipoEquipo('${item.id || ''}', '${UI.utils.escapeHtml(item.tipo_equipo_name || '')}')"
-                                style="white-space: nowrap;">
-                                <i class="bi bi-trash"></i>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-            `;
-        }).join('');
+        // Agrupar por tipo_equipo_id
+        const grupos = {};
+        data.forEach(item => {
+            const grupoId = item.tipo_equipo_id || 'sin_grupo';
+            if (!grupos[grupoId]) {
+                grupos[grupoId] = {
+                    nombre: item.tipo_equipo_name || '',
+                    items: []
+                };
+            }
+            grupos[grupoId].items.push(item);
+        });
+
+        let htmlContent = '';
+        let isOddGroup = true;
+
+        Object.keys(grupos).forEach(grupoId => {
+            const grupo = grupos[grupoId];
+            const groupClass = isOddGroup ? 'group-odd' : 'group-even';
+            const cantidadItems = grupo.items.length;
+            
+            // Badge: mismo color que en productos (bg-info)
+            const badgeText = cantidadItems === 1 ? '1 combinación' : `${cantidadItems} combinaciones`;
+            
+            grupo.items.forEach((item, index) => {
+                if (index === 0) {
+                    // Primera fila del grupo: mostrar nombre con rowspan y badge (igual que productos)
+                    htmlContent += `
+                        <tr class="${groupClass}" data-group-id="${grupoId}">
+                            <td class="align-middle main-name-cell" rowspan="${cantidadItems}">
+                                <div class="name-container">
+                                    <span class="main-name">${UI.utils.escapeHtml(grupo.nombre)}</span>
+                                    <br><span class="badge bg-info mt-1" title="Este tipo de equipo tiene ${cantidadItems} ${cantidadItems === 1 ? 'combinación' : 'combinaciones'}">${badgeText}</span>
+                                </div>
+                            </td>
+                            <td>${UI.utils.escapeHtml(item.producto_name || '')}</td>
+                            <td>${UI.utils.escapeHtml(item.tipo_criticidad_name || '')}</td>
+                            <td>${UI.utils.escapeHtml(item.criticidad_name || '')}</td>
+                            <td class="text-center">
+                                <div class="btn-group" role="group">
+                                    <button class="btn btn-primary btn-sm me-1" 
+                                        data-id="${item.id || ''}"
+                                        data-tipo-equipo-name="${UI.utils.escapeHtml(item.tipo_equipo_name || '')}"
+                                        data-producto-id="${item.producto_id || ''}"
+                                        data-tipo-criticidad-id="${item.tipo_criticidad_id || ''}"
+                                        data-criticidad-id="${item.criticidad_id || ''}"
+                                        onclick="window.openEditModal(this.dataset.id, this.dataset.tipoEquipoName, this.dataset.productoId, this.dataset.tipoCriticidadId, this.dataset.criticidadId)"
+                                        style="white-space: nowrap;">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </button>
+                                    <button class="btn btn-danger btn-sm" 
+                                        onclick="window.deleteTipoEquipo('${item.id || ''}', '${UI.utils.escapeHtml(item.tipo_equipo_name || '')}')"
+                                        style="white-space: nowrap;">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                } else {
+                    // Filas adicionales del grupo: solo combinaciones
+                    htmlContent += `
+                        <tr class="${groupClass}" data-group-id="${grupoId}">
+                            <td>${UI.utils.escapeHtml(item.producto_name || '')}</td>
+                            <td>${UI.utils.escapeHtml(item.tipo_criticidad_name || '')}</td>
+                            <td>${UI.utils.escapeHtml(item.criticidad_name || '')}</td>
+                            <td class="text-center">
+                                <div class="btn-group" role="group">
+                                    <button class="btn btn-primary btn-sm me-1" 
+                                        data-id="${item.id || ''}"
+                                        data-tipo-equipo-name="${UI.utils.escapeHtml(item.tipo_equipo_name || '')}"
+                                        data-producto-id="${item.producto_id || ''}"
+                                        data-tipo-criticidad-id="${item.tipo_criticidad_id || ''}"
+                                        data-criticidad-id="${item.criticidad_id || ''}"
+                                        onclick="window.openEditModal(this.dataset.id, this.dataset.tipoEquipoName, this.dataset.productoId, this.dataset.tipoCriticidadId, this.dataset.criticidadId)"
+                                        style="white-space: nowrap;">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </button>
+                                    <button class="btn btn-danger btn-sm" 
+                                        onclick="window.deleteTipoEquipo('${item.id || ''}', '${UI.utils.escapeHtml(item.tipo_equipo_name || '')}')"
+                                        style="white-space: nowrap;">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }
+            });
+            
+            isOddGroup = !isOddGroup; // Alternar para el próximo grupo
+        });
+
+        tbody.innerHTML = htmlContent;
+        
+        // Aplicar efectos de hover por grupo
+        aplicarEfectosHover();
     } else {
         const searchQuery = document.getElementById('searchInput')?.value;
         if (searchQuery && searchQuery.trim() !== '') {
@@ -91,6 +155,34 @@ function actualizarTablaTiposEquipo(response) {
                 </tr>`;
         }
     }
+}
+
+// Función para aplicar efectos de hover por grupo
+function aplicarEfectosHover() {
+    const tbody = document.getElementById('tipoEquipoTableBody');
+    if (!tbody) return;
+
+    const rows = tbody.querySelectorAll('tr[data-group-id]');
+    
+    rows.forEach(row => {
+        const groupId = row.dataset.groupId;
+        
+        row.addEventListener('mouseenter', () => {
+            // Resaltar todas las filas del mismo grupo
+            const groupRows = tbody.querySelectorAll(`tr[data-group-id="${groupId}"]`);
+            groupRows.forEach(groupRow => {
+                groupRow.classList.add('group-hover');
+            });
+        });
+        
+        row.addEventListener('mouseleave', () => {
+            // Quitar resaltado de todas las filas del mismo grupo
+            const groupRows = tbody.querySelectorAll(`tr[data-group-id="${groupId}"]`);
+            groupRows.forEach(groupRow => {
+                groupRow.classList.remove('group-hover');
+            });
+        });
+    });
 }
 
 // Función para actualizar la paginación

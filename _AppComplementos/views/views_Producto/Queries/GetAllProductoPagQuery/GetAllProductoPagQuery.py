@@ -18,7 +18,7 @@ class allProductosPag(BaseListView):
             'relacion_tipo_criticidad__criticidad'
         ).annotate(
             total_relations=Count('producto__productotipocritcrit')
-        ).order_by('-created_at')
+        ).order_by('producto__name', 'relacion_tipo_criticidad__tipo_criticidad__name')
 
     def get_allowed_ordering_fields(self):
         return ['created_at', 'producto__name']

@@ -5,7 +5,7 @@ import { UI } from '../../../../static/js/global/utils/ui.js';
 let currentPage = 1;
 const DEFAULT_PER_PAGE = 10;
 
-// Función para actualizar la tabla de productos
+// Función para actualizar la tabla de productos con agrupación
 function actualizarTablaProductos(data) {
     const tbody = document.getElementById('prodTableBody');
     if (!tbody) return;
@@ -20,36 +20,152 @@ function actualizarTablaProductos(data) {
         return;
     }
 
+    // Agrupar datos por producto_id
+    const groupedData = {};
     data.forEach(item => {
-        const row = document.createElement('tr');
-        const hasMultipleRelations = item.total_relations > 1;
-        row.innerHTML = `
-            <td>
-                ${UI.utils.escapeHtml(item.producto_name)}
-                ${hasMultipleRelations ? `<span class="badge bg-info ms-2" title="Este producto tiene ${item.total_relations} relaciones">${item.total_relations}</span>` : ''}
+        if (!groupedData[item.producto_id]) {
+            groupedData[item.producto_id] = {
+                producto_name: item.producto_name,
+                total_relations: item.total_relations,
+                relations: []
+            };
+        }
+        groupedData[item.producto_id].relations.push(item);
+    });
+
+    // Renderizar filas agrupadas
+    Object.values(groupedData).forEach((product, groupIndex) => {
+        const firstRelation = product.relations[0];
+        const hasMultipleRelations = product.total_relations > 1;
+        const groupClass = groupIndex % 2 === 0 ? 'product-group-odd' : 'product-group-even';
+        
+        // Crear la primera fila con el nombre del producto
+        const firstRow = document.createElement('tr');
+        firstRow.className = `${groupClass} ${hasMultipleRelations ? 'product-group-start' : ''}`;
+        firstRow.innerHTML = `
+            <td class="align-middle product-name-cell" ${hasMultipleRelations ? `rowspan="${product.relations.length}"` : ''}>
+                <div class="product-name-container">
+                    <span class="product-name">${UI.utils.escapeHtml(product.producto_name)}</span>
+                    <br><span class="badge bg-info mt-1" title="Este producto tiene ${product.total_relations} ${product.total_relations === 1 ? 'combinación' : 'combinaciones'}">${product.total_relations} ${product.total_relations === 1 ? 'combinación' : 'combinaciones'}</span>
+                </div>
             </td>
-            <td>${UI.utils.escapeHtml(item.tipo_criticidad_name)}</td>
-            <td>${UI.utils.escapeHtml(item.criticidad_name)}</td>
-            <td class="text-center">
+            <td class="combination-cell">${UI.utils.escapeHtml(firstRelation.tipo_criticidad_name)}</td>
+            <td class="combination-cell">${UI.utils.escapeHtml(firstRelation.criticidad_name)}</td>
+            <td class="text-center action-cell">
                 <div class="btn-group" role="group">
                     <button class="btn btn-primary btn-sm me-1" 
-                        data-id="${item.id}"
-                        data-producto-name="${UI.utils.escapeHtml(item.producto_name)}"
-                        data-tipo-criticidad-id="${item.tipo_criticidad_id}"
-                        data-criticidad-id="${item.criticidad_id}"
+                        data-id="${firstRelation.id}"
+                        data-producto-name="${UI.utils.escapeHtml(product.producto_name)}"
+                        data-tipo-criticidad-id="${firstRelation.tipo_criticidad_id}"
+                        data-criticidad-id="${firstRelation.criticidad_id}"
                         onclick="window.openEditModal(this.dataset.id, this.dataset.productoName, this.dataset.tipoCriticidadId, this.dataset.criticidadId)"
-                        style="white-space: nowrap;">
+                        title="Editar esta combinación">
                         <i class="bi bi-pencil-square"></i>
                     </button>
                     <button class="btn btn-danger btn-sm" 
-                        onclick="window.deleteProducto('${item.id}', '${item.producto_id}', '${UI.utils.escapeHtml(item.producto_name)}')"
-                        title="${hasMultipleRelations ? 'Eliminar relación o producto completo' : 'Eliminar producto'}">
+                        onclick="window.deleteProducto('${firstRelation.id}', '${firstRelation.producto_id}', '${UI.utils.escapeHtml(product.producto_name)}')"
+                        title="${hasMultipleRelations ? 'Eliminar esta combinación' : 'Eliminar producto'}">
                         <i class="bi bi-trash"></i>
                     </button>
                 </div>
             </td>
         `;
-        tbody.appendChild(row);
+        tbody.appendChild(firstRow);
+
+        // Crear filas adicionales para las demás relaciones (sin repetir el nombre del producto)
+        for (let i = 1; i < product.relations.length; i++) {
+            const relation = product.relations[i];
+            const additionalRow = document.createElement('tr');
+            additionalRow.className = `${groupClass} product-group-continuation`;
+            additionalRow.innerHTML = `
+                <td class="combination-cell">${UI.utils.escapeHtml(relation.tipo_criticidad_name)}</td>
+                <td class="combination-cell">${UI.utils.escapeHtml(relation.criticidad_name)}</td>
+                <td class="text-center action-cell">
+                    <div class="btn-group" role="group">
+                        <button class="btn btn-primary btn-sm me-1" 
+                            data-id="${relation.id}"
+                            data-producto-name="${UI.utils.escapeHtml(product.producto_name)}"
+                            data-tipo-criticidad-id="${relation.tipo_criticidad_id}"
+                            data-criticidad-id="${relation.criticidad_id}"
+                            onclick="window.openEditModal(this.dataset.id, this.dataset.productoName, this.dataset.tipoCriticidadId, this.dataset.criticidadId)"
+                            title="Editar esta combinación">
+                            <i class="bi bi-pencil-square"></i>
+                        </button>
+                        <button class="btn btn-danger btn-sm" 
+                            onclick="window.deleteProducto('${relation.id}', '${relation.producto_id}', '${UI.utils.escapeHtml(product.producto_name)}')"
+                            title="Eliminar esta combinación">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(additionalRow);
+        }
+    });
+    
+    // Agregar evento hover para destacar grupos completos
+    addGroupHoverEffect();
+}
+
+// Función para agregar efecto hover a grupos de productos
+function addGroupHoverEffect() {
+    const table = document.querySelector('.grouped-table');
+    if (!table) return;
+    
+    const rows = table.querySelectorAll('tbody tr');
+    
+    rows.forEach((row, index) => {
+        row.addEventListener('mouseenter', function() {
+            // Limpiar highlights previos
+            rows.forEach(r => r.classList.remove('table-active'));
+            
+            // Si la fila tiene rowspan (es el inicio de un grupo)
+            const groupedCell = this.querySelector('.product-name-cell[rowspan]');
+            if (groupedCell) {
+                const rowspan = parseInt(groupedCell.getAttribute('rowspan'));
+                // Destacar todas las filas del grupo
+                for (let i = 0; i < rowspan; i++) {
+                    const targetRow = rows[index + i];
+                    if (targetRow) {
+                        targetRow.classList.add('table-active');
+                    }
+                }
+            } else {
+                // Si es una fila de continuación, buscar el grupo completo
+                const allRows = Array.from(rows);
+                const currentIndex = allRows.indexOf(this);
+                
+                // Buscar hacia atrás la fila con rowspan
+                for (let i = currentIndex - 1; i >= 0; i--) {
+                    const possibleGroupRow = allRows[i];
+                    const groupCell = possibleGroupRow.querySelector('.product-name-cell[rowspan]');
+                    if (groupCell) {
+                        const rowspan = parseInt(groupCell.getAttribute('rowspan'));
+                        const groupStartIndex = i;
+                        const groupEndIndex = groupStartIndex + rowspan - 1;
+                        
+                        if (currentIndex <= groupEndIndex) {
+                            // Destacar todo el grupo
+                            for (let j = groupStartIndex; j <= groupEndIndex; j++) {
+                                if (allRows[j]) {
+                                    allRows[j].classList.add('table-active');
+                                }
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+        });
+        
+        row.addEventListener('mouseleave', function() {
+            // Remover highlight de todas las filas después de un pequeño delay
+            setTimeout(() => {
+                if (!table.querySelector('tbody tr:hover')) {
+                    rows.forEach(r => r.classList.remove('table-active'));
+                }
+            }, 100);
+        });
     });
 }
 
