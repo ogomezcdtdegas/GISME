@@ -145,14 +145,27 @@ class BaseRetrieveUpdateView(APIView):
     model = None
     serializer_class = None
 
+    def get(self, request, obj_id):
+        """Vista GET para obtener un objeto por su ID"""
+        print(f"🔍 Obteniendo objeto ID: {obj_id}")
+        try:
+            obj = get_object_or_404(self.model, id=obj_id)
+            serializer = self.serializer_class(obj)
+            return Response({"success": True, "data": serializer.data}, status=status.HTTP_200_OK)
+        except Exception as e:
+            return Response({"success": False, "error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
     def put(self, request, obj_id):
         print(f"🔍 Intentando actualizar ID: {obj_id}")  # Verificar el ID en consola
+        print(f"📥 Datos recibidos: {request.data}")  # Ver los datos que llegan
         obj = get_object_or_404(self.model, id=obj_id)
         serializer = self.serializer_class(obj, data=request.data, partial=True)
 
         if serializer.is_valid():
             serializer.save()
+            print(f"✅ Actualización exitosa para ID: {obj_id}")
             return Response({"success": True, "message": "Actualización exitosa"}, status=status.HTTP_200_OK)
         
+        print(f"❌ Errores de validación: {serializer.errors}")
         return Response({"success": False, "error": serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 ''' XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX '''

@@ -41,5 +41,21 @@ export const ENDPOINTS = {
         ACTUALIZAR: (id) => `/complementos/editar-tecnologia/${id}/`,
         ELIMINAR: (id) => `/complementos/eliminar-tecnologia/${id}/`,
         ELIMINAR_RELACION: (id) => `/complementos/eliminar-tecnologia-relacion/${id}/`
+    },
+    UBICACION: {
+        LISTAR: '/complementos/ubicaciones/',
+        LISTAR_TODOS: '/complementos/listar-todo-ubicaciones/',
+        CREAR: '/complementos/crear-ubicacion/',
+        POR_ID: (id) => `/complementos/ubicacion/${id}/`,
+        ACTUALIZAR: (id) => `/complementos/editar-ubicacion/${id}/`,
+        ELIMINAR: (id) => `/complementos/eliminar-ubicacion/${id}/`
+    },
+    SISTEMA: {
+        LISTAR: '/complementos/listar-sistemas/',
+        LISTAR_TODOS: '/complementos/listar-todo-sistemas/',
+        CREAR: '/complementos/crear-sistema/',
+        POR_ID: (id) => `/complementos/sistema/${id}/`,
+        ACTUALIZAR: (id) => `/complementos/editar-sistema/${id}/`,
+        ELIMINAR: (id) => `/complementos/eliminar-sistema/${id}/`
     }
 };

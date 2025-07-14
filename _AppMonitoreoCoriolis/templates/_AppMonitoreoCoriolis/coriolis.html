@@ -1,0 +1,146 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Monitoreo Coriolis{% if sistema %} - {{ sistema.tag }} {{ sistema.sistema_id }}{% endif %} - GISME{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/monitoreo.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <div class="row">
+        <div class="col-12">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a href="{% url 'monitoreo_index' %}">Monitoreo y Medición</a>
+                    </li>
+                    <li class="breadcrumb-item active" aria-current="page">
+                        Monitoreo Coriolis{% if sistema %} - {{ sistema.tag }} {{ sistema.sistema_id }}{% endif %}
+                    </li>
+                </ol>
+            </nav>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-diagram-3"></i> Monitoreo de Medidores Coriolis{% if sistema %} "{{ sistema.tag }} {{ sistema.sistema_id }}"{% endif %}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <!-- Panel de Estado -->
+                        <div class="col-lg-8 mb-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">
+                                        <i class="bi bi-activity"></i> Estado del Sistema
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-4 text-center">
+                                            <div class="card bg-success text-white">
+                                                <div class="card-body">
+                                                    <i class="bi bi-check-circle" style="font-size: 2rem;"></i>
+                                                    <h6 class="mt-2">Sistema Activo</h6>
+                                                    <small>Funcionando correctamente</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 text-center">
+                                            <div class="card bg-info text-white">
+                                                <div class="card-body">
+                                                    <i class="bi bi-speedometer2" style="font-size: 2rem;"></i>
+                                                    <h6 class="mt-2">Flujo Actual</h6>
+                                                    <strong>125.4 m³/h</strong>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4 text-center">
+                                            <div class="card bg-warning text-white">
+                                                <div class="card-body">
+                                                    <i class="bi bi-thermometer-half" style="font-size: 2rem;"></i>
+                                                    <h6 class="mt-2">Temperatura</h6>
+                                                    <strong>22.5°C</strong>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Panel de Controles -->
+                        <div class="col-lg-4 mb-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">
+                                        <i class="bi bi-gear"></i> Controles
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="d-grid gap-2">
+                                        <button class="btn btn-primary" type="button">
+                                            <i class="bi bi-play"></i> Iniciar Monitoreo
+                                        </button>
+                                        <button class="btn btn-warning" type="button">
+                                            <i class="bi bi-pause"></i> Pausar
+                                        </button>
+                                        <button class="btn btn-info" type="button">
+                                            <i class="bi bi-download"></i> Exportar Datos
+                                        </button>
+                                        <button class="btn btn-secondary" type="button">
+                                            <i class="bi bi-gear"></i> Configuración
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="mb-0">
+                                        <i class="bi bi-graph-up"></i> Gráfico de Tendencias
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="chartContainer" style="height: 400px;">
+                                        <div class="d-flex justify-content-center align-items-center h-100">
+                                            <div class="text-center">
+                                                <i class="bi bi-graph-up text-muted" style="font-size: 4rem;"></i>
+                                                <p class="text-muted mt-3">
+                                                    Gráfico de tendencias en tiempo real
+                                                    <br><small>Los datos se mostrarán aquí una vez iniciado el monitoreo</small>
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// JavaScript específico para monitoreo Coriolis
+console.log('Página de Monitoreo Coriolis cargada');
+
+// Aquí se puede agregar funcionalidad para gráficos en tiempo real
+// Por ejemplo, con Chart.js o similar
+</script>
+{% endblock %}

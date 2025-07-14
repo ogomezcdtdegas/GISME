@@ -1,0 +1,35 @@
+<div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Editar Ubicación</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editUbicacionForm">
+                    {% csrf_token %}
+                    <input type="hidden" id="editUbicacionId" name="id">
+                    
+                    <div class="mb-3">
+                        <label for="editNombre" class="form-label">Nombre de Ubicación</label>
+                        <input type="text" class="form-control" id="editNombre" name="nombre" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="editLatitud" class="form-label">Latitud</label>
+                        <input type="number" step="0.0000001" min="-90" max="90" class="form-control" id="editLatitud" name="latitud" required>
+                        <div class="form-text">Coordenada entre -90 y 90 grados</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="editLongitud" class="form-label">Longitud</label>
+                        <input type="number" step="0.0000001" min="-180" max="180" class="form-control" id="editLongitud" name="longitud" required>
+                        <div class="form-text">Coordenada entre -180 y 180 grados</div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
