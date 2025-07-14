@@ -2,7 +2,7 @@ from django.contrib import admin
 from .models import (
     TipoEquipo, Producto, TipoEquipoProducto, 
     TipoCriticidad, Criticidad, TipoCriticidadCriticidad,
-    Tecnologia, TecnologiaTipoEquipo
+    Tecnologia, TecnologiaTipoEquipo, Ubicacion, Sistema
 )
 
 # Register your models here.
@@ -18,8 +18,8 @@ class ProductoAdmin(admin.ModelAdmin):
 
 @admin.register(TipoEquipoProducto)
 class TipoEquipoProductoAdmin(admin.ModelAdmin):
-    list_display = ('tipo_equipo', 'producto', 'created_at')
-    list_filter = ('tipo_equipo', 'producto')
+    list_display = ('tipo_equipo', 'relacion_producto', 'created_at')
+    list_filter = ('tipo_equipo', 'relacion_producto__producto')
 
 @admin.register(TipoCriticidad)
 class TipoCriticidadAdmin(admin.ModelAdmin):
@@ -43,5 +43,18 @@ class TecnologiaAdmin(admin.ModelAdmin):
 
 @admin.register(TecnologiaTipoEquipo)
 class TecnologiaTipoEquipoAdmin(admin.ModelAdmin):
-    list_display = ('tecnologia', 'tipo_equipo_producto', 'tipo_criticidad_criticidad', 'created_at')
-    list_filter = ('tecnologia', 'tipo_equipo_producto__tipo_equipo', 'tipo_criticidad_criticidad__tipo_criticidad')
+    list_display = ('tecnologia', 'relacion_tipo_equipo', 'created_at')
+    list_filter = ('tecnologia', 'relacion_tipo_equipo__tipo_equipo')
+
+@admin.register(Ubicacion)
+class UbicacionAdmin(admin.ModelAdmin):
+    list_display = ('nombre', 'latitud', 'longitud', 'created_at')
+    search_fields = ('nombre',)
+    list_filter = ('created_at',)
+
+@admin.register(Sistema)
+class SistemaAdmin(admin.ModelAdmin):
+    list_display = ('tag', 'sistema_id', 'ubicacion', 'created_at')
+    search_fields = ('tag', 'sistema_id', 'ubicacion__nombre')
+    list_filter = ('ubicacion', 'created_at')
+    autocomplete_fields = ('ubicacion',)

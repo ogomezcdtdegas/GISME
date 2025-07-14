@@ -2,7 +2,7 @@ from .base import *
 import os
 
 DEBUG = True
-ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS_DEV', 'tudominio.com').split(',')
+ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS_DEV', '127.0.0.1,localhost,tudominio.com').split(',')
 SESSION_COOKIE_AGE = 1200
 
 DATABASES = {

@@ -40,7 +40,14 @@
             <a href="{% url 'crear_usuario' %}"><i class="bi bi-person-plus"></i> Crear Usuario</a>
         </div>
 
-        <a href="{% url 'allEquiposPag' %}" class="{% if active_section == 'fluxpro_caudalMedLineal' %}home{% endif %}"><i class="bi bi-house-door"></i> Home</a>
+        <a href="{% url 'allEquiposPag' %}" class="{% if active_section == 'home' %}active{% endif %}"><i class="bi bi-house-door"></i> Home</a>
+        
+        <!-- Monitoreo y Medición de Sistemas -->
+        <a href="#" id="toggleMonitoreo"><i class="bi bi-activity"></i> Monitoreo y Medición de Sistemas <i class="bi bi-chevron-down float-end"></i></a>
+        <div class="submenu collapse {% if active_section == 'monitoreo_coriolis' %}show{% endif %}" id="monitoreoSubmenu">
+            <a href="{% url 'monitoreo_coriolis' %}" class="{% if active_section == 'monitoreo_coriolis' %}active{% endif %}"><i class="bi bi-diagram-3"></i> Monitoreo Coriolis</a>
+        </div>
+        
         <a href="{% url 'calc1' %}" class="{% if active_section == 'calc1' %}active{% endif %}"><i class="bi bi-calculator"></i> App Calc1</a>
         <a href="{% url 'calcular_incertidumbre' %}" class="{% if active_section == 'calc2' %}active{% endif %}"><i class="bi bi-bar-chart"></i> App Calc2</a>
         
@@ -61,12 +68,14 @@
 
         <!-- Menú desplegable -->
         <a href="#" id="toggleComplementos"><i class="bi bi-grid"></i> Complementos <i class="bi bi-chevron-down float-end"></i></a>
-        <div class="submenu collapse {% if active_section in 'complementos_criticidad complementos_tipo complementos_producto complementos_tecnologia' %}show{% endif %}" id="complementosSubmenu">
+        <div class="submenu collapse {% if active_section in 'complementos_criticidad complementos_tipo complementos_producto complementos_tecnologia complementos_ubicacion complementos_sistema' %}show{% endif %}" id="complementosSubmenu">
             <a href="{% url 'allCriticidadesPag' %}" class="{% if active_section == 'complementos_criticidad' %}active{% endif %}"><i class="bi bi-shield-exclamation"></i> Criticidad</a>
             <a href="{% url 'allTipCriticidadesPag' %}"><i class="bi bi-clipboard-check"></i> Tipo de Criticidad</a>
             <a href="{% url 'allProductosPag' %}"><i class="bi bi-droplet"></i> Producto</a>
             <a href="{% url 'allTiposEquipoPag' %}"><i class="bi bi-gear"></i> Tipo de Equipo</a>
-            <a href="{% url 'allTecnologiasPag' %}" class="{% if active_section == 'complementos_tecnologia' %}active{% endif %}"><i class="bi bi-diagram-3"></i> Tecnología</a> 
+            <a href="{% url 'allTecnologiasPag' %}" class="{% if active_section == 'complementos_tecnologia' %}active{% endif %}"><i class="bi bi-diagram-3"></i> Tecnología</a>
+            <a href="{% url 'allUbicacionesPag' %}" class="{% if active_section == 'complementos_ubicacion' %}active{% endif %}"><i class="bi bi-geo-alt"></i> Ubicaciones</a>
+            <a href="{% url 'allSistemasPag' %}" class="{% if active_section == 'complementos_sistema' %}active{% endif %}"><i class="bi bi-cpu"></i> Sistemas</a>
         </div>
 
         <!-- Botón de Logout -->
@@ -131,6 +140,11 @@
         document.getElementById("toggleHerramientas").addEventListener("click", function(e) {
             e.preventDefault();
             toggleSubmenu("herramientasSubmenu");
+        });
+
+        document.getElementById("toggleMonitoreo").addEventListener("click", function(e) {
+            e.preventDefault();
+            toggleSubmenu("monitoreoSubmenu");
         });
 
         document.getElementById("toggleComplementos").addEventListener("click", function(e) {

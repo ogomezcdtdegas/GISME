@@ -37,6 +37,28 @@ from .views.views_Tecnologia.Commands import (
 from .views.views_Tecnologia.Commands.DeleteTecnologiaRelacionCommand.DeleteTecnologiaRelacionCommand import DeleteTecnologiaRelacionCommand
 from .views.views_Tecnologia.Queries import allTecnologiasPag
 
+# Ubicación
+from .views.views_Ubicacion.Commands.CreateUbicacionCommand.CreateUbicacionCommand import CreateUbicacionView
+from .views.views_Ubicacion.Commands.UpdateUbicacionCommand.UpdateUbicacionCommand import UpdateUbicacionView
+from .views.views_Ubicacion.Commands.DeleteUbicacionCommand.DeleteUbicacionCommand import DeleteUbicacionView
+from .views.views_Ubicacion.Queries.GetAllUbicacionPagQuery.GetAllUbicacionPagQuery import UbicacionListPagView
+from .views.views_Ubicacion.Queries.GetAllUbicacionListQuery.GetAllUbicacionListQuery import UbicacionListAllView
+from .views.views_Ubicacion.Queries.GetUbicacionByIdQuery.GetUbicacionByIdQuery import GetUbicacionByIdView
+
+# Sistema
+from .views.views_Sistema.views_templates import sistemas_index
+from .views.views_Sistema.queries import (
+    listar_sistemas_query,
+    listar_todos_sistemas_query,
+    obtener_sistema_query
+)
+from .views.views_Sistema.commands import (
+    crear_sistema_command,
+    editar_sistema_command,
+    eliminar_sistema_command,
+    SistemaBaseView
+)
+
 urlpatterns = [
     path('', GetAllCriticidadPagQuery.allCriticidadPag.as_view(), name='allCriticidadesPag'),
     path('listar-todo-criticidad/', GetAllCriticidadListQuery.CriticidadListAllView.as_view(), name='listarTodoCriticidad'),
@@ -72,4 +94,28 @@ urlpatterns = [
     path('editar-tecnologia/<uuid:obj_id>/', EditarTecnologiaView.as_view(), name='editarTecnologia'),
     path('eliminar-tecnologia/<uuid:obj_id>/', DeleteTecnologiaCommand.as_view(), name='eliminarTecnologia'),
     path('eliminar-tecnologia-relacion/<uuid:obj_id>/', DeleteTecnologiaRelacionCommand.as_view(), name='eliminarTecnologiaRelacion'),
+
+    # Ubicación URLs
+    path('ubicaciones/', UbicacionListPagView.as_view(), name='allUbicacionesPag'),
+    path('listar-todo-ubicaciones/', UbicacionListAllView.as_view(), name='listarTodoUbicaciones'),
+    path('crear-ubicacion/', CreateUbicacionView.as_view(), name='crearUbicacion'),
+    path('ubicacion/<uuid:obj_id>/', GetUbicacionByIdView.as_view(), name='obtenerUbicacion'),
+    path('editar-ubicacion/<uuid:obj_id>/', UpdateUbicacionView.as_view(), name='editarUbicacion'),
+    path('eliminar-ubicacion/<uuid:obj_id>/', DeleteUbicacionView.as_view(), name='eliminarUbicacion'),
+
+    # Sistema URLs - Templates
+    path('sistemas/', sistemas_index, name='allSistemasPag'),
+    
+    # Sistema URLs - API Queries  
+    path('listar-sistemas/', listar_sistemas_query, name='listarSistemas'),
+    path('listar-todo-sistemas/', listar_todos_sistemas_query, name='listarTodoSistemas'),
+    path('sistema/<uuid:sistema_id>/', obtener_sistema_query, name='obtenerSistema'),
+    
+    # Sistema URLs - API Commands
+    path('crear-sistema/', crear_sistema_command, name='crearSistema'),
+    path('editar-sistema/<uuid:sistema_id>/', editar_sistema_command, name='editarSistema'),
+    path('eliminar-sistema/<uuid:sistema_id>/', eliminar_sistema_command, name='eliminarSistema'),
+    
+    # Sistema URLs - Debug
+    path('debug-sistema/<uuid:pk>/', SistemaBaseView.as_view(), name='debugSistema'),
 ]
