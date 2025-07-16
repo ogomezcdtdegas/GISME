@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Monitoreo y Medición de Sistemas - GISME{% endblock %}
+{% block title %}Bienvenido a GISME - Sistema de Monitoreo{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/monitoreo.css' %}">
@@ -9,87 +9,23 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid mt-4">
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0">
-                        <i class="bi bi-activity"></i> Monitoreo y Medición de Sistemas
-                    </h4>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <!-- Tarjeta Monitoreo Coriolis -->
-                        <div class="col-md-6 col-lg-4 mb-4">
-                            <div class="card h-100 shadow-sm">
-                                <div class="card-body text-center">
-                                    <i class="bi bi-diagram-3 text-primary" style="font-size: 3rem;"></i>
-                                    <h5 class="card-title mt-3">Monitoreo Coriolis</h5>
-                                    <p class="card-text">
-                                        Sistema de monitoreo en tiempo real para medidores de flujo Coriolis.
-                                    </p>
-                                    <a href="{% url 'coriolis_monitoring' %}" class="btn btn-primary">
-                                        <i class="bi bi-play-circle"></i> Acceder
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Tarjeta para futuras implementaciones -->
-                        <div class="col-md-6 col-lg-4 mb-4">
-                            <div class="card h-100 shadow-sm">
-                                <div class="card-body text-center">
-                                    <i class="bi bi-speedometer2 text-secondary" style="font-size: 3rem;"></i>
-                                    <h5 class="card-title mt-3">Medidores Ultrasónicos</h5>
-                                    <p class="card-text">
-                                        Monitoreo de medidores ultrasónicos de flujo de gas.
-                                    </p>
-                                    <button class="btn btn-secondary" disabled>
-                                        <i class="bi bi-clock"></i> Próximamente
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Tarjeta para futuras implementaciones -->
-                        <div class="col-md-6 col-lg-4 mb-4">
-                            <div class="card h-100 shadow-sm">
-                                <div class="card-body text-center">
-                                    <i class="bi bi-graph-up text-secondary" style="font-size: 3rem;"></i>
-                                    <h5 class="card-title mt-3">Análisis de Tendencias</h5>
-                                    <p class="card-text">
-                                        Análisis histórico y tendencias de medición.
-                                    </p>
-                                    <button class="btn btn-secondary" disabled>
-                                        <i class="bi bi-clock"></i> Próximamente
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="row mt-4">
-                        <div class="col-12">
-                            <div class="alert alert-info">
-                                <h6 class="alert-heading">
-                                    <i class="bi bi-info-circle"></i> Información del Sistema
-                                </h6>
-                                <p class="mb-0">
-                                    Esta sección contiene herramientas especializadas para el monitoreo y medición 
-                                    de diferentes tipos de sistemas de flujo. Selecciona el sistema que deseas monitorear.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+<div class="container py-5">
+    <div class="row justify-content-center align-items-center">
+        <div class="col-lg-7 text-center">
+            <img src="{% static 'img/gisme_landing.png' %}" alt="GISME Sistema de Monitoreo" class="img-fluid mb-4" style="max-width: 350px;">
+            <h1 class="display-5 fw-bold mb-3" style="color: #2c3e50;">Bienvenido a GISME</h1>
+            <h3 class="mb-4" style="color: #3b5998;">Sistema Integral de Monitoreo y Trazabilidad</h3>
+            <p class="lead mb-4" style="color: #495057;">
+                Plataforma centralizada para la supervisión, análisis y trazabilidad de sistemas de medición.<br>
+                Visualiza el estado de tus sistemas en tiempo real, accede a reportes históricos y mantén el control total de tus operaciones.
+            </p>
+            <div class="alert alert-primary shadow-sm mx-auto" style="max-width: 600px;">
+                <i class="bi bi-info-circle"></i>
+                <span>Para acceder a las funciones de monitoreo, utiliza el menú lateral.</span>
             </div>
         </div>
     </div>
 </div>
 {% endblock %}
 
-{% block extra_js %}
-<!-- Scripts locales de Coriolis -->
-<script src="{% static 'js/coriolis-common.js' %}"></script>
-{% endblock %}
+{% block extra_js %}{% endblock %}
