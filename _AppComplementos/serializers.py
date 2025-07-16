@@ -207,17 +207,19 @@ class UbicacionSerializer(serializers.ModelSerializer):
 class SistemaSerializer(serializers.ModelSerializer):
     created_at = serializers.DateTimeField(format="%d-%m-%Y %H:%M", required=False, read_only=True)
     ubicacion_nombre = serializers.CharField(source="ubicacion.nombre", read_only=True)
+    ubicacion_lat = serializers.DecimalField(source="ubicacion.latitud", max_digits=10, decimal_places=7, read_only=True)
+    ubicacion_lng = serializers.DecimalField(source="ubicacion.longitud", max_digits=10, decimal_places=7, read_only=True)
     ubicacion_coordenadas = serializers.SerializerMethodField()
     
     class Meta:
         model = Sistema
-        fields = ["id", "tag", "sistema_id", "ubicacion", "ubicacion_nombre", "ubicacion_coordenadas", "created_at"]
+        fields = ["id", "tag", "sistema_id", "ubicacion", "ubicacion_nombre", "ubicacion_lat", "ubicacion_lng", "ubicacion_coordenadas", "created_at"]
     
     def get_ubicacion_coordenadas(self, obj):
         """Retorna las coordenadas de la ubicación como string"""
-        if obj.ubicacion:
+        if obj.ubicacion and obj.ubicacion.latitud is not None and obj.ubicacion.longitud is not None:
             return f"({obj.ubicacion.latitud}, {obj.ubicacion.longitud})"
-        return ""
+        return "Sin coordenadas"
         
     def validate(self, attrs):
         """Validación a nivel de modelo para evitar duplicados"""

@@ -1,0 +1,1 @@
+from .GetAllCriticidadPagQuery import allCriticidadPag

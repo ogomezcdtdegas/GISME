@@ -56,6 +56,10 @@ h1 {
     display: block !important;
 }
 
+.submenu.collapse:not(.show) {
+    display: none;
+}
+
 .submenu a {
     padding-left: 40px;
 }
@@ -89,6 +93,15 @@ h1 {
 /* Estilo para los iconos dentro de los enlaces del menú */
 .submenu a .bi {
     margin-right: 8px; /* Espacio entre el icono y el texto */
+}
+
+/* Estilos para los iconos de chevron */
+.sidebar a .bi-chevron-down {
+    transition: transform 0.3s ease;
+}
+
+.sidebar a[aria-expanded="true"] .bi-chevron-down {
+    transform: rotate(180deg);
 }
 
 #toggleSidebar {

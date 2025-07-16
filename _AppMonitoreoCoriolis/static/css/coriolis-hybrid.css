@@ -1,0 +1,108 @@
+/* Estilos específicos para Coriolis Híbrida */
+
+/* === VISTA SELECTOR === */
+.selector-view {
+    transition: all 0.3s ease;
+}
+
+.selector-view.active {
+    display: block;
+}
+
+/* === VISTA MONITOREO === */
+.monitoring-view {
+    transition: all 0.3s ease;
+}
+
+.monitoring-view.active {
+    display: block;
+}
+
+/* === CONTROLES DE VISTA === */
+.view-controls {
+    margin-bottom: 20px;
+}
+
+.view-toggle {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+    padding: 10px;
+}
+
+/* === TABLAS HÍBRIDAS === */
+.hybrid-table-container {
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.hybrid-table thead th {
+    position: sticky;
+    top: 0;
+    background: #6c757d;
+    z-index: 1;
+}
+
+/* === ORDENAMIENTO === */
+.sortable-header {
+    cursor: pointer;
+    user-select: none;
+    transition: background-color 0.2s ease;
+}
+
+.sortable-header:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+.sort-icon {
+    transition: transform 0.2s ease;
+}
+
+/* === BÚSQUEDA === */
+.search-container {
+    position: relative;
+}
+
+.search-container .form-control {
+    padding-right: 40px;
+}
+
+.search-clear {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: none;
+    background: none;
+    color: #6c757d;
+}
+
+/* === PAGINACIÓN === */
+.pagination-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    margin-top: 15px;
+}
+
+.pagination-info {
+    font-size: 0.9rem;
+    color: #6c757d;
+}
+
+/* === RESPONSIVIDAD HÍBRIDA === */
+@media (max-width: 768px) {
+    .hybrid-table-container {
+        max-height: 400px;
+    }
+    
+    .view-controls {
+        text-align: center;
+    }
+    
+    .pagination-container {
+        flex-direction: column;
+        gap: 5px;
+    }
+}

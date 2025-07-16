@@ -1,0 +1,259 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Monitoreo Coriolis - GISME{% endblock %}
+
+{% block extra_css %}
+{% csrf_token %}
+<link rel="stylesheet" href="{% static 'css/monitoreo.css' %}">
+<link rel="stylesheet" href="{% static 'css/coriolis-common.css' %}">
+<link rel="stylesheet" href="{% static 'css/coriolis-spa.css' %}">
+<link rel="stylesheet" href="{% static 'css/soft-colors.css' %}">
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+     integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+     crossorigin=""/>
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid mt-4">
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="text-center">
+            <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+                <span class="visually-hidden">Cargando...</span>
+            </div>
+            <div class="mt-3">
+                <h5>Cargando Monitoreo Coriolis...</h5>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ VISTA DE SELECCIÓN DE SISTEMAS ============ -->
+    <div id="sistema-selector-view">
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h4 class="mb-0">
+                            <i class="bi bi-diagram-3"></i> Monitoreo Coriolis
+                        </h4>
+                        <p class="mb-0 mt-2">Seleccione el sistema que desea monitorear</p>
+                    </div>
+                    <div class="card-body">
+                        <!-- Barra de búsqueda -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                    <input type="text" class="form-control" id="searchInput" placeholder="Buscar sistemas...">
+                                </div>
+                            </div>
+                            <div class="col-md-6 text-end">
+                                <button class="btn btn-outline-secondary" id="clearSearch">
+                                    <i class="bi bi-x-circle"></i> Limpiar
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Tabla de sistemas -->
+                        <div class="table-responsive">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th scope="col">
+                                            <span style="cursor: pointer;" onclick="sortTable('tag')">
+                                                Tag <i class="bi bi-arrow-up-down ms-1" id="tag-sort-icon"></i>
+                                            </span>
+                                        </th>
+                                        <th scope="col">
+                                            <span style="cursor: pointer;" onclick="sortTable('sistema_id')">
+                                                ID Sistema <i class="bi bi-arrow-up-down ms-1" id="sistema_id-sort-icon"></i>
+                                            </span>
+                                        </th>
+                                        <th scope="col">
+                                            <span style="cursor: pointer;" onclick="sortTable('ubicacion_nombre')">
+                                                Ubicación <i class="bi bi-arrow-up-down ms-1" id="ubicacion_nombre-sort-icon"></i>
+                                            </span>
+                                        </th>
+                                        <th scope="col">Coordenadas</th>
+                                        <th scope="col">Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="sistemasTableBody">
+                                    <tr>
+                                        <td colspan="5" class="text-center">
+                                            <div class="spinner-border spinner-border-sm" role="status">
+                                                <span class="visually-hidden">Cargando...</span>
+                                            </div>
+                                            Cargando sistemas...
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Paginación -->
+                        <div id="pagination" class="mt-3"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============ VISTA DE MONITOREO DE SISTEMA ESPECÍFICO ============ -->
+    <div id="sistema-monitoring-view" class="hidden">
+        <div class="row">
+            <div class="col-12">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb">
+                        <li class="breadcrumb-item">
+                            <a href="javascript:void(0)" onclick="showSelectorView()">Monitoreo Coriolis</a>
+                        </li>
+                        <li class="breadcrumb-item active" aria-current="page" id="breadcrumbSistema">
+                            Sistema
+                        </li>
+                    </ol>
+                </nav>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-12">
+                <div class="card">
+                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0" id="sistemaTitle">
+                            <i class="bi bi-diagram-3"></i> Monitoreo de Medidores Coriolis
+                        </h4>
+                        <button class="btn btn-light btn-sm" onclick="showSelectorView()">
+                            <i class="bi bi-arrow-left"></i> Cambiar Sistema
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+
+                            <!-- Imagen descriptiva del sistema -->
+                            <div class="row mb-4">
+                                <div class="col-12">
+                                    <div class="card">
+                                        <div class="card-header">
+                                            <h5><i class="bi bi-pipe"></i> Esquema del Sistema Coriolis</h5>
+                                        </div>
+                                        <div class="card-body text-center">
+                                            <img src="{% static 'img/coriolis_render.png' %}" alt="Sistema Coriolis" class="img-fluid" style="max-width: 1200px;">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                            <!-- Panel de Estado -->
+                            <div class="col-lg-8 mb-4">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5><i class="bi bi-activity"></i> Estado del Sistema</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="sistemaInfo" class="metrics-container">
+                                            <div class="text-center">
+                                                <div class="spinner-border" role="status">
+                                                    <span class="visually-hidden">Cargando...</span>
+                                                </div>
+                                                <p class="mt-2">Cargando información del sistema...</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Panel de Ubicación -->
+                            <div class="col-lg-4 mb-4">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5><i class="bi bi-geo-alt"></i> Ubicación</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div id="sistemaMap" style="height: 300px;"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        
+
+                        <!-- Gráficos de Tendencias -->
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5><i class="bi bi-graph-up"></i> Tendencias de Medición</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="chart-container">
+                                            <canvas id="trendChart"></canvas>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal del Mapa -->
+<div class="modal fade" id="mapModal" tabindex="-1" aria-labelledby="mapModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="mapModalLabel">
+                    <i class="bi bi-geo-alt"></i> Ubicación del Sistema
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <strong>Sistema:</strong>
+                        <div id="modal-sistema-info">-</div>
+                    </div>
+                    <div class="col-md-4">
+                        <strong>Ubicación:</strong>
+                        <div id="modal-ubicacion-info">-</div>
+                    </div>
+                    <div class="col-md-4">
+                        <strong>Coordenadas:</strong>
+                        <div id="modal-coordenadas-info">-</div>
+                    </div>
+                </div>
+                <div id="map" style="height: 400px;"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="copyCoordinates()">
+                    <i class="bi bi-clipboard"></i> Copiar Coordenadas
+                </button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Chart.js para gráficos -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
+
+<!-- Leaflet JavaScript -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+     integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+     crossorigin=""></script>
+
+<!-- Scripts locales de Coriolis -->
+<script src="{% static 'js/coriolis-common.js' %}"></script>
+<script src="{% static 'js/coriolis-map.js' %}"></script>
+<script src="{% static 'js/coriolis-spa.js' %}"></script>
+{% endblock %}

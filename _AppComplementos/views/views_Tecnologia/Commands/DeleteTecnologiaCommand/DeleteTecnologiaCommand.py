@@ -1,6 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 from django.db import transaction
 from django.db.models import ProtectedError
 from _AppComplementos.models import (
@@ -8,6 +9,8 @@ from _AppComplementos.models import (
 )
 
 class DeleteTecnologiaCommand(APIView):
+    """CBV Command para eliminar tecnología con lógica de cascada específica"""
+    permission_classes = [IsAuthenticated]
     def delete(self, request, obj_id):
         try:
             with transaction.atomic():
