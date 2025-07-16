@@ -45,17 +45,20 @@ from .views.views_Ubicacion.Queries.GetAllUbicacionPagQuery.GetAllUbicacionPagQu
 from .views.views_Ubicacion.Queries.GetAllUbicacionListQuery.GetAllUbicacionListQuery import UbicacionListAllView
 from .views.views_Ubicacion.Queries.GetUbicacionByIdQuery.GetUbicacionByIdQuery import GetUbicacionByIdView
 
-# Sistema
-from .views.views_Sistema.views_templates import sistemas_index
-from .views.views_Sistema.queries import (
-    listar_sistemas_query,
-    listar_todos_sistemas_query,
-    obtener_sistema_query
-)
-from .views.views_Sistema.commands import (
-    crear_sistema_command,
-    editar_sistema_command,
-    eliminar_sistema_command,
+# Sistema - Nueva estructura modular
+from .views.views_Sistema import (
+    # Commands
+    CrearSistemaCommandView,
+    EditarSistemaCommandView,
+    EliminarSistemaCommandView,
+    
+    # Queries
+    ListarSistemasQueryView,
+    ListarTodosSistemasQueryView,
+    ObtenerSistemaQueryView,
+    
+    # Templates & Debug
+    SistemasIndexView,
     SistemaBaseView
 )
 
@@ -103,18 +106,18 @@ urlpatterns = [
     path('editar-ubicacion/<uuid:obj_id>/', UpdateUbicacionView.as_view(), name='editarUbicacion'),
     path('eliminar-ubicacion/<uuid:obj_id>/', DeleteUbicacionView.as_view(), name='eliminarUbicacion'),
 
-    # Sistema URLs - Templates
-    path('sistemas/', sistemas_index, name='allSistemasPag'),
+    # Sistema URLs - Templates (CBV)
+    path('sistemas/', SistemasIndexView.as_view(), name='allSistemasPag'),
     
-    # Sistema URLs - API Queries  
-    path('listar-sistemas/', listar_sistemas_query, name='listarSistemas'),
-    path('listar-todo-sistemas/', listar_todos_sistemas_query, name='listarTodoSistemas'),
-    path('sistema/<uuid:sistema_id>/', obtener_sistema_query, name='obtenerSistema'),
+    # Sistema URLs - API Queries (CBV)
+    path('listar-sistemas/', ListarSistemasQueryView.as_view(), name='listarSistemas'),
+    path('listar-todo-sistemas/', ListarTodosSistemasQueryView.as_view(), name='listarTodoSistemas'),
+    path('sistema/<uuid:sistema_id>/', ObtenerSistemaQueryView.as_view(), name='obtenerSistema'),
     
-    # Sistema URLs - API Commands
-    path('crear-sistema/', crear_sistema_command, name='crearSistema'),
-    path('editar-sistema/<uuid:sistema_id>/', editar_sistema_command, name='editarSistema'),
-    path('eliminar-sistema/<uuid:sistema_id>/', eliminar_sistema_command, name='eliminarSistema'),
+    # Sistema URLs - API Commands (CBV)
+    path('crear-sistema/', CrearSistemaCommandView.as_view(), name='crearSistema'),
+    path('editar-sistema/<uuid:sistema_id>/', EditarSistemaCommandView.as_view(), name='editarSistema'),
+    path('eliminar-sistema/<uuid:sistema_id>/', EliminarSistemaCommandView.as_view(), name='eliminarSistema'),
     
     # Sistema URLs - Debug
     path('debug-sistema/<uuid:pk>/', SistemaBaseView.as_view(), name='debugSistema'),

@@ -215,9 +215,9 @@ class SistemaSerializer(serializers.ModelSerializer):
     
     def get_ubicacion_coordenadas(self, obj):
         """Retorna las coordenadas de la ubicación como string"""
-        if obj.ubicacion:
+        if obj.ubicacion and obj.ubicacion.latitud is not None and obj.ubicacion.longitud is not None:
             return f"({obj.ubicacion.latitud}, {obj.ubicacion.longitud})"
-        return ""
+        return "Sin coordenadas"
         
     def validate(self, attrs):
         """Validación a nivel de modelo para evitar duplicados"""
