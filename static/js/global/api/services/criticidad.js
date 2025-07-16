@@ -26,9 +26,9 @@ export const CriticidadService = {
         try {
             const response = await BaseAPI.get(ENDPOINTS.CRITICIDAD.POR_TIPO(tipoId));
             
-            if (response.success && response.data) {
+            if (response.success && response.results) {
                 // Mantener el formato {id, name} que espera el frontend
-                return response.data.map(item => ({
+                return response.results.map(item => ({
                     id: item.value,
                     name: item.label
                 }));

@@ -691,7 +691,7 @@ class BaseListAllView(APIView):
             
             return Response({
                 "success": True,
-                "data": serializer.data,
+                "results": serializer.data,
                 "count": queryset.count()
             }, status=status.HTTP_200_OK)
         except Exception as e:

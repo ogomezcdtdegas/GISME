@@ -2,7 +2,7 @@ from django.urls import path
 
 # Criticidad
 from .views.views_Criticidad.Commands import CreateCriticidadCommand, UpdateCriticidadCommand
-from .views.views_Criticidad.Queries import GetAllCriticidadPagQuery, GetAllCriticidadListQuery, GetCriticidadPorTipoCritQuery
+from .views.views_Criticidad.Queries import allCriticidadPag, GetAllCriticidadListQuery, GetCriticidadPorTipoCritQuery
 from .views.views_Criticidad.Commands.DeleteCriticidadCommand.DeleteCriticidadCommand import DeleteCriticidadCommand
 
 # Tipo Criticidad
@@ -63,7 +63,7 @@ from .views.views_Sistema import (
 )
 
 urlpatterns = [
-    path('', GetAllCriticidadPagQuery.allCriticidadPag.as_view(), name='allCriticidadesPag'),
+    path('', allCriticidadPag.as_view(), name='allCriticidadesPag'),
     path('listar-todo-criticidad/', GetAllCriticidadListQuery.CriticidadListAllView.as_view(), name='listarTodoCriticidad'),
     path('crear-criticidad/', CreateCriticidadCommand.crearCriticidad.as_view(), name='crearCriticidad'),
     path('editar-criticidad/<uuid:obj_id>/', UpdateCriticidadCommand.editarCriticidad.as_view(), name='editarCriticidad'),

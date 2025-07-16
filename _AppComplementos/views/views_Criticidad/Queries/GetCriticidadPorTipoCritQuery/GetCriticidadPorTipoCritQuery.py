@@ -1,24 +1,23 @@
-from rest_framework.views import APIView
-from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from repoGenerico.views_base import BaseListAllView
 from .....models import TipoCriticidadCriticidad
 from .....serializers import CriticidadesPorTipoSerializer
-from django.shortcuts import get_object_or_404
 
-class CriticidadesPorTipoView(APIView):
-    """
-    Vista para obtener criticidades filtradas por tipo de criticidad
-    """
-    def get(self, request, tipo_id, format=None):
-        relaciones = TipoCriticidadCriticidad.objects.filter(
+
+class CriticidadesPorTipoView(BaseListAllView):
+    """CBV Query para obtener criticidades filtradas por tipo de criticidad usando BaseListAllView"""
+    model = TipoCriticidadCriticidad
+    serializer_class = CriticidadesPorTipoSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def get_queryset(self):
+        """Filtrar por tipo_id y optimizar con select_related"""
+        tipo_id = self.kwargs.get('tipo_id')
+        return TipoCriticidadCriticidad.objects.filter(
             tipo_criticidad_id=tipo_id
         ).select_related('criticidad')
-        
-        # Serializar los datos
-        serializer = CriticidadesPorTipoSerializer(relaciones, many=True)
-        
-        # Devolver el formato esperado por el frontend
-        return Response({
-            'success': True,
-            'data': serializer.data,
-            'count': len(serializer.data)
-        })
+    
+    def get(self, request, tipo_id, format=None):
+        """Override para capturar tipo_id del URL"""
+        self.kwargs = {'tipo_id': tipo_id}
+        return super().get(request)

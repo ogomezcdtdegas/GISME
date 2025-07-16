@@ -5,6 +5,7 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/monitoreo.css' %}">
+<link rel="stylesheet" href="{% static 'css/soft-colors.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -89,8 +90,6 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
-// JavaScript específico para la página de monitoreo
-console.log('Página de Monitoreo y Medición cargada');
-</script>
+<!-- Scripts locales de Coriolis -->
+<script src="{% static 'js/coriolis-common.js' %}"></script>
 {% endblock %}

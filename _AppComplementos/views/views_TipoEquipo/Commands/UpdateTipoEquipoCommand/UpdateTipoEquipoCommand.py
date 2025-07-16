@@ -1,20 +1,25 @@
-from django.views import View
-from django.http import JsonResponse
-from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_http_methods
-from django.shortcuts import get_object_or_404
-import json
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from rest_framework import status
+from repoGenerico.views_base import BaseRetrieveUpdateView
 
 from _AppComplementos.models import TipoEquipo, TipoEquipoProducto, ProductoTipoCritCrit
 from _AppComplementos.serializers import TipoEquipoProductoSerializer
 
 
-@method_decorator(csrf_exempt, name='dispatch')
-class EditarTipoEquipoView(View):
-    def put(self, request, obj_id):
+class EditarTipoEquipoView(BaseRetrieveUpdateView):
+    """CBV Command para editar tipo de equipo usando BaseRetrieveUpdateView"""
+    model = TipoEquipoProducto
+    serializer_class = TipoEquipoProductoSerializer
+    permission_classes = [IsAuthenticated]
+    
+    def put(self, request, **kwargs):
+        """Override del método PUT para lógica específica de actualización"""
         try:
-            data = json.loads(request.body)
+            # Extraer ID usando el método base
+            obj_id = self._get_object_id_from_kwargs(kwargs)
+            
+            data = request.data
             name = data.get('name')
             producto_id = data.get('producto_id')
             tipo_criticidad_id = data.get('tipo_criticidad_id')
@@ -22,13 +27,13 @@ class EditarTipoEquipoView(View):
             
             # Validar que todos los campos estén presentes
             if not all([name, producto_id, tipo_criticidad_id, criticidad_id]):
-                return JsonResponse({
+                return Response({
                     'success': False,
                     'error': 'Todos los campos son obligatorios'
-                }, status=400)
+                }, status=status.HTTP_400_BAD_REQUEST)
             
             # Obtener la relación a actualizar
-            tipo_equipo_producto = get_object_or_404(TipoEquipoProducto, id=obj_id)
+            tipo_equipo_producto = self.model.objects.get(id=obj_id)
             
             # Buscar la relación ProductoTipoCritCrit basándose en los IDs
             producto_relacion = ProductoTipoCritCrit.objects.filter(
@@ -38,10 +43,10 @@ class EditarTipoEquipoView(View):
             ).first()
 
             if not producto_relacion:
-                return JsonResponse({
+                return Response({
                     'success': False,
                     'error': 'La combinación de producto, tipo de criticidad y criticidad no existe'
-                }, status=400)
+                }, status=status.HTTP_400_BAD_REQUEST)
             
             # Obtener el tipo de equipo actual
             tipo_equipo_actual = tipo_equipo_producto.tipo_equipo
@@ -49,10 +54,10 @@ class EditarTipoEquipoView(View):
             # Si el nombre cambió, verificar que no exista otro TipoEquipo con ese nombre
             if tipo_equipo_actual.name != name:
                 if TipoEquipo.objects.filter(name=name).exists():
-                    return JsonResponse({
+                    return Response({
                         'success': False,
                         'error': f'Ya existe un tipo de equipo con el nombre "{name}"'
-                    }, status=400)
+                    }, status=status.HTTP_400_BAD_REQUEST)
                 
                 # Actualizar el nombre del tipo de equipo existente
                 tipo_equipo_actual.name = name
@@ -63,29 +68,29 @@ class EditarTipoEquipoView(View):
                 tipo_equipo=tipo_equipo_actual,
                 relacion_producto=producto_relacion
             ).exclude(id=obj_id).exists():
-                return JsonResponse({
+                return Response({
                     'success': False,
                     'error': 'Esta combinación ya existe'
-                }, status=400)
+                }, status=status.HTTP_400_BAD_REQUEST)
             
             # Actualizar la relación
             tipo_equipo_producto.tipo_equipo = tipo_equipo_actual
             tipo_equipo_producto.relacion_producto = producto_relacion
             tipo_equipo_producto.save()
             
-            return JsonResponse({
+            return Response({
                 'success': True,
                 'message': 'Tipo de equipo actualizado correctamente',
                 'data': TipoEquipoProductoSerializer(tipo_equipo_producto).data
-            })
+            }, status=status.HTTP_200_OK)
             
-        except json.JSONDecodeError:
-            return JsonResponse({
+        except self.model.DoesNotExist:
+            return Response({
                 'success': False,
-                'error': 'Error en el formato de datos'
-            }, status=400)
+                'error': 'Tipo de equipo no encontrado'
+            }, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
-            return JsonResponse({
+            return Response({
                 'success': False,
                 'error': f'Error interno: {str(e)}'
-            }, status=500)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

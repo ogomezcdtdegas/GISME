@@ -5,6 +5,8 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/monitoreo.css' %}">
+<link rel="stylesheet" href="{% static 'css/coriolis-common.css' %}">
+<link rel="stylesheet" href="{% static 'css/soft-colors.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -84,5 +86,7 @@
 {% endblock %}
 
 {% block extra_js %}
-<script type="module" src="{% static 'js/monitoreo/sistema-selector.js' %}"></script>
+<!-- Scripts locales de Coriolis -->
+<script src="{% static 'js/coriolis-common.js' %}"></script>
+<script src="{% static 'js/coriolis-hybrid-selector.js' %}"></script>
 {% endblock %}

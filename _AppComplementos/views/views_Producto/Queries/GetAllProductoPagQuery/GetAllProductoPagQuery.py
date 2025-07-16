@@ -33,3 +33,8 @@ class allProductosPag(BaseListView):
         if 'per_page' not in request.GET:
             request.GET['per_page'] = '10'  # Valor por defecto
         return super().get(request)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['active_section'] = 'complementos_producto'
+        return context

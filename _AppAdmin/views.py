@@ -23,3 +23,8 @@ class UsuarioCreateView(LoginRequiredMixin, CreateView):
     form_class = UsuarioForm
     template_name = '_AppAdmin/index.html'
     success_url = reverse_lazy('crear_usuario')  # Redirige a la misma página tras éxito
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['active_section'] = 'admin'  # Marcar la sección de administración como activa
+        return context

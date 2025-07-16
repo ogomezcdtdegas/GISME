@@ -36,3 +36,8 @@ class allTipoEquiposPag(BaseListView):
             request.GET['ordering'] = 'tipo_equipo__name'  # Orden alfabético por tipo de equipo
             
         return super().get(request)
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['active_section'] = 'complementos_tipoequipo'
+        return context

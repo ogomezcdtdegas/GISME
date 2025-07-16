@@ -5,6 +5,8 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/monitoreo.css' %}">
+<link rel="stylesheet" href="{% static 'css/coriolis-common.css' %}">
+<link rel="stylesheet" href="{% static 'css/soft-colors.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -136,11 +138,15 @@
 {% endblock %}
 
 {% block extra_js %}
-<script>
-// JavaScript específico para monitoreo Coriolis
-console.log('Página de Monitoreo Coriolis cargada');
+<!-- Chart.js para gráficos -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
 
-// Aquí se puede agregar funcionalidad para gráficos en tiempo real
-// Por ejemplo, con Chart.js o similar
-</script>
+<!-- Scripts locales de Coriolis -->
+<script src="{% static 'js/coriolis-common.js' %}"></script>
+<script src="{% static 'js/coriolis-hybrid-monitoring.js' %}"></script>
+
+<!-- Agregar contexto del sistema para JavaScript -->
+<div style="display: none;" 
+     data-sistema-tag="DEMO" 
+     data-sistema-id="001"></div>
 {% endblock %}
