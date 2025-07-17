@@ -7,7 +7,7 @@ class AuthMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        exempt_paths = {"/auth/login/", "/api/token/"}  # URLs públicas sin login
+        exempt_paths = {"/auth/login/", "/api/token/", "/AppMonitoreoCoriolis/api/node-red/", "/monitoreo/api/node-red/"}  # URLs públicas sin login
         max_inactivity = 1200  # segundos para cerrar sesión por inactividad
 
         if request.user.is_authenticated:
