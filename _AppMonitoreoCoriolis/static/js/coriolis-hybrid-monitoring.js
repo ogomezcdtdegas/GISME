@@ -146,7 +146,7 @@ function initChart() {
     // Llenar datos iniciales
     const now = new Date();
     for (let i = 19; i >= 0; i--) {
-        const time = new Date(now.getTime() - i * 2000);
+        const time = new Date(now.getTime() - i * 500);
         addDataPoint(time);
     }
 }
@@ -235,7 +235,7 @@ function initCountdown() {
             if (countdown <= 0) countdown = 2;
             countdownElement.textContent = countdown;
         }
-    }, 1000);
+    }, 500);
 }
 
 // Inicializar cuando el documento esté listo
@@ -246,9 +246,9 @@ document.addEventListener('DOMContentLoaded', function() {
         initChart();
         initCountdown();
         
-        // Actualizar datos cada 2 segundos
+        // Actualizar datos cada 100 ms
         setInterval(() => {
             addDataPoint(new Date());
-        }, 2000);
+        }, 100);
     }
 });
