@@ -144,12 +144,29 @@
                                         <div class="card-body text-center" style="overflow: auto; max-height: 700px;">
                                             <div class="img-container" style="position:relative; max-width:900px; margin:auto;">
                                                 <img src="{% static 'img/coriolis_render.png' %}" class="img-fluid" id="sistema-img" style="max-width:100%; height:auto;">
-                                                <!-- Marcador 1: (718,399) -->
-                                                <button class="marker" style="position:absolute; top:45%; left:45%; width:32px; height:32px; border-radius:50%; background:rgba(0,123,255,0); border:none; cursor:pointer;" onclick="abrirModal('sensor1')" title="Ver histórico Sensor 1"></button>
-                                                <!-- Marcador 2: (1046,531) -->
-                                                <button class="marker" style="position:absolute; top:58%; left:65.3%; width:32px; height:32px; border-radius:50%; background:rgba(40,167,69,0); border:none; cursor:pointer;" onclick="abrirModal('sensor2')" title="Ver histórico Sensor 2"></button>
-                                                <!-- Marcador 3: (1081,293) -->
-                                                <button class="marker" style="position:absolute; top:32%; left:67.5%; width:32px; height:32px; border-radius:50%; background:rgba(220,53,69,0); border:none; cursor:pointer;" onclick="abrirModal('sensor3')" title="Ver histórico Sensor 3"></button>
+                                                <!-- Displays de sensores -->
+<div style="position:absolute; top:33%; left:42%; min-width:90px; z-index:2;">
+  <div class="shadow-sm" style="background:#fff; border-radius:10px; padding:6px 12px; text-align:center; font-size:13px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+    <div style="font-weight:600; color:#888;">Sensor 1</div>
+    <div id="display-sensor1" style="font-size:15px; color:#007bff; font-weight:700;">---</div>
+  </div>
+</div>
+<div style="position:absolute; top:65%; left:60%; min-width:90px; z-index:2;">
+  <div class="shadow-sm" style="background:#fff; border-radius:10px; padding:6px 12px; text-align:center; font-size:13px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+    <div style="font-weight:600; color:#888;">Sensor 2</div>
+    <div id="display-sensor2" style="font-size:15px; color:#28a745; font-weight:700;">---</div>
+  </div>
+</div>
+<div style="position:absolute; top:18%; left:67%; min-width:90px; z-index:2;">
+  <div class="shadow-sm" style="background:#fff; border-radius:10px; padding:6px 12px; text-align:center; font-size:13px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+    <div style="font-weight:600; color:#888;">Sensor 3</div>
+    <div id="display-sensor3" style="font-size:15px; color:#dc3545; font-weight:700;">---</div>
+  </div>
+</div>
+<!-- Marcadores transparentes clickeables -->
+<button class="marker" style="position:absolute; top:45%; left:45%; width:32px; height:32px; border-radius:50%; background:rgba(0,123,255,0); border:none; cursor:pointer;" onclick="abrirModal('sensor1')" title="Ver histórico Sensor 1"></button>
+<button class="marker" style="position:absolute; top:58%; left:65.3%; width:32px; height:32px; border-radius:50%; background:rgba(40,167,69,0); border:none; cursor:pointer;" onclick="abrirModal('sensor2')" title="Ver histórico Sensor 2"></button>
+<button class="marker" style="position:absolute; top:32%; left:67.5%; width:32px; height:32px; border-radius:50%; background:rgba(220,53,69,0); border:none; cursor:pointer;" onclick="abrirModal('sensor3')" title="Ver histórico Sensor 3"></button>
                                             </div>
                                         </div>
                                     </div>
@@ -297,27 +314,73 @@
 <script src="{% static 'js/coriolis-map.js' %}"></script>
 <script src="{% static 'js/coriolis-spa.js' %}"></script>
 <script>
+// Simulación de valores aleatorios para los displays de sensores
+function actualizarDisplaysSensores() {
+  // Sensor 1: Presión (PSI)
+  const val1 = (120 + Math.random() * 10).toFixed(1);
+  document.getElementById('display-sensor1').textContent = val1 + ' PSI';
+  // Sensor 2: Temperatura (°F)
+  const val2 = (90 + Math.random() * 20).toFixed(1);
+  document.getElementById('display-sensor2').textContent = val2 + ' °F';
+  // Sensor 3: Presión (PSI)
+  const val3 = (40 + Math.random() * 10).toFixed(1);
+  document.getElementById('display-sensor3').textContent = val3 + ' PSI';
+}
+setInterval(actualizarDisplaysSensores, 1000);
+document.addEventListener('DOMContentLoaded', actualizarDisplaysSensores);
+
+// =====================
+// Simulación de datos en tiempo real para el gráfico del modal histórico
+// =====================
 let historicoChart = null;
+let historicoData = [];
+let historicoLabels = [];
+let historicoSensorId = 'sensor1';
+let historicoInterval = null;
 
 function abrirModal(sensorId) {
     document.getElementById('tituloGrafica').textContent = 'Histórico - ' + sensorId;
-    // Generar más datos aleatorios para simular histórico (por ejemplo, 60 puntos)
-    const labels = [];
-    const data = [];
+    historicoSensorId = sensorId;
+    // Inicializar datos
+    historicoData = [];
+    historicoLabels = [];
     const now = new Date();
     for (let i = 59; i >= 0; i--) {
-        const fecha = new Date(now.getTime() - i * 3600 * 1000); // cada hora
-        labels.push(fecha.toISOString().slice(0, 19).replace('T', ' '));
-        // Simular valores distintos por sensor
-        let base = 0;
-        if (sensorId === 'sensor1') base = 120 + Math.random() * 10;
-        if (sensorId === 'sensor2') base = 80 + Math.random() * 10;
-        if (sensorId === 'sensor3') base = 40 + Math.random() * 10;
-        data.push(base + Math.random() * 5);
+        const fecha = new Date(now.getTime() - i * 100);
+        historicoLabels.push(fecha.toLocaleTimeString() + ':' + fecha.getMilliseconds().toString().padStart(3, '0'));
+        historicoData.push(generarValorSensor(sensorId));
     }
-    renderHistoricoChart(labels, data, sensorId);
+    renderHistoricoChart(historicoLabels, historicoData, sensorId);
+    if (historicoInterval) clearInterval(historicoInterval);
+    historicoInterval = setInterval(actualizarHistoricoChart, 100);
     var modal = new bootstrap.Modal(document.getElementById('historicoModal'));
     modal.show();
+    // Detener actualización al cerrar el modal
+    document.getElementById('historicoModal').addEventListener('hidden.bs.modal', function() {
+        clearInterval(historicoInterval);
+    }, { once: true });
+}
+
+function generarValorSensor(sensorId) {
+    if (sensorId === 'sensor1') return (120 + Math.random() * 10).toFixed(1);
+    if (sensorId === 'sensor2') return (90 + Math.random() * 20).toFixed(1);
+    if (sensorId === 'sensor3') return (40 + Math.random() * 10).toFixed(1);
+    return (100 + Math.random() * 10).toFixed(1);
+}
+
+function actualizarHistoricoChart() {
+    const now = new Date();
+    historicoLabels.push(now.toLocaleTimeString() + ':' + now.getMilliseconds().toString().padStart(3, '0'));
+    historicoData.push(generarValorSensor(historicoSensorId));
+    if (historicoLabels.length > 60) {
+        historicoLabels.shift();
+        historicoData.shift();
+    }
+    if (historicoChart) {
+        historicoChart.data.labels = [...historicoLabels];
+        historicoChart.data.datasets[0].data = [...historicoData];
+        historicoChart.update('none');
+    }
 }
 
 function renderHistoricoChart(labels, data, sensorId) {
@@ -330,7 +393,7 @@ function renderHistoricoChart(labels, data, sensorId) {
         data: {
             labels: labels,
             datasets: [{
-                label: 'Presión del sistema (PSI)',
+                label: sensorId === 'sensor2' ? 'Temperatura (°F)' : 'Presión (PSI)',
                 data: data,
                 borderColor: sensorId === 'sensor1' ? '#007bff' : sensorId === 'sensor2' ? '#28a745' : '#dc3545',
                 backgroundColor: 'rgba(0,0,0,0.05)',
@@ -341,17 +404,18 @@ function renderHistoricoChart(labels, data, sensorId) {
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            animation: false,
             plugins: {
                 legend: { display: true },
                 title: { display: false }
             },
             scales: {
                 x: {
-                    title: { display: true, text: 'Fecha de Medición' },
-                    ticks: { maxRotation: 45, minRotation: 45, autoSkip: false }
+                    title: { display: true, text: 'Hora' },
+                    ticks: { maxRotation: 45, minRotation: 45, autoSkip: true }
                 },
                 y: {
-                    title: { display: true, text: 'Presión (PSI)' },
+                    title: { display: true, text: sensorId === 'sensor2' ? 'Temperatura (°F)' : 'Presión (PSI)' },
                     beginAtZero: true
                 }
             }
@@ -360,7 +424,7 @@ function renderHistoricoChart(labels, data, sensorId) {
 }
 
 function buscarHistorico() {
-    // Simular nueva búsqueda generando nuevos datos aleatorios
+    // Solo refrescar el gráfico, sin overlays ni efectos visuales
     const sensorId = document.getElementById('tituloGrafica').textContent.split(' - ')[1] || 'sensor1';
     abrirModal(sensorId);
 }
