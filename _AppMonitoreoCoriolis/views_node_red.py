@@ -1,15 +1,11 @@
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-
+from django.conf import settings
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from .models import NodeRedData
 from django.utils.decorators import method_decorator
-import json
-
-# Puedes poner este token en settings.py y leerlo desde allí si lo prefieres
-NODE_RED_TOKEN = "VC8NXK1uXwPs-YnTx9EZ5HXtg1B3F5Ml00WecfmTL3pkLh-4WdoX3Lt-rcG1s3pK4VH9L8YWaU7umcvdhb2Tg2wZL149XwK2Vtw-m-W5LWak4ItzF6k6yP1H2L070J-6Xa8EygGCiJzUeyDKZOOaEq3c2xwpoN-HMeBos3Oc4Kc"
 
 @method_decorator(csrf_exempt, name='dispatch')
 class NodeRedReceiverView(APIView):
@@ -18,7 +14,7 @@ class NodeRedReceiverView(APIView):
 
     def post(self, request, *args, **kwargs):
         token = request.headers.get('X-API-TOKEN')
-        if token != NODE_RED_TOKEN:
+        if token != settings.NODE_RED_TOKEN:
             return Response({'error': 'Token inválido'}, status=status.HTTP_401_UNAUTHORIZED)
         try:
             data = request.data
