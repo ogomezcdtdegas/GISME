@@ -73,8 +73,8 @@ function initChart() {
             responsive: true,
             maintainAspectRatio: false,
             animation: {
-                duration: 750,
-                easing: 'easeInOutQuart'
+                duration: 100,
+                easing: 'linear'
             },
             interaction: {
                 mode: 'index',
@@ -112,7 +112,7 @@ function initChart() {
                         text: 'Tiempo'
                     },
                     ticks: {
-                        maxTicksLimit: 10
+                        maxTicksLimit: 20
                     }
                 },
                 y: {
@@ -146,14 +146,14 @@ function initChart() {
     // Llenar datos iniciales
     const now = new Date();
     for (let i = 19; i >= 0; i--) {
-        const time = new Date(now.getTime() - i * 500);
+        const time = new Date(now.getTime() - i * 100);
         addDataPoint(time);
     }
 }
 
 // Agregar punto de datos
 function addDataPoint(time) {
-    const timeStr = time.toLocaleTimeString();
+    const timeStr = time.toLocaleTimeString('es-ES', {hour: '2-digit', minute: '2-digit', second: '2-digit', fractionalSecondDigits: 1});
     
     // Simular variaciones realistas
     const pressure = baseValues.pressure + (Math.random() - 0.5) * 10;
@@ -188,7 +188,7 @@ function addDataPoint(time) {
 
     // Actualizar gráfico
     if (trendChart) {
-        trendChart.update('none');
+        trendChart.update('none'); // Usar 'none' para evitar animaciones y permitir actualizaciones más rápidas
     }
 
     // Actualizar valores en tiempo real en la interfaz
@@ -227,15 +227,15 @@ function updateMetrics(pressure, flow, temperature, density) {
 
 // Countdown para próxima actualización
 function initCountdown() {
-    let countdown = 2;
+    let countdown = 10;
     setInterval(() => {
         const countdownElement = document.getElementById('countdown');
         if (countdownElement) {
             countdown--;
-            if (countdown <= 0) countdown = 2;
-            countdownElement.textContent = countdown;
+            if (countdown <= 0) countdown = 10;
+            countdownElement.textContent = (countdown / 10).toFixed(1);
         }
-    }, 500);
+    }, 100);
 }
 
 // Inicializar cuando el documento esté listo
@@ -246,7 +246,7 @@ document.addEventListener('DOMContentLoaded', function() {
         initChart();
         initCountdown();
         
-        // Actualizar datos cada 100 ms
+        // Actualizar datos cada 100ms
         setInterval(() => {
             addDataPoint(new Date());
         }, 100);
