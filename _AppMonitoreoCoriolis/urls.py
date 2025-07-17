@@ -1,6 +1,6 @@
 from django.urls import path
 from . import views
-from .views_node_red import node_red_receiver
+from .views_node_red import NodeRedReceiverView
 
 urlpatterns = [
     # Vista base SPA - Una sola ruta que maneja todo
@@ -10,5 +10,5 @@ urlpatterns = [
 
 urlpatterns += [
     # Endpoint para Node-RED
-    path('api/node-red/', node_red_receiver, name='node_red_receiver'),
+    path('api/node-red/', NodeRedReceiverView.as_view(), name='node_red_receiver'),
 ]
