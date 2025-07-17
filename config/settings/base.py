@@ -11,6 +11,8 @@ SECRET_KEY = os.getenv('SECRET_KEY')
 if not SECRET_KEY:
     raise ValueError("No se ha configurado la SECRET_KEY para la aplicación Django")
 
+NODE_RED_TOKEN = os.getenv("NODE_RED_TOKEN")
+
 # Configuraciones de cookies seguras
 
 # Esta configuración asegura que la cookie de sesión solo sea accesible por el servidor y no por scripts del lado del cliente (como JavaScript). 
