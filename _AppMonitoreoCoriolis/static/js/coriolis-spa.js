@@ -333,7 +333,7 @@ const CoriolisSPA = {
             if (this.trendChart) {
                 this.updateTrendChart(pressure, flow, temp);
             }
-        }, 3000); // Actualizar cada 3 segundos
+        }, 100); // Actualizar cada 100ms
     },
 
     // Inicializar gráfico de tendencias
@@ -398,8 +398,8 @@ const CoriolisSPA = {
                 responsive: true,
                 maintainAspectRatio: false,
                 animation: {
-                    duration: 750,
-                    easing: 'easeInOutQuart'
+                    duration: 100,
+                    easing: 'linear'
                 },
                 plugins: {
                     legend: {
@@ -440,8 +440,8 @@ const CoriolisSPA = {
         this.trendChart.data.datasets[1].data.push(flow.toFixed(1));
         this.trendChart.data.datasets[2].data.push(temp.toFixed(1));
         
-        // Mantener solo los últimos 20 puntos
-        if (this.trendChart.data.labels.length > 20) {
+        // Mantener solo los últimos 50 puntos (5 segundos con updates cada 100ms)
+        if (this.trendChart.data.labels.length > 50) {
             this.trendChart.data.labels.shift();
             this.trendChart.data.datasets.forEach(dataset => dataset.data.shift());
         }
