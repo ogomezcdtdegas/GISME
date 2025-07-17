@@ -134,7 +134,7 @@
                     <div class="card-body">
                         <div class="row">
 
-                            <!-- Imagen descriptiva del sistema -->
+                            <!-- Imagen descriptiva del sistema con marcadores interactivos -->
                             <div class="row mb-4">
                                 <div class="col-12">
                                     <div class="card">
@@ -142,7 +142,15 @@
                                             <h5><i class="bi bi-pipe"></i> Esquema del Sistema Coriolis</h5>
                                         </div>
                                         <div class="card-body text-center" style="overflow: auto; max-height: 700px;">
-                                            <img src="{% static 'img/coriolis_render.png' %}" alt="Sistema Coriolis" class="img-fluid" style="max-width: 1200px;">
+                                            <div class="img-container" style="position:relative; max-width:900px; margin:auto;">
+                                                <img src="{% static 'img/coriolis_render.png' %}" class="img-fluid" id="sistema-img" style="max-width:100%; height:auto;">
+                                                <!-- Marcador 1: (718,399) -->
+                                                <button class="marker" style="position:absolute; top:45%; left:45%; width:32px; height:32px; border-radius:50%; background:rgba(0,123,255,0); border:none; cursor:pointer;" onclick="abrirModal('sensor1')" title="Ver histórico Sensor 1"></button>
+                                                <!-- Marcador 2: (1046,531) -->
+                                                <button class="marker" style="position:absolute; top:58%; left:65.3%; width:32px; height:32px; border-radius:50%; background:rgba(40,167,69,0); border:none; cursor:pointer;" onclick="abrirModal('sensor2')" title="Ver histórico Sensor 2"></button>
+                                                <!-- Marcador 3: (1081,293) -->
+                                                <button class="marker" style="position:absolute; top:32%; left:67.5%; width:32px; height:32px; border-radius:50%; background:rgba(220,53,69,0); border:none; cursor:pointer;" onclick="abrirModal('sensor3')" title="Ver histórico Sensor 3"></button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -241,6 +249,38 @@
         </div>
     </div>
 </div>
+
+<!-- Modal Histórico (reutilizable para los 3 sensores) -->
+<div class="modal fade" id="historicoModal" tabindex="-1" aria-labelledby="historicoModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="historicoModalLabel">Histórico</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="mb-3">
+          <label>Selecciona el rango de fechas</label>
+          <input type="date" id="fechaInicio" value="2025-07-14"> &rarr;
+          <input type="date" id="fechaFin" value="2025-07-17">
+          <button class="btn btn-outline-success" onclick="buscarHistorico()"><i class="bi bi-search"></i></button>
+        </div>
+        <div class="card">
+          <div class="card-body">
+            <h6 class="mb-3" id="tituloGrafica">Presión del Sistema</h6>
+            <div style="width:100%; min-width:300px; height:260px;">
+              <canvas id="graficaHistorico" height="220" style="width:100% !important; display:block;"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">CERRAR</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 {% endblock %}
 
 {% block extra_js %}
@@ -256,4 +296,73 @@
 <script src="{% static 'js/coriolis-common.js' %}"></script>
 <script src="{% static 'js/coriolis-map.js' %}"></script>
 <script src="{% static 'js/coriolis-spa.js' %}"></script>
+<script>
+let historicoChart = null;
+
+function abrirModal(sensorId) {
+    document.getElementById('tituloGrafica').textContent = 'Histórico - ' + sensorId;
+    // Generar más datos aleatorios para simular histórico (por ejemplo, 60 puntos)
+    const labels = [];
+    const data = [];
+    const now = new Date();
+    for (let i = 59; i >= 0; i--) {
+        const fecha = new Date(now.getTime() - i * 3600 * 1000); // cada hora
+        labels.push(fecha.toISOString().slice(0, 19).replace('T', ' '));
+        // Simular valores distintos por sensor
+        let base = 0;
+        if (sensorId === 'sensor1') base = 120 + Math.random() * 10;
+        if (sensorId === 'sensor2') base = 80 + Math.random() * 10;
+        if (sensorId === 'sensor3') base = 40 + Math.random() * 10;
+        data.push(base + Math.random() * 5);
+    }
+    renderHistoricoChart(labels, data, sensorId);
+    var modal = new bootstrap.Modal(document.getElementById('historicoModal'));
+    modal.show();
+}
+
+function renderHistoricoChart(labels, data, sensorId) {
+    const ctx = document.getElementById('graficaHistorico').getContext('2d');
+    if (historicoChart) {
+        historicoChart.destroy();
+    }
+    historicoChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Presión del sistema (PSI)',
+                data: data,
+                borderColor: sensorId === 'sensor1' ? '#007bff' : sensorId === 'sensor2' ? '#28a745' : '#dc3545',
+                backgroundColor: 'rgba(0,0,0,0.05)',
+                tension: 0.3,
+                pointRadius: 2
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { display: true },
+                title: { display: false }
+            },
+            scales: {
+                x: {
+                    title: { display: true, text: 'Fecha de Medición' },
+                    ticks: { maxRotation: 45, minRotation: 45, autoSkip: false }
+                },
+                y: {
+                    title: { display: true, text: 'Presión (PSI)' },
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+}
+
+function buscarHistorico() {
+    // Simular nueva búsqueda generando nuevos datos aleatorios
+    const sensorId = document.getElementById('tituloGrafica').textContent.split(' - ')[1] || 'sensor1';
+    abrirModal(sensorId);
+}
+</script>
 {% endblock %}
