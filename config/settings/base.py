@@ -13,6 +13,9 @@ if not SECRET_KEY:
 
 NODE_RED_TOKEN = os.getenv("NODE_RED_TOKEN")
 
+NODE_RED_USER = os.getenv("NODE_RED_USER")
+NODE_RED_PASS = os.getenv("NODE_RED_PASS")
+
 # Configuraciones de cookies seguras
 
 # Esta configuración asegura que la cookie de sesión solo sea accesible por el servidor y no por scripts del lado del cliente (como JavaScript). 
