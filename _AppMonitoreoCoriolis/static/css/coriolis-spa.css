@@ -60,6 +60,18 @@
     overflow: hidden;
 }
 
+.coriolis-card-body {
+    background: linear-gradient(135deg, #e3f0ff 0%, #eceaea 100%);
+    /* O usa un color sólido personalizado */
+    /* background: #f5f7fa; */
+    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    padding: 32px;
+}
+
+.coriolis-header-system{
+    background: rgba(71, 68, 68, 1);
+}
+
 /* === RESPONSIVIDAD SPA === */
 @media (max-width: 768px) {
     .loading-overlay h5 {

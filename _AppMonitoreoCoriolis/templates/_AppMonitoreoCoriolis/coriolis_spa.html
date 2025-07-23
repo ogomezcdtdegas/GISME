@@ -123,13 +123,28 @@
         <div class="row">
             <div class="col-12">
                 <div class="card">
-                    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <div class="card-header coriolis-header-system text-white d-flex justify-content-between align-items-center">
                         <h4 class="mb-0" id="sistemaTitle">
                             <i class="bi bi-diagram-3"></i> Monitoreo de Medidores Coriolis
                         </h4>
-                        <button class="btn btn-light btn-sm" onclick="showSelectorView()">
-                            <i class="bi bi-arrow-left"></i> Cambiar Sistema
-                        </button>
+                        <div>
+                            <button class="btn btn-outline-danger btn-sm me-2" onclick="descargarReportePDF()">
+                                <i class="bi bi-file-earmark-pdf"></i> Descargar Reporte PDF
+                            </button>
+                            <button class="btn btn-light btn-sm" onclick="showSelectorView()">
+                                <i class="bi bi-arrow-left"></i> Cambiar Sistema
+                            </button>
+                        </div>
+                        <!-- Contenedor oculto para el reporte PDF -->
+                        <div id="reportePDF" style="display:none; max-width:600px;">
+                            <h3>Reporte del Sistema Coriolis</h3>
+                            <p><strong>Sistema:</strong> <span id="pdf-sistema-nombre"></span></p>
+                            <p><strong>Estado:</strong> <span id="pdf-sistema-estado"></span></p>
+                            <p><strong>Temperatura actual:</strong> <span id="pdf-temperatura"></span></p>
+                            <div>
+                                <canvas id="pdf-grafica-temperatura" width="400" height="200"></canvas>
+                            </div>
+                        </div>
                     </div>
                     <div class="card-body">
                         <div class="row">
@@ -141,32 +156,32 @@
                                         <div class="card-header">
                                             <h5><i class="bi bi-pipe"></i> Esquema del Sistema Coriolis</h5>
                                         </div>
-                                        <div class="card-body text-center" style="overflow: auto; max-height: 700px;">
-                                            <div class="img-container" style="position:relative; max-width:900px; margin:auto;">
-                                                <img src="{% static 'img/coriolis_render.png' %}" class="img-fluid" id="sistema-img" style="max-width:100%; height:auto;">
+                                        <div class="card-body coriolis-card-body text-center" style="overflow: auto; max-height: 700px;">
+                                            <div class="img-container" style="position:relative; max-width:1050px; margin:auto;">
+                                                <img src="{% static 'img/coriolis_render2.png' %}" class="img-fluid" id="sistema-img" style="max-width:100%; height:auto;">
                                                 <!-- Displays de sensores -->
-                                                <div style="position:absolute; top:33%; left:42%; min-width:90px; z-index:2;">
+                                                <div style="position:absolute; top:33%; left:32%; min-width:90px; z-index:2;">
                                                 <div class="shadow-sm" style="background:#fff; border-radius:10px; padding:6px 12px; text-align:center; font-size:13px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
                                                     <div style="font-weight:600; color:#888;">Sensor 1</div>
                                                     <div id="display-sensor1" style="font-size:15px; color:#007bff; font-weight:700;">---</div>
                                                 </div>
                                                 </div>
-                                                <div style="position:absolute; top:65%; left:60%; min-width:90px; z-index:2;">
+                                                <div style="position:absolute; top:73%; left:58%; min-width:90px; z-index:2;">
                                                 <div class="shadow-sm" style="background:#fff; border-radius:10px; padding:6px 12px; text-align:center; font-size:13px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
                                                     <div style="font-weight:600; color:#888;">Sensor 2</div>
                                                     <div id="display-sensor2" style="font-size:15px; color:#28a745; font-weight:700;">---</div>
                                                 </div>
                                                 </div>
-                                                <div style="position:absolute; top:18%; left:67%; min-width:90px; z-index:2;">
+                                                <div style="position:absolute; top:7%; left:56%; min-width:90px; z-index:2;">
                                                 <div class="shadow-sm" style="background:#fff; border-radius:10px; padding:6px 12px; text-align:center; font-size:13px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
                                                     <div style="font-weight:600; color:#888;">Sensor 3</div>
                                                     <div id="display-sensor3" style="font-size:15px; color:#dc3545; font-weight:700;">---</div>
                                                 </div>
                                                 </div>
                                                 <!-- Marcadores transparentes clickeables -->
-                                                <button class="marker" style="position:absolute; top:45%; left:45%; width:32px; height:32px; border-radius:50%; background:rgba(0,123,255,0); border:none; cursor:pointer;" onclick="abrirModal('sensor1')" title="Ver histórico Sensor 1"></button>
-                                                <button class="marker" style="position:absolute; top:58%; left:65.3%; width:32px; height:32px; border-radius:50%; background:rgba(40,167,69,0); border:none; cursor:pointer;" onclick="abrirModal('sensor2')" title="Ver histórico Sensor 2"></button>
-                                                <button class="marker" style="position:absolute; top:32%; left:67.5%; width:32px; height:32px; border-radius:50%; background:rgba(220,53,69,0); border:none; cursor:pointer;" onclick="abrirModal('sensor3')" title="Ver histórico Sensor 3"></button>
+                                                <button class="marker" style="position:absolute; top:45%; left:35%; width:32px; height:32px; border-radius:50%; background:rgba(0,123,255,0); border:none; cursor:pointer;" onclick="abrirModal('sensor1')" title="Ver histórico Sensor 1"></button>
+                                                <button class="marker" style="position:absolute; top:58%; left:61.5%; width:32px; height:32px; border-radius:50%; background:rgba(40,167,69,0); border:none; cursor:pointer;" onclick="abrirModal('sensor2')" title="Ver histórico Sensor 2"></button>
+                                                <button class="marker" style="position:absolute; top:23%; left:58%; width:32px; height:32px; border-radius:50%; background:rgba(220,53,69,0); border:none; cursor:pointer;" onclick="abrirModal('sensor3')" title="Ver histórico Sensor 3"></button>
                                             </div>
                                         </div>
                                     </div>
@@ -301,6 +316,82 @@
 {% endblock %}
 
 {% block extra_js %}
+<!-- jsPDF y html2canvas para exportar a PDF -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+async function descargarReportePDF() {
+    // Llena los datos del reporte
+    const sistemaNombre = document.getElementById('sistemaTitle').textContent.trim();
+    const sistemaEstado = document.getElementById('sistemaInfo')?.textContent.trim() || 'N/A';
+    const tempText = document.getElementById('display-sensor2').textContent;
+    document.getElementById('pdf-sistema-nombre').textContent = sistemaNombre;
+    document.getElementById('pdf-sistema-estado').textContent = sistemaEstado;
+    document.getElementById('pdf-temperatura').textContent = tempText;
+
+    // Dibuja el gráfico de temperatura usando Chart.js
+    const temp = parseFloat(tempText);
+    const ctx = document.getElementById('pdf-grafica-temperatura').getContext('2d');
+    if (window.pdfChart) {
+        window.pdfChart.destroy();
+    }
+    window.pdfChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: Array.from({length: 10}, (_, i) => `T-${10 - i}`),
+            datasets: [{
+                label: 'Temperatura (°F)',
+                data: Array.from({length: 9}, () => (90 + Math.random() * 20).toFixed(1)).concat([temp]),
+                borderColor: '#28a745',
+                backgroundColor: 'rgba(40,167,69,0.1)',
+                tension: 0.3,
+                pointRadius: 2
+            }]
+        },
+        options: {
+            responsive: false,
+            maintainAspectRatio: false,
+            animation: false,
+            plugins: {
+                legend: { display: true },
+                title: { display: false }
+            },
+            scales: {
+                x: { title: { display: true, text: 'Tiempo' } },
+                y: { title: { display: true, text: 'Temperatura (°F)' }, beginAtZero: true }
+            }
+        }
+    });
+
+    // Espera a que Chart.js termine de renderizar
+    await new Promise(resolve => setTimeout(resolve, 300));
+
+    // Muestra el contenedor temporalmente para capturarlo
+    const reporte = document.getElementById('reportePDF');
+    reporte.style.display = 'block';
+
+    // Usa html2canvas para capturar el reporte
+    const canvas = await html2canvas(reporte, {backgroundColor: "#fff"});
+    const imgData = canvas.toDataURL('image/png');
+
+    // Crea el PDF
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF();
+    // Título y datos generales
+    pdf.setFontSize(16);
+    pdf.text('Reporte del Sistema Coriolis', 15, 15);
+    pdf.setFontSize(12);
+    pdf.text('Sistema: ' + sistemaNombre, 15, 25);
+    pdf.text('Estado: ' + sistemaEstado, 15, 32);
+    pdf.text('Temperatura actual: ' + tempText, 15, 39);
+    // Imagen del gráfico
+    pdf.addImage(imgData, 'PNG', 10, 45, 190, 0);
+    pdf.save('reporte_coriolis.pdf');
+
+    // Oculta el contenedor de nuevo
+    reporte.style.display = 'none';
+}
+</script>
 <!-- Chart.js para gráficos -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.js"></script>
 
