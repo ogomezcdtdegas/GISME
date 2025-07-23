@@ -37,6 +37,8 @@ class BaseReadForIdView(APIView):
 ''' -------------------------------------------------------------------------------------------------------------------------------------------------------- '''
 
 class BaseListView(APIView):
+    def get_queryset(self):
+        return self.model.objects.all()
     model = None  # 🔹 Se define en la subclase
     serializer_class = None
     template_name = None  # 🔹 Para renderizado en HTML

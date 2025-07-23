@@ -29,14 +29,14 @@ export const ENDPOINTS = {
         POR_ID: (id) => `/complementos/tipo-criticidad/${id}/`
     },
     TIPO_EQUIPO: {
-        LISTAR: '/complementos/tipoEquipos/',
+        LISTAR: '/complementos/tipoEquipo-list-pag/',
         CREAR: '/complementos/crear-tipoEquipo/',
         ACTUALIZAR: (id) => `/complementos/editar-tipoEquipo/${id}/`,
         ELIMINAR: (id) => `/complementos/eliminar-tipo-equipo/${id}/`,
         ELIMINAR_RELACION: (id) => `/complementos/eliminar-tipo-equipo-relacion/${id}/`
     },
     TECNOLOGIA: {
-        LISTAR: '/complementos/tecnologias/',
+        LISTAR: '/complementos/tecnologia-list-pag/',
         CREAR: '/complementos/crear-tecnologia/',
         ACTUALIZAR: (id) => `/complementos/editar-tecnologia/${id}/`,
         ELIMINAR: (id) => `/complementos/eliminar-tecnologia/${id}/`,
