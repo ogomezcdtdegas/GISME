@@ -4,6 +4,13 @@ from rest_framework.response import Response
 from .....models import TipoCriticidadCriticidad, TipoCriticidad
 from .....serializers import TipoCriticidadCriticidadSerializer, TipoCriticidadSerializer
 
+from drf_spectacular.utils import extend_schema, extend_schema_view
+
+@extend_schema_view(
+    get=extend_schema(tags=['TipoCriticidad']),
+    post=extend_schema(tags=['TipoCriticidad']),
+)
+
 # 🔹 Listado de relaciones
 class TipoCriticidadListAllView(BaseListAllView):
     model = TipoCriticidadCriticidad
@@ -11,6 +18,13 @@ class TipoCriticidadListAllView(BaseListAllView):
 
     def get_queryset(self):
         return self.model.objects.all().select_related('tipo_criticidad', 'criticidad')
+
+
+
+@extend_schema_view(
+    get=extend_schema(tags=['TipoCriticidad']),
+    post=extend_schema(tags=['TipoCriticidad']),
+)
 
 # 🔹 Listado de tipos únicos
 class TiposCriticidadUnicosView(APIView):

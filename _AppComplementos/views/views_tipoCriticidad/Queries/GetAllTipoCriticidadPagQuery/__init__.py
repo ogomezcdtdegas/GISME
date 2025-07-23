@@ -1,0 +1,1 @@
+from .GetAllTipoCriticidadPagQuery import TipoCriticidadPaginatedAPI, TipoCriticidadPaginatedHTML

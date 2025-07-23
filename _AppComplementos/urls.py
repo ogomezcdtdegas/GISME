@@ -26,7 +26,7 @@ from .views.views_TipoEquipo.Commands import (
     DeleteTipoEquipoCommand,
     DeleteTipoEquipoRelacionCommand
 )
-from .views.views_TipoEquipo.Queries import allTipoEquiposPag
+from .views.views_TipoEquipo.Queries import TipoEquipoPaginatedAPI, TipoEquipoPaginatedHTML
 
 # Tecnología
 from .views.views_Tecnologia.Commands import (
@@ -35,7 +35,7 @@ from .views.views_Tecnologia.Commands import (
     DeleteTecnologiaCommand
 )
 from .views.views_Tecnologia.Commands.DeleteTecnologiaRelacionCommand.DeleteTecnologiaRelacionCommand import DeleteTecnologiaRelacionCommand
-from .views.views_Tecnologia.Queries import allTecnologiasPag
+
 
 # Ubicación
 from .views.views_Ubicacion.Commands.CreateUbicacionCommand.CreateUbicacionCommand import CreateUbicacionView
@@ -63,6 +63,18 @@ from .views.views_Sistema import (
 )
 
 urlpatterns = [
+    # Backward compatibility: old name for TipoEquipo paginada HTML
+    path('listar-todo-tipoequipos/',
+         __import__('_AppComplementos.views.views_TipoEquipo.Queries.GetAllTipoEquipoPagQuery.GetAllTipoEquipoPagQuery', fromlist=['TipoEquipoPaginatedHTML']).TipoEquipoPaginatedHTML.as_view(),
+         name='allTiposEquipoPag'),
+    # Backward compatibility: old name for Tecnología paginada HTML
+    path('listar-todo-tecnologias/',
+         __import__('_AppComplementos.views.views_Tecnologia.Queries.GetAllTecnologiaPagQuery.GetAllTecnologiaPagQuery', fromlist=['TecnologiaPaginatedHTML']).TecnologiaPaginatedHTML.as_view(),
+         name='allTecnologiasPag'),
+    # Backward compatibility: old name for Producto paginada HTML
+    path('listar-todo-productos/',
+         __import__('_AppComplementos.views.views_Producto.Queries.GetAllProductoPagQuery.GetAllProductoPagQuery', fromlist=['ProductoPaginatedHTML']).ProductoPaginatedHTML.as_view(),
+         name='allProductosPag'),
     # Backward compatibility: old name for Criticidad paginada HTML
     path('',
          __import__('_AppComplementos.views.views_Criticidad.Queries.GetAllCriticidadPagQuery.GetAllCriticidadPagQuery', fromlist=['CriticidadPaginatedHTML']).CriticidadPaginatedHTML.as_view(),
@@ -90,21 +102,45 @@ urlpatterns = [
     path('eliminar-tipo-criticidad/<uuid:obj_id>/', DeleteTipoCriticidadCommand.as_view(), name='eliminarTipoCriticidad'),
     path('eliminar-tipo-criticidad-relacion/<uuid:obj_id>/', DeleteTipoCriticidadRelacionCommand.as_view(), name='eliminarTipoCriticidadRelacion'),
 
-    path('listar-todo-productos/', GetAllProductoPagQuery.allProductosPag.as_view(), name='allProductosPag'),
+    # Producto paginada HTML
+    path('producto/',
+         __import__('_AppComplementos.views.views_Producto.Queries.GetAllProductoPagQuery.GetAllProductoPagQuery', fromlist=['ProductoPaginatedHTML']).ProductoPaginatedHTML.as_view(),
+         name='producto_paginated_html'),
+
+    # Producto paginada API (JSON)
+    path('producto-list-pag/',
+         __import__('_AppComplementos.views.views_Producto.Queries.GetAllProductoPagQuery.GetAllProductoPagQuery', fromlist=['ProductoPaginatedAPI']).ProductoPaginatedAPI.as_view(),
+         name='producto_paginated_api'),
     path('crear-producto-completo/', CreateProductoCommand.CrearProductoCompletoView.as_view(), name='crearProducto'),
     path('editar-producto/<uuid:obj_id>/', UpdateProductoCommand.EditarProductoView.as_view(), name='editar_producto'),
     path('eliminar-producto/<uuid:obj_id>/', DeleteProductoCommand.as_view(), name='eliminarProducto'),
     path('eliminar-producto-relacion/<uuid:obj_id>/', DeleteProductoRelacionCommand.as_view(), name='eliminarProductoRelacion'),
     
-    # Tipo Equipo URLs
-    path('tipoEquipos/', allTipoEquiposPag.as_view(), name='allTiposEquipoPag'),
+    # Tipo Equipo paginada HTML
+    path('tipoEquipos/',
+         __import__('_AppComplementos.views.views_TipoEquipo.Queries.GetAllTipoEquipoPagQuery.GetAllTipoEquipoPagQuery', fromlist=['TipoEquipoPaginatedHTML']).TipoEquipoPaginatedHTML.as_view(),
+         name='tipoequipo_paginated_html'),
+
+    # Tipo Equipo paginada API (JSON)
+    path('tipoEquipo-list-pag/',
+         __import__('_AppComplementos.views.views_TipoEquipo.Queries.GetAllTipoEquipoPagQuery.GetAllTipoEquipoPagQuery', fromlist=['TipoEquipoPaginatedAPI']).TipoEquipoPaginatedAPI.as_view(),
+         name='tipoequipo_paginated_api'),
+
     path('crear-tipoEquipo/', crearTipoEquipo.as_view(), name='crearTipoEquipo'),
     path('editar-tipoEquipo/<uuid:obj_id>/', EditarTipoEquipoView.as_view(), name='editarTipoEquipo'),
     path('eliminar-tipo-equipo/<uuid:obj_id>/', DeleteTipoEquipoCommand.as_view(), name='eliminarTipoEquipo'),
     path('eliminar-tipo-equipo-relacion/<uuid:obj_id>/', DeleteTipoEquipoRelacionCommand.as_view(), name='eliminarTipoEquipoRelacion'),
 
     # Tecnología URLs
-    path('tecnologias/', allTecnologiasPag.as_view(), name='allTecnologiasPag'),
+    # Tecnología paginada HTML
+    path('tecnologia/',
+         __import__('_AppComplementos.views.views_Tecnologia.Queries.GetAllTecnologiaPagQuery.GetAllTecnologiaPagQuery', fromlist=['TecnologiaPaginatedHTML']).TecnologiaPaginatedHTML.as_view(),
+         name='tecnologia_paginated_html'),
+
+    # Tecnología paginada API (JSON)
+    path('tecnologia-list-pag/',
+         __import__('_AppComplementos.views.views_Tecnologia.Queries.GetAllTecnologiaPagQuery.GetAllTecnologiaPagQuery', fromlist=['TecnologiaPaginatedAPI']).TecnologiaPaginatedAPI.as_view(),
+         name='tecnologia_paginated_api'),
     path('crear-tecnologia/', crearTecnologia.as_view(), name='crearTecnologia'),
     path('editar-tecnologia/<uuid:obj_id>/', EditarTecnologiaView.as_view(), name='editarTecnologia'),
     path('eliminar-tecnologia/<uuid:obj_id>/', DeleteTecnologiaCommand.as_view(), name='eliminarTecnologia'),

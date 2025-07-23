@@ -9,6 +9,11 @@ from _AppComplementos.models import (
     TipoEquipo, TipoEquipoProducto,
     Tecnologia, TecnologiaTipoEquipo
 )
+from drf_spectacular.utils import extend_schema, extend_schema_view
+
+@extend_schema_view(
+    delete=extend_schema(tags=['Producto']),
+)
 
 class DeleteProductoCommand(APIView):
     """CBV Command para eliminar producto con lógica de cascada específica"""

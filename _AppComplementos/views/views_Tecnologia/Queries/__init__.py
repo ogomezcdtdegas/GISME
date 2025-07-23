@@ -1,1 +1,1 @@
-from .GetAllTecnologiaPagQuery.GetAllTecnologiaPagQuery import allTecnologiasPag
+from .GetAllTecnologiaPagQuery.GetAllTecnologiaPagQuery import TecnologiaPaginatedAPI, TecnologiaPaginatedHTML

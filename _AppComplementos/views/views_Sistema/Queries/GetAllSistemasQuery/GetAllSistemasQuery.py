@@ -4,6 +4,12 @@ from repoGenerico.views_base import BaseListAllView
 from .....models import Sistema
 from .....serializers import SistemaSerializer
 
+from drf_spectacular.utils import extend_schema, extend_schema_view
+
+@extend_schema_view(
+    get=extend_schema(tags=['Sistema']),
+    post=extend_schema(tags=['Sistema']),
+)
 
 class ListarTodosSistemasQueryView(BaseListAllView):
     """CBV Query para listar todos los sistemas sin paginación usando BaseListAllView"""

@@ -3,6 +3,13 @@ from rest_framework.response import Response
 from .....models import TipoCriticidad
 from .....serializers import TipoCriticidadSerializer
 
+from drf_spectacular.utils import extend_schema, extend_schema_view
+
+@extend_schema_view(
+    get=extend_schema(tags=['TipoCriticidad']),
+    post=extend_schema(tags=['TipoCriticidad']),
+)
+
 class TiposCriticidadUnicosView(APIView):
     """
     Vista para obtener tipos de criticidad únicos (sin duplicados)

@@ -8,6 +8,12 @@ from _AppComplementos.models import (
     Tecnologia, TecnologiaTipoEquipo
 )
 
+from drf_spectacular.utils import extend_schema, extend_schema_view
+
+@extend_schema_view(
+    delete=extend_schema(tags=['Tecnología']),
+)
+
 class DeleteTecnologiaCommand(APIView):
     """CBV Command para eliminar tecnología con lógica de cascada específica"""
     permission_classes = [IsAuthenticated]

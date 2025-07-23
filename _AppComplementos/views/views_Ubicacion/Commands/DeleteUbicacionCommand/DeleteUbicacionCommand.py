@@ -4,6 +4,12 @@ from rest_framework import status
 from django.shortcuts import get_object_or_404
 from .....models import Ubicacion
 
+from drf_spectacular.utils import extend_schema, extend_schema_view
+
+@extend_schema_view(
+    delete=extend_schema(tags=['Ubicación']),
+)
+
 # 🔹 Eliminar
 class DeleteUbicacionView(APIView):
     def delete(self, request, ubicacion_id):

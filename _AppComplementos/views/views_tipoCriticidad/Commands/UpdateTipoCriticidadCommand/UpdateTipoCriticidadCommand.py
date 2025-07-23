@@ -4,6 +4,13 @@ from .....serializers import TipoCriticidadCriticidadSerializer
 from django.http import JsonResponse
 from rest_framework import status
 
+from drf_spectacular.utils import extend_schema, extend_schema_view
+
+@extend_schema_view(
+    put=extend_schema(tags=['TipoCriticidad']),
+    patch=extend_schema(tags=['TipoCriticidad']),
+)
+
 class editarTipCriticidad(BaseRetrieveUpdateView, BaseReadForIdView):  
     model = TipoCriticidadCriticidad
     serializer_class = TipoCriticidadCriticidadSerializer
