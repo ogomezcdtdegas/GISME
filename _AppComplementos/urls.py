@@ -2,7 +2,7 @@ from django.urls import path
 
 # Criticidad
 from .views.views_Criticidad.Commands import CreateCriticidadCommand, UpdateCriticidadCommand
-from .views.views_Criticidad.Queries import allCriticidadPag, GetAllCriticidadListQuery, GetCriticidadPorTipoCritQuery
+from .views.views_Criticidad.Queries import GetAllCriticidadListQuery, GetCriticidadPorTipoCritQuery
 from .views.views_Criticidad.Commands.DeleteCriticidadCommand.DeleteCriticidadCommand import DeleteCriticidadCommand
 
 # Tipo Criticidad
@@ -63,7 +63,19 @@ from .views.views_Sistema import (
 )
 
 urlpatterns = [
-    path('', allCriticidadPag.as_view(), name='allCriticidadesPag'),
+    # Backward compatibility: old name for Criticidad paginada HTML
+    path('',
+         __import__('_AppComplementos.views.views_Criticidad.Queries.GetAllCriticidadPagQuery.GetAllCriticidadPagQuery', fromlist=['CriticidadPaginatedHTML']).CriticidadPaginatedHTML.as_view(),
+         name='allCriticidadesPag'),
+    # Criticidad paginada HTML
+    path('criticidad/',
+         __import__('_AppComplementos.views.views_Criticidad.Queries.GetAllCriticidadPagQuery.GetAllCriticidadPagQuery', fromlist=['CriticidadPaginatedHTML']).CriticidadPaginatedHTML.as_view(),
+         name='criticidad_paginated_html'),
+
+    # Criticidad paginada API (JSON)
+    path('criticidad-list-pag/',
+         __import__('_AppComplementos.views.views_Criticidad.Queries.GetAllCriticidadPagQuery.GetAllCriticidadPagQuery', fromlist=['CriticidadPaginatedAPI']).CriticidadPaginatedAPI.as_view(),
+         name='criticidad_paginated_api'),
     path('listar-todo-criticidad/', GetAllCriticidadListQuery.CriticidadListAllView.as_view(), name='listarTodoCriticidad'),
     path('crear-criticidad/', CreateCriticidadCommand.crearCriticidad.as_view(), name='crearCriticidad'),
     path('editar-criticidad/<uuid:obj_id>/', UpdateCriticidadCommand.editarCriticidad.as_view(), name='editarCriticidad'),

@@ -1,1 +1,1 @@
-from .GetAllCriticidadPagQuery import allCriticidadPag
+from .GetAllCriticidadPagQuery import CriticidadPaginatedAPI, CriticidadPaginatedHTML

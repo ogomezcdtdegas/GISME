@@ -98,6 +98,7 @@ INSTALLED_APPS = [
     '_AppAuth',
     '_AppAdmin',
     'django_extensions',
+    'drf_spectacular',
 ]
 
 MIDDLEWARE = [
@@ -172,3 +173,4 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
     ),
 }
+

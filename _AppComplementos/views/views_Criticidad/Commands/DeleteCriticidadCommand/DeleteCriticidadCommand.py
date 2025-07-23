@@ -9,6 +9,12 @@ from _AppComplementos.models import (
     ProductoTipoCritCrit, Producto, TipoEquipoProducto, 
     TipoEquipo, TecnologiaTipoEquipo, Tecnologia
 )
+from drf_spectacular.utils import extend_schema, extend_schema_view
+
+@extend_schema_view(
+    delete=extend_schema(tags=['Criticidad']),
+)
+
 
 class DeleteCriticidadCommand(APIView):
     """CBV Command para eliminar criticidad con lógica de cascada específica"""

@@ -15,3 +15,6 @@ DATABASES = {
         'PORT': os.getenv('DB_PORT'),
     }
 }
+
+# Habilitar Swagger/Schema solo en desarrollo
+REST_FRAMEWORK['DEFAULT_SCHEMA_CLASS'] = 'drf_spectacular.openapi.AutoSchema'
