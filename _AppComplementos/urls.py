@@ -63,6 +63,10 @@ from .views.views_Sistema import (
 )
 
 urlpatterns = [
+    # Backward compatibility: old name for Producto paginada HTML
+    path('listar-todo-productos/',
+         __import__('_AppComplementos.views.views_Producto.Queries.GetAllProductoPagQuery.GetAllProductoPagQuery', fromlist=['ProductoPaginatedHTML']).ProductoPaginatedHTML.as_view(),
+         name='allProductosPag'),
     # Backward compatibility: old name for Criticidad paginada HTML
     path('',
          __import__('_AppComplementos.views.views_Criticidad.Queries.GetAllCriticidadPagQuery.GetAllCriticidadPagQuery', fromlist=['CriticidadPaginatedHTML']).CriticidadPaginatedHTML.as_view(),
@@ -90,7 +94,15 @@ urlpatterns = [
     path('eliminar-tipo-criticidad/<uuid:obj_id>/', DeleteTipoCriticidadCommand.as_view(), name='eliminarTipoCriticidad'),
     path('eliminar-tipo-criticidad-relacion/<uuid:obj_id>/', DeleteTipoCriticidadRelacionCommand.as_view(), name='eliminarTipoCriticidadRelacion'),
 
-    path('listar-todo-productos/', GetAllProductoPagQuery.allProductosPag.as_view(), name='allProductosPag'),
+    # Producto paginada HTML
+    path('producto/',
+         __import__('_AppComplementos.views.views_Producto.Queries.GetAllProductoPagQuery.GetAllProductoPagQuery', fromlist=['ProductoPaginatedHTML']).ProductoPaginatedHTML.as_view(),
+         name='producto_paginated_html'),
+
+    # Producto paginada API (JSON)
+    path('producto-list-pag/',
+         __import__('_AppComplementos.views.views_Producto.Queries.GetAllProductoPagQuery.GetAllProductoPagQuery', fromlist=['ProductoPaginatedAPI']).ProductoPaginatedAPI.as_view(),
+         name='producto_paginated_api'),
     path('crear-producto-completo/', CreateProductoCommand.CrearProductoCompletoView.as_view(), name='crearProducto'),
     path('editar-producto/<uuid:obj_id>/', UpdateProductoCommand.EditarProductoView.as_view(), name='editar_producto'),
     path('eliminar-producto/<uuid:obj_id>/', DeleteProductoCommand.as_view(), name='eliminarProducto'),
