@@ -10,6 +10,12 @@ from _AppComplementos.models import (
     TecnologiaTipoEquipo, Tecnologia
 )
 
+from drf_spectacular.utils import extend_schema, extend_schema_view
+
+@extend_schema_view(
+    delete=extend_schema(tags=['TipoCriticidad']),
+)
+
 class DeleteTipoCriticidadCommand(APIView):
     def delete(self, request, obj_id):
         try:

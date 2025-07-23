@@ -9,6 +9,11 @@ from _AppComplementos.models import (
     Tecnologia, TecnologiaTipoEquipo
 )
 
+from drf_spectacular.utils import extend_schema, extend_schema_view
+
+@extend_schema_view(
+    delete=extend_schema(tags=['TipoEquipo']),
+)
 
 class DeleteTipoEquipoCommand(APIView):
     """CBV Command para eliminar tipo de equipo con lógica de cascada específica"""

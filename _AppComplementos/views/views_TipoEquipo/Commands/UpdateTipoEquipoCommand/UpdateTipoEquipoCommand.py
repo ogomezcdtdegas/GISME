@@ -6,6 +6,13 @@ from repoGenerico.views_base import BaseRetrieveUpdateView
 from _AppComplementos.models import TipoEquipo, TipoEquipoProducto, ProductoTipoCritCrit
 from _AppComplementos.serializers import TipoEquipoProductoSerializer
 
+from drf_spectacular.utils import extend_schema, extend_schema_view
+
+@extend_schema_view(
+    put=extend_schema(tags=['TipoEquipo']),
+    patch=extend_schema(tags=['TipoEquipo']),
+)
+
 
 class EditarTipoEquipoView(BaseRetrieveUpdateView):
     """CBV Command para editar tipo de equipo usando BaseRetrieveUpdateView"""

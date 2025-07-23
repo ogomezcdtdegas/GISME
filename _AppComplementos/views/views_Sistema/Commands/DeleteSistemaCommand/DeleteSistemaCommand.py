@@ -3,6 +3,11 @@ from repoGenerico.views_base import BaseDeleteView
 
 from .....models import Sistema
 
+from drf_spectacular.utils import extend_schema, extend_schema_view
+
+@extend_schema_view(
+    delete=extend_schema(tags=['Sistema']),
+)
 
 class EliminarSistemaCommandView(BaseDeleteView):
     """CBV Command para eliminar un sistema usando BaseDeleteView"""

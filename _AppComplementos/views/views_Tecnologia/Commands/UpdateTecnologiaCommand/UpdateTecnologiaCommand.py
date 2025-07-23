@@ -5,6 +5,14 @@ from django.http import JsonResponse
 from rest_framework import status
 from rest_framework.response import Response
 
+from drf_spectacular.utils import extend_schema, extend_schema_view
+
+@extend_schema_view(
+    put=extend_schema(tags=['Tecnología']),
+    patch=extend_schema(tags=['Tecnología']),
+)
+
+
 # 🔹 Actualización completa
 class EditarTecnologiaView(BaseRetrieveUpdateView, BaseReadForIdView):
     model = TecnologiaTipoEquipo

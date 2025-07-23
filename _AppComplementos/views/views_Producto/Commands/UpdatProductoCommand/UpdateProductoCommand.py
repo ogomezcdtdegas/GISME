@@ -5,6 +5,13 @@ from django.http import JsonResponse
 from django.db import transaction
 from rest_framework import status
 
+from drf_spectacular.utils import extend_schema, extend_schema_view
+
+@extend_schema_view(
+    put=extend_schema(tags=['Producto']),
+    patch=extend_schema(tags=['Producto']),
+)
+
 class EditarProductoView(BaseRetrieveUpdateView, BaseReadForIdView):
     model = ProductoTipoCritCrit
     serializer_class = ProductoTipoCriticiddadSerializer

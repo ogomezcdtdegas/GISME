@@ -4,7 +4,11 @@ from rest_framework import status
 from .....models import Producto, ProductoTipoCritCrit, TipoCriticidadCriticidad
 from .....serializers import ProductoTipoCriticiddadSerializer
 from django.shortcuts import get_object_or_404
+from drf_spectacular.utils import extend_schema, extend_schema_view
 
+@extend_schema_view(
+    post=extend_schema(tags=['Producto']),
+)
 class CrearProductoCompletoView(BaseCreateView):
     """
     Vista para crear un producto con su relación completa de tipo y criticidad

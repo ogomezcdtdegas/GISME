@@ -3,6 +3,13 @@ from .....models import TecnologiaTipoEquipo
 from .....serializers import TecnologiaTipoEquipoSerializer
 from django.db.models import Count
 
+from drf_spectacular.utils import extend_schema, extend_schema_view
+
+@extend_schema_view(
+    get=extend_schema(tags=['Tecnología']),
+    post=extend_schema(tags=['Tecnología']),
+)
+
 # 🔹 Listado paginado
 class allTecnologiasPag(BaseListView):
     model = TecnologiaTipoEquipo

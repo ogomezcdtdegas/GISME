@@ -3,6 +3,13 @@ from .....models import ProductoTipoCritCrit
 from .....serializers import ProductoTipoCriticiddadSerializer
 from django.db.models import Count
 
+from drf_spectacular.utils import extend_schema, extend_schema_view
+
+@extend_schema_view(
+    get=extend_schema(tags=['Producto']),
+    post=extend_schema(tags=['Producto']),
+)
+
 # 🔹 Listado paginado
 class allProductosPag(BaseListView):
     model = ProductoTipoCritCrit

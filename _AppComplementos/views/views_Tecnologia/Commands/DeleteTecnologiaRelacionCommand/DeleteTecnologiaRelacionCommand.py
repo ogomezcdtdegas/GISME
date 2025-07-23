@@ -6,6 +6,11 @@ from repoGenerico.views_base import BaseDeleteView
 
 from _AppComplementos.models import TecnologiaTipoEquipo, Tecnologia
 
+from drf_spectacular.utils import extend_schema, extend_schema_view
+
+@extend_schema_view(
+    delete=extend_schema(tags=['Tecnología']),
+)
 
 class DeleteTecnologiaRelacionCommand(BaseDeleteView):
     """CBV Command para eliminar relación de tecnología usando BaseDeleteView"""

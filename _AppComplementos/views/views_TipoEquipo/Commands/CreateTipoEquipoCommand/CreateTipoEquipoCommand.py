@@ -4,6 +4,12 @@ from _AppComplementos.serializers import TipoEquipoProductoSerializer
 from django.http import JsonResponse
 from rest_framework import status
 
+from drf_spectacular.utils import extend_schema, extend_schema_view
+
+@extend_schema_view(
+    post=extend_schema(tags=['TipoEquipo']),
+)
+
 # 🔹 Creación independiente
 class crearTipoEquipo(BaseCreateView, BaseReadForIdView):
     model = TipoEquipoProducto
