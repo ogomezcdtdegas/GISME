@@ -1,21 +1,14 @@
+from ...models import ProductoTipoCritCrit
+from ...serializers import ProductoTipoCriticiddadSerializer
 from repoGenerico.views_base import BaseListView
-from .....models import ProductoTipoCritCrit
-from .....serializers import ProductoTipoCriticiddadSerializer
 from django.db.models import Count
 
-
-from drf_spectacular.utils import extend_schema, extend_schema_view
-from rest_framework.response import Response
-
-
-# 🔹 API paginada (JSON)
-@extend_schema_view(
-    get=extend_schema(tags=['Producto'], description="Listado paginado de productos (API)")
-)
-
-class ProductoPaginatedAPI(BaseListView):
+# 🔹 Vista HTML paginada
+class ProductoPaginatedHTML(BaseListView):
     model = ProductoTipoCritCrit
     serializer_class = ProductoTipoCriticiddadSerializer
+    template_name = "_AppComplementos/templates_producto/index.html"
+    active_section = "complementos_producto"
 
     def get_queryset(self):
         return ProductoTipoCritCrit.objects.select_related(
@@ -30,6 +23,5 @@ class ProductoPaginatedAPI(BaseListView):
     def get_allowed_ordering_fields(self):
         return ['created_at', 'producto__name']
 
-    def apply_search_filters(self, queryset, search_query):
-        return queryset.filter(producto__name__icontains=search_query)
-
+    def get_search_fields(self):
+        return ['producto__name']

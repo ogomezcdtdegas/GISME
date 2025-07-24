@@ -1,22 +1,14 @@
+from ...models import TipoEquipoProducto
+from ...serializers import TipoEquipoProductoSerializer
 from repoGenerico.views_base import BaseListView
 from django.db.models import Count
-from _AppComplementos.models import TipoEquipoProducto
-from _AppComplementos.serializers import TipoEquipoProductoSerializer
 
-from drf_spectacular.utils import extend_schema, extend_schema_view
-
-
-# 🔹 API paginada (JSON)
-from rest_framework.response import Response
-from drf_spectacular.utils import extend_schema, extend_schema_view
-
-@extend_schema_view(
-    get=extend_schema(tags=['TipoEquipo'], description="Listado paginado de tipo de equipos (API)")
-)
-
-class TipoEquipoPaginatedAPI(BaseListView):
+# 🔹 Vista HTML paginada
+class TipoEquipoPaginatedHTML(BaseListView):
     model = TipoEquipoProducto
     serializer_class = TipoEquipoProductoSerializer
+    template_name = "_AppComplementos/templates_tipoEquipo/index.html"
+    active_section = "complementos_tipoequipo"
 
     def get_queryset(self):
         queryset = super().get_queryset()
@@ -30,6 +22,5 @@ class TipoEquipoPaginatedAPI(BaseListView):
     def get_allowed_ordering_fields(self):
         return ['created_at', 'tipo_equipo__name']
 
-    def apply_search_filters(self, queryset, search_query):
-        return queryset.filter(tipo_equipo__name__icontains=search_query)
-
+    def get_search_fields(self):
+        return ['tipo_equipo__name']

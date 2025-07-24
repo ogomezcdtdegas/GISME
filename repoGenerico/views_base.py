@@ -38,9 +38,13 @@ class BaseReadForIdView(APIView):
 
 class BaseListView(APIView):
 
+
     model = None  # Se define en la subclase
     serializer_class = None
     template_name = None  # Para renderizado en HTML (solo si se usa)
+    active_section = None
+    default_per_page = 10
+    default_ordering = 'created_at'
 
     def get_queryset(self):
         """Subclases pueden sobrescribir para optimizar el queryset (select_related, annotate, etc)."""
@@ -50,14 +54,22 @@ class BaseListView(APIView):
         """Campos permitidos para ordenamiento. Override en subclases."""
         return ['created_at', 'name']
 
+    def get_search_fields(self):
+        """Campos permitidos para búsqueda. Override en subclases."""
+        return []
+
     def get_default_ordering(self):
         """Ordenamiento por defecto. Override en subclases si es necesario."""
-        return 'created_at'
+        return getattr(self, 'default_ordering', 'created_at')
 
     def apply_search_filters(self, queryset, search_query):
-        """Aplica filtros de búsqueda al queryset. Override en subclases para búsqueda personalizada."""
-        if hasattr(self.model, 'name'):
-            queryset = queryset.filter(name__icontains=search_query)
+        fields = self.get_search_fields()
+        if fields and search_query:
+            from django.db.models import Q
+            q = Q()
+            for field in fields:
+                q |= Q(**{f"{field}__icontains": search_query})
+            queryset = queryset.filter(q)
         return queryset
 
     def paginate_queryset(self, queryset, per_page, page_number):
@@ -79,6 +91,12 @@ class BaseListView(APIView):
         }, status=status.HTTP_200_OK)
 
     def get(self, request):
+        request.GET = request.GET.copy()
+        if 'per_page' not in request.GET:
+            request.GET['per_page'] = str(self.default_per_page)
+        if 'ordering' not in request.GET:
+            request.GET['ordering'] = self.get_default_ordering()
+
         ordering = request.GET.get('ordering', self.get_default_ordering())
         allowed_fields = self.get_allowed_ordering_fields()
         if ordering.lstrip('-') not in allowed_fields:
@@ -90,14 +108,20 @@ class BaseListView(APIView):
             queryset = self.apply_search_filters(queryset, search_query)
         queryset = queryset.order_by(ordering)
 
-        per_page = int(request.GET.get('per_page', 10))
+        per_page = int(request.GET.get('per_page', self.default_per_page))
         page_number = int(request.GET.get('page', 1))
         page_obj = self.paginate_queryset(queryset, per_page, page_number)
 
         # Si es petición AJAX, responde JSON paginado; si no, renderiza template si está definido
         if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or not self.template_name:
             return self.get_paginated_response(page_obj, search_query)
-        return render(request, self.template_name, {"objects": page_obj})
+        return render(request, self.template_name, {"objects": page_obj, **self.get_context_data()})
+
+    def get_context_data(self, **kwargs):
+        context = kwargs.copy() if kwargs else {}
+        if self.active_section:
+            context["active_section"] = self.active_section
+        return context
 
 ''' XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX '''
 
