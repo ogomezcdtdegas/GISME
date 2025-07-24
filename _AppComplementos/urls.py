@@ -9,6 +9,7 @@ from .views.views_Criticidad.Commands.DeleteCriticidadCommand.DeleteCriticidadCo
 from .views.views_tipoCriticidad.Commands import CreateTipoCriticidadCommand, UpdateTipoCriticidadCommand, DeleteTipoCriticidadCommand
 from .views.views_tipoCriticidad.Commands.DeleteTipoCriticidadRelacionCommand.DeleteTipoCriticidadRelacionCommand import DeleteTipoCriticidadRelacionCommand
 from .views.views_tipoCriticidad.Queries import GetAllTipoCriticidadPagQuery, GetAllTipoCriticidadListQuery
+from .views.views_tipoCriticidad.Queries.GetAllTipoCriticidadPagQuery.GetAllTipoCriticidadPagQuery import TipoCriticidadPaginatedAPI, TipoCriticidadPaginatedHTML
 
 # Producto
 from .views.views_Producto.Commands import (
@@ -63,6 +64,10 @@ from .views.views_Sistema import (
 )
 
 urlpatterns = [
+    # TipoCriticidad paginada API (JSON) - modern pattern for Swagger
+    path('tipoCriticidad-list-pag/',
+         __import__('_AppComplementos.views.views_tipoCriticidad.Queries.GetAllTipoCriticidadPagQuery.GetAllTipoCriticidadPagQuery', fromlist=['TipoCriticidadPaginatedAPI']).TipoCriticidadPaginatedAPI.as_view(),
+         name='tipocriticidad_paginated_api_modern'),
     # Backward compatibility: old name for TipoEquipo paginada HTML
     path('listar-todo-tipoequipos/',
          __import__('_AppComplementos.views.views_TipoEquipo.Queries.GetAllTipoEquipoPagQuery.GetAllTipoEquipoPagQuery', fromlist=['TipoEquipoPaginatedHTML']).TipoEquipoPaginatedHTML.as_view(),
@@ -96,7 +101,14 @@ urlpatterns = [
 
     path('listar-todo-tipocriticidad/', GetAllTipoCriticidadListQuery.TipoCriticidadListAllView.as_view(), name='listarTipoCriticidad'),
     path('tipos-criticidad-unicos/', GetAllTipoCriticidadListQuery.TiposCriticidadUnicosView.as_view(), name='tiposCriticidadUnicos'),
-    path('tipCriticidades/', GetAllTipoCriticidadPagQuery.as_view(), name='allTipCriticidadesPag'),
+    # TipoCriticidad paginada API (JSON)
+    path('tipCriticidades/',
+         __import__('_AppComplementos.views.views_tipoCriticidad.Queries.GetAllTipoCriticidadPagQuery.GetAllTipoCriticidadPagQuery', fromlist=['TipoCriticidadPaginatedAPI']).TipoCriticidadPaginatedAPI.as_view(),
+         name='tipocriticidad_paginated_api'),
+    # Backward compatibility: old name for TipoCriticidad paginada HTML
+    path('listar-todo-tipocriticidades/',
+         __import__('_AppComplementos.views.views_tipoCriticidad.Queries.GetAllTipoCriticidadPagQuery.GetAllTipoCriticidadPagQuery', fromlist=['TipoCriticidadPaginatedHTML']).TipoCriticidadPaginatedHTML.as_view(),
+         name='allTipCriticidadesPag'),
     path('crear-tipCriticidad/', CreateTipoCriticidadCommand.crearTipCriticidad.as_view(), name='crearTipCriticidad'),
     path('editar-tipCriticidad/<uuid:obj_id>/', UpdateTipoCriticidadCommand.editarTipCriticidad.as_view(), name='editarTipCriticidad'),
     path('eliminar-tipo-criticidad/<uuid:obj_id>/', DeleteTipoCriticidadCommand.as_view(), name='eliminarTipoCriticidad'),
