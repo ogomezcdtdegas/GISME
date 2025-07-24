@@ -37,60 +37,67 @@ class BaseReadForIdView(APIView):
 ''' -------------------------------------------------------------------------------------------------------------------------------------------------------- '''
 
 class BaseListView(APIView):
-    def get_queryset(self):
-        return self.model.objects.all()
-    model = None  # 🔹 Se define en la subclase
+
+    model = None  # Se define en la subclase
     serializer_class = None
-    template_name = None  # 🔹 Para renderizado en HTML
+    template_name = None  # Para renderizado en HTML (solo si se usa)
 
-    def get(self, request):
-        # Obtener el ordenamiento desde los parámetros de la URL
-        ordering = request.GET.get('ordering', '-created_at')
-        
-        # Validar que el campo de ordenamiento sea seguro
-        allowed_fields = self.get_allowed_ordering_fields()
-        if ordering.lstrip('-') not in allowed_fields:
-            ordering = '-created_at'  # Fallback seguro
-        
-        queryset = self.model.objects.all()
-        
-        # Aplicar filtros de búsqueda si están presentes
-        search_query = request.GET.get('search', '').strip()
-        if search_query:
-            queryset = self.apply_search_filters(queryset, search_query)
-        
-        queryset = queryset.order_by(ordering)
-        per_page = int(request.GET.get('per_page', 10))
-        page_number = int(request.GET.get('page', 1))
+    def get_queryset(self):
+        """Subclases pueden sobrescribir para optimizar el queryset (select_related, annotate, etc)."""
+        return self.model.objects.all()
 
-        paginator = Paginator(queryset, per_page)
-        page_obj = paginator.get_page(page_number)
-
-        if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
-            data = self.serializer_class(page_obj, many=True).data
-            return Response({
-                "results": data,
-                "has_previous": page_obj.has_previous(),
-                "has_next": page_obj.has_next(),
-                "previous_page_number": page_obj.previous_page_number() if page_obj.has_previous() else None,
-                "next_page_number": page_obj.next_page_number() if page_obj.has_next() else None,
-                "current_page": page_obj.number,
-                "total_pages": paginator.num_pages,
-                "search_query": search_query,  # Incluir el término de búsqueda en la respuesta
-            }, status=status.HTTP_200_OK)
-
-        return render(request, self.template_name, {"objects": page_obj})
-    
     def get_allowed_ordering_fields(self):
-        """Devuelve los campos permitidos para ordenamiento. Override en subclases."""
+        """Campos permitidos para ordenamiento. Override en subclases."""
         return ['created_at', 'name']
-    
+
+    def get_default_ordering(self):
+        """Ordenamiento por defecto. Override en subclases si es necesario."""
+        return 'created_at'
+
     def apply_search_filters(self, queryset, search_query):
         """Aplica filtros de búsqueda al queryset. Override en subclases para búsqueda personalizada."""
-        # Implementación por defecto: buscar en el campo 'name' si existe
         if hasattr(self.model, 'name'):
             queryset = queryset.filter(name__icontains=search_query)
         return queryset
+
+    def paginate_queryset(self, queryset, per_page, page_number):
+        paginator = Paginator(queryset, per_page)
+        return paginator.get_page(page_number)
+
+    def get_paginated_response(self, page_obj, search_query=None):
+        data = self.serializer_class(page_obj, many=True).data
+        return Response({
+            "results": data,
+            "has_previous": page_obj.has_previous(),
+            "has_next": page_obj.has_next(),
+            "previous_page_number": page_obj.previous_page_number() if page_obj.has_previous() else None,
+            "next_page_number": page_obj.next_page_number() if page_obj.has_next() else None,
+            "current_page": page_obj.number,
+            "total_pages": page_obj.paginator.num_pages,
+            "total_count": page_obj.paginator.count,
+            "search_query": search_query,
+        }, status=status.HTTP_200_OK)
+
+    def get(self, request):
+        ordering = request.GET.get('ordering', self.get_default_ordering())
+        allowed_fields = self.get_allowed_ordering_fields()
+        if ordering.lstrip('-') not in allowed_fields:
+            ordering = self.get_default_ordering()
+
+        queryset = self.get_queryset()
+        search_query = request.GET.get('search', '').strip()
+        if search_query:
+            queryset = self.apply_search_filters(queryset, search_query)
+        queryset = queryset.order_by(ordering)
+
+        per_page = int(request.GET.get('per_page', 10))
+        page_number = int(request.GET.get('page', 1))
+        page_obj = self.paginate_queryset(queryset, per_page, page_number)
+
+        # Si es petición AJAX, responde JSON paginado; si no, renderiza template si está definido
+        if request.headers.get('X-Requested-With') == 'XMLHttpRequest' or not self.template_name:
+            return self.get_paginated_response(page_obj, search_query)
+        return render(request, self.template_name, {"objects": page_obj})
 
 ''' XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX '''
 
