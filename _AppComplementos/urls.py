@@ -9,6 +9,7 @@ from .views.views_Criticidad.Commands.DeleteCriticidadCommand.DeleteCriticidadCo
 from .views.views_tipoCriticidad.Commands import CreateTipoCriticidadCommand, UpdateTipoCriticidadCommand, DeleteTipoCriticidadCommand
 from .views.views_tipoCriticidad.Commands.DeleteTipoCriticidadRelacionCommand.DeleteTipoCriticidadRelacionCommand import DeleteTipoCriticidadRelacionCommand
 from .views.views_tipoCriticidad.Queries import GetAllTipoCriticidadPagQuery, GetAllTipoCriticidadListQuery
+from .views.views_tipoCriticidad.Queries.GetAllTipoCriticidadPagQuery.GetAllTipoCriticidadPagQuery import TipoCriticidadPaginatedAPI, TipoCriticidadPaginatedHTML
 
 # Producto
 from .views.views_Producto.Commands import (
@@ -63,6 +64,14 @@ from .views.views_Sistema import (
 )
 
 urlpatterns = [
+    # Backward compatibility: old name for Ubicacion paginada HTML
+    path('listar-todo-ubicaciones/',
+         __import__('_AppComplementos.views.views_Ubicacion.views_template', fromlist=['UbicacionListPagHTML']).UbicacionListPagHTML.as_view(),
+         name='allUbicacionesPag'),
+    # TipoCriticidad paginada API (JSON) - modern pattern for Swagger
+    path('tipoCriticidad-list-pag/',
+         __import__('_AppComplementos.views.views_tipoCriticidad.Queries.GetAllTipoCriticidadPagQuery.GetAllTipoCriticidadPagQuery', fromlist=['TipoCriticidadPaginatedAPI']).TipoCriticidadPaginatedAPI.as_view(),
+         name='tipocriticidad_paginated_api_modern'),
     # Backward compatibility: old name for TipoEquipo paginada HTML
     path('listar-todo-tipoequipos/',
          __import__('_AppComplementos.views.views_TipoEquipo.Queries.GetAllTipoEquipoPagQuery.GetAllTipoEquipoPagQuery', fromlist=['TipoEquipoPaginatedHTML']).TipoEquipoPaginatedHTML.as_view(),
@@ -96,7 +105,14 @@ urlpatterns = [
 
     path('listar-todo-tipocriticidad/', GetAllTipoCriticidadListQuery.TipoCriticidadListAllView.as_view(), name='listarTipoCriticidad'),
     path('tipos-criticidad-unicos/', GetAllTipoCriticidadListQuery.TiposCriticidadUnicosView.as_view(), name='tiposCriticidadUnicos'),
-    path('tipCriticidades/', GetAllTipoCriticidadPagQuery.as_view(), name='allTipCriticidadesPag'),
+    # TipoCriticidad paginada API (JSON)
+    path('tipCriticidades/',
+         __import__('_AppComplementos.views.views_tipoCriticidad.Queries.GetAllTipoCriticidadPagQuery.GetAllTipoCriticidadPagQuery', fromlist=['TipoCriticidadPaginatedAPI']).TipoCriticidadPaginatedAPI.as_view(),
+         name='tipocriticidad_paginated_api'),
+    # Backward compatibility: old name for TipoCriticidad paginada HTML
+    path('listar-todo-tipocriticidades/',
+         __import__('_AppComplementos.views.views_tipoCriticidad.Queries.GetAllTipoCriticidadPagQuery.GetAllTipoCriticidadPagQuery', fromlist=['TipoCriticidadPaginatedHTML']).TipoCriticidadPaginatedHTML.as_view(),
+         name='allTipCriticidadesPag'),
     path('crear-tipCriticidad/', CreateTipoCriticidadCommand.crearTipCriticidad.as_view(), name='crearTipCriticidad'),
     path('editar-tipCriticidad/<uuid:obj_id>/', UpdateTipoCriticidadCommand.editarTipCriticidad.as_view(), name='editarTipCriticidad'),
     path('eliminar-tipo-criticidad/<uuid:obj_id>/', DeleteTipoCriticidadCommand.as_view(), name='eliminarTipoCriticidad'),
@@ -147,7 +163,15 @@ urlpatterns = [
     path('eliminar-tecnologia-relacion/<uuid:obj_id>/', DeleteTecnologiaRelacionCommand.as_view(), name='eliminarTecnologiaRelacion'),
 
     # Ubicación URLs
-    path('ubicaciones/', UbicacionListPagView.as_view(), name='allUbicacionesPag'),
+    # Ubicación paginada HTML
+    path('ubicaciones/',
+         __import__('_AppComplementos.views.views_Ubicacion.views_template', fromlist=['UbicacionListPagHTML']).UbicacionListPagHTML.as_view(),
+         name='ubicacion_paginated_html'),
+
+    # Ubicación paginada API (JSON)
+    path('ubicaciones-list-pag/',
+         __import__('_AppComplementos.views.views_Ubicacion.Queries.GetAllUbicacionPagQuery.GetAllUbicacionPagQuery', fromlist=['UbicacionListPagView']).UbicacionListPagView.as_view(),
+         name='ubicacion_paginated_api'),
     path('listar-todo-ubicaciones/', UbicacionListAllView.as_view(), name='listarTodoUbicaciones'),
     path('crear-ubicacion/', CreateUbicacionView.as_view(), name='crearUbicacion'),
     path('ubicacion/<uuid:obj_id>/', GetUbicacionByIdView.as_view(), name='obtenerUbicacion'),
@@ -158,7 +182,7 @@ urlpatterns = [
     path('sistemas/', SistemasIndexView.as_view(), name='allSistemasPag'),
     
     # Sistema URLs - API Queries (CBV)
-    path('listar-sistemas/', ListarSistemasQueryView.as_view(), name='listarSistemas'),
+    path('listar-sistemas-pag/', ListarSistemasQueryView.as_view(), name='listarSistemasPag'),
     path('listar-todo-sistemas/', ListarTodosSistemasQueryView.as_view(), name='listarTodoSistemas'),
     path('sistema/<uuid:sistema_id>/', ObtenerSistemaQueryView.as_view(), name='obtenerSistema'),
     
