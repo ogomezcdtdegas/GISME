@@ -3,6 +3,25 @@ from django.core.paginator import Paginator
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+import base64
+from django.conf import settings
+
+# Mixin reutilizable para autenticación básica Node-RED
+class BasicNodeRedAuthMixin:
+    def check_basic_auth(self, request):
+        auth_header = request.headers.get('Authorization')
+        if not auth_header or not auth_header.startswith('Basic '):
+            return Response({'error': 'No autorizado'}, status=status.HTTP_401_UNAUTHORIZED)
+        try:
+            encoded_credentials = auth_header.split(' ')[1]
+            decoded_credentials = base64.b64decode(encoded_credentials).decode('utf-8')
+            username, password = decoded_credentials.split(':', 1)
+        except Exception:
+            return Response({'error': 'Credenciales mal formateadas'}, status=status.HTTP_401_UNAUTHORIZED)
+        if username != settings.NODE_RED_USER or password != settings.NODE_RED_PASS:
+            return Response({'error': 'Credenciales inválidas'}, status=status.HTTP_401_UNAUTHORIZED)
+        return None  # Autenticación exitosa
+
 
 ''' XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX '''
 ''' ---------------------------------------------------------- Querys -------------------------------------------------------------------------------------- '''
