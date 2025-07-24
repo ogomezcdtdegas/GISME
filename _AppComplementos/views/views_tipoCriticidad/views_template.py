@@ -1,20 +1,14 @@
 from repoGenerico.views_base import BaseListView
-from .....models import TipoCriticidadCriticidad
-from .....serializers import TipoCriticidadCriticidadSerializer
+from ...models import TipoCriticidadCriticidad
+from ...serializers import TipoCriticidadCriticidadSerializer
 from django.db.models import Count
 
-from drf_spectacular.utils import extend_schema, extend_schema_view
-
-# 🔹 API paginada (JSON)
-@extend_schema_view(
-    get=extend_schema(tags=['TipoCriticidad'], description="Listado paginado de tecnologías (API)")
-)
-
-# 🔹 Paginated API View (for Swagger/JSON)
-
-class TipoCriticidadPaginatedAPI(BaseListView):
+# 🔹 Paginated HTML View (for template rendering)
+class TipoCriticidadPaginatedHTML(BaseListView):
     model = TipoCriticidadCriticidad
     serializer_class = TipoCriticidadCriticidadSerializer
+    template_name = "_AppComplementos/templates_tipoCriticidad/index.html"
+    active_section = "complementos_tipocriticidad"
 
     def get_queryset(self):
         return TipoCriticidadCriticidad.objects.select_related(
@@ -27,6 +21,5 @@ class TipoCriticidadPaginatedAPI(BaseListView):
     def get_allowed_ordering_fields(self):
         return ['created_at', 'tipo_criticidad__name']
 
-    def apply_search_filters(self, queryset, search_query):
-        return queryset.filter(tipo_criticidad__name__icontains=search_query)
-
+    def get_search_fields(self):
+        return ['tipo_criticidad__name']

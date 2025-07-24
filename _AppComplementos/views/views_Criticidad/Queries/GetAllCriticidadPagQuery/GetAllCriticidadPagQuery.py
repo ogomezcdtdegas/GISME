@@ -15,22 +15,3 @@ class CriticidadPaginatedAPI(BaseListView):
     def get_allowed_ordering_fields(self):
         return ['created_at', 'name']
 
-# 🔹 Vista HTML paginada
-class CriticidadPaginatedHTML(BaseListView):
-    model = Criticidad
-    serializer_class = CriticidadSerializer
-    template_name = "_AppComplementos/templates_criticidad/index.html"
-
-    def get_allowed_ordering_fields(self):
-        return ['created_at', 'name']
-
-    def get(self, request):
-        request.GET = request.GET.copy()
-        if 'per_page' not in request.GET:
-            request.GET['per_page'] = '10'
-        return super().get(request)
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["active_section"] = "complementos_criticidad"
-        return context

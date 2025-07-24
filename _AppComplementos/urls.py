@@ -9,7 +9,8 @@ from .views.views_Criticidad.Commands.DeleteCriticidadCommand.DeleteCriticidadCo
 from .views.views_tipoCriticidad.Commands import CreateTipoCriticidadCommand, UpdateTipoCriticidadCommand, DeleteTipoCriticidadCommand
 from .views.views_tipoCriticidad.Commands.DeleteTipoCriticidadRelacionCommand.DeleteTipoCriticidadRelacionCommand import DeleteTipoCriticidadRelacionCommand
 from .views.views_tipoCriticidad.Queries import GetAllTipoCriticidadPagQuery, GetAllTipoCriticidadListQuery
-from .views.views_tipoCriticidad.Queries.GetAllTipoCriticidadPagQuery.GetAllTipoCriticidadPagQuery import TipoCriticidadPaginatedAPI, TipoCriticidadPaginatedHTML
+from .views.views_tipoCriticidad.Queries.GetAllTipoCriticidadPagQuery.GetAllTipoCriticidadPagQuery import TipoCriticidadPaginatedAPI
+from .views.views_tipoCriticidad.views_template import TipoCriticidadPaginatedHTML
 
 # Producto
 from .views.views_Producto.Commands import (
@@ -27,7 +28,8 @@ from .views.views_TipoEquipo.Commands import (
     DeleteTipoEquipoCommand,
     DeleteTipoEquipoRelacionCommand
 )
-from .views.views_TipoEquipo.Queries import TipoEquipoPaginatedAPI, TipoEquipoPaginatedHTML
+from .views.views_TipoEquipo.Queries import TipoEquipoPaginatedAPI
+from .views.views_TipoEquipo.views_template import TipoEquipoPaginatedHTML
 
 # Tecnología
 from .views.views_Tecnologia.Commands import (
@@ -74,23 +76,23 @@ urlpatterns = [
          name='tipocriticidad_paginated_api_modern'),
     # Backward compatibility: old name for TipoEquipo paginada HTML
     path('listar-todo-tipoequipos/',
-         __import__('_AppComplementos.views.views_TipoEquipo.Queries.GetAllTipoEquipoPagQuery.GetAllTipoEquipoPagQuery', fromlist=['TipoEquipoPaginatedHTML']).TipoEquipoPaginatedHTML.as_view(),
+         __import__('_AppComplementos.views.views_TipoEquipo.views_template', fromlist=['TipoEquipoPaginatedHTML']).TipoEquipoPaginatedHTML.as_view(),
          name='allTiposEquipoPag'),
     # Backward compatibility: old name for Tecnología paginada HTML
     path('listar-todo-tecnologias/',
-         __import__('_AppComplementos.views.views_Tecnologia.Queries.GetAllTecnologiaPagQuery.GetAllTecnologiaPagQuery', fromlist=['TecnologiaPaginatedHTML']).TecnologiaPaginatedHTML.as_view(),
+         __import__('_AppComplementos.views.views_Tecnologia.views_template', fromlist=['TecnologiaPaginatedHTML']).TecnologiaPaginatedHTML.as_view(),
          name='allTecnologiasPag'),
     # Backward compatibility: old name for Producto paginada HTML
     path('listar-todo-productos/',
-         __import__('_AppComplementos.views.views_Producto.Queries.GetAllProductoPagQuery.GetAllProductoPagQuery', fromlist=['ProductoPaginatedHTML']).ProductoPaginatedHTML.as_view(),
+         __import__('_AppComplementos.views.views_Producto.views_template', fromlist=['ProductoPaginatedHTML']).ProductoPaginatedHTML.as_view(),
          name='allProductosPag'),
     # Backward compatibility: old name for Criticidad paginada HTML
     path('',
-         __import__('_AppComplementos.views.views_Criticidad.Queries.GetAllCriticidadPagQuery.GetAllCriticidadPagQuery', fromlist=['CriticidadPaginatedHTML']).CriticidadPaginatedHTML.as_view(),
+         __import__('_AppComplementos.views.views_Criticidad.views_template', fromlist=['CriticidadPaginatedHTML']).CriticidadPaginatedHTML.as_view(),
          name='allCriticidadesPag'),
     # Criticidad paginada HTML
     path('criticidad/',
-         __import__('_AppComplementos.views.views_Criticidad.Queries.GetAllCriticidadPagQuery.GetAllCriticidadPagQuery', fromlist=['CriticidadPaginatedHTML']).CriticidadPaginatedHTML.as_view(),
+         __import__('_AppComplementos.views.views_Criticidad.views_template', fromlist=['CriticidadPaginatedHTML']).CriticidadPaginatedHTML.as_view(),
          name='criticidad_paginated_html'),
 
     # Criticidad paginada API (JSON)
@@ -111,7 +113,7 @@ urlpatterns = [
          name='tipocriticidad_paginated_api'),
     # Backward compatibility: old name for TipoCriticidad paginada HTML
     path('listar-todo-tipocriticidades/',
-         __import__('_AppComplementos.views.views_tipoCriticidad.Queries.GetAllTipoCriticidadPagQuery.GetAllTipoCriticidadPagQuery', fromlist=['TipoCriticidadPaginatedHTML']).TipoCriticidadPaginatedHTML.as_view(),
+         __import__('_AppComplementos.views.views_tipoCriticidad.views_template', fromlist=['TipoCriticidadPaginatedHTML']).TipoCriticidadPaginatedHTML.as_view(),
          name='allTipCriticidadesPag'),
     path('crear-tipCriticidad/', CreateTipoCriticidadCommand.crearTipCriticidad.as_view(), name='crearTipCriticidad'),
     path('editar-tipCriticidad/<uuid:obj_id>/', UpdateTipoCriticidadCommand.editarTipCriticidad.as_view(), name='editarTipCriticidad'),
@@ -120,7 +122,7 @@ urlpatterns = [
 
     # Producto paginada HTML
     path('producto/',
-         __import__('_AppComplementos.views.views_Producto.Queries.GetAllProductoPagQuery.GetAllProductoPagQuery', fromlist=['ProductoPaginatedHTML']).ProductoPaginatedHTML.as_view(),
+         __import__('_AppComplementos.views.views_Producto.views_template', fromlist=['ProductoPaginatedHTML']).ProductoPaginatedHTML.as_view(),
          name='producto_paginated_html'),
 
     # Producto paginada API (JSON)
@@ -134,7 +136,7 @@ urlpatterns = [
     
     # Tipo Equipo paginada HTML
     path('tipoEquipos/',
-         __import__('_AppComplementos.views.views_TipoEquipo.Queries.GetAllTipoEquipoPagQuery.GetAllTipoEquipoPagQuery', fromlist=['TipoEquipoPaginatedHTML']).TipoEquipoPaginatedHTML.as_view(),
+         __import__('_AppComplementos.views.views_TipoEquipo.views_template', fromlist=['TipoEquipoPaginatedHTML']).TipoEquipoPaginatedHTML.as_view(),
          name='tipoequipo_paginated_html'),
 
     # Tipo Equipo paginada API (JSON)
@@ -150,7 +152,7 @@ urlpatterns = [
     # Tecnología URLs
     # Tecnología paginada HTML
     path('tecnologia/',
-         __import__('_AppComplementos.views.views_Tecnologia.Queries.GetAllTecnologiaPagQuery.GetAllTecnologiaPagQuery', fromlist=['TecnologiaPaginatedHTML']).TecnologiaPaginatedHTML.as_view(),
+         __import__('_AppComplementos.views.views_Tecnologia.views_template', fromlist=['TecnologiaPaginatedHTML']).TecnologiaPaginatedHTML.as_view(),
          name='tecnologia_paginated_html'),
 
     # Tecnología paginada API (JSON)
