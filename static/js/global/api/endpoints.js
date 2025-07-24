@@ -51,7 +51,7 @@ export const ENDPOINTS = {
         ELIMINAR: (id) => `/complementos/eliminar-ubicacion/${id}/`
     },
     SISTEMA: {
-        LISTAR: '/complementos/listar-sistemas/',
+        LISTAR: '/complementos/listar-sistemas-pag/',
         LISTAR_TODOS: '/complementos/listar-todo-sistemas/',
         CREAR: '/complementos/crear-sistema/',
         POR_ID: (id) => `/complementos/sistema/${id}/`,

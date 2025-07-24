@@ -64,6 +64,10 @@ from .views.views_Sistema import (
 )
 
 urlpatterns = [
+    # Backward compatibility: old name for Ubicacion paginada HTML
+    path('listar-todo-ubicaciones/',
+         __import__('_AppComplementos.views.views_Ubicacion.views_template', fromlist=['UbicacionListPagHTML']).UbicacionListPagHTML.as_view(),
+         name='allUbicacionesPag'),
     # TipoCriticidad paginada API (JSON) - modern pattern for Swagger
     path('tipoCriticidad-list-pag/',
          __import__('_AppComplementos.views.views_tipoCriticidad.Queries.GetAllTipoCriticidadPagQuery.GetAllTipoCriticidadPagQuery', fromlist=['TipoCriticidadPaginatedAPI']).TipoCriticidadPaginatedAPI.as_view(),
@@ -159,7 +163,15 @@ urlpatterns = [
     path('eliminar-tecnologia-relacion/<uuid:obj_id>/', DeleteTecnologiaRelacionCommand.as_view(), name='eliminarTecnologiaRelacion'),
 
     # Ubicación URLs
-    path('ubicaciones/', UbicacionListPagView.as_view(), name='allUbicacionesPag'),
+    # Ubicación paginada HTML
+    path('ubicaciones/',
+         __import__('_AppComplementos.views.views_Ubicacion.views_template', fromlist=['UbicacionListPagHTML']).UbicacionListPagHTML.as_view(),
+         name='ubicacion_paginated_html'),
+
+    # Ubicación paginada API (JSON)
+    path('ubicaciones-list-pag/',
+         __import__('_AppComplementos.views.views_Ubicacion.Queries.GetAllUbicacionPagQuery.GetAllUbicacionPagQuery', fromlist=['UbicacionListPagView']).UbicacionListPagView.as_view(),
+         name='ubicacion_paginated_api'),
     path('listar-todo-ubicaciones/', UbicacionListAllView.as_view(), name='listarTodoUbicaciones'),
     path('crear-ubicacion/', CreateUbicacionView.as_view(), name='crearUbicacion'),
     path('ubicacion/<uuid:obj_id>/', GetUbicacionByIdView.as_view(), name='obtenerUbicacion'),
@@ -170,7 +182,7 @@ urlpatterns = [
     path('sistemas/', SistemasIndexView.as_view(), name='allSistemasPag'),
     
     # Sistema URLs - API Queries (CBV)
-    path('listar-sistemas/', ListarSistemasQueryView.as_view(), name='listarSistemas'),
+    path('listar-sistemas-pag/', ListarSistemasQueryView.as_view(), name='listarSistemasPag'),
     path('listar-todo-sistemas/', ListarTodosSistemasQueryView.as_view(), name='listarTodoSistemas'),
     path('sistema/<uuid:sistema_id>/', ObtenerSistemaQueryView.as_view(), name='obtenerSistema'),
     
