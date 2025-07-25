@@ -1,0 +1,1 @@
+from .UpdateUbicacionCommand import UpdateUbicacionView

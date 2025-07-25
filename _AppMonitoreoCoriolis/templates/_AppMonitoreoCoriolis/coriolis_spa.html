@@ -162,19 +162,19 @@
                                                 <!-- Displays de sensores -->
                                                 <div style="position:absolute; top:33%; left:32%; min-width:90px; z-index:2;">
                                                 <div class="shadow-sm" style="background:#fff; border-radius:10px; padding:6px 12px; text-align:center; font-size:13px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
-                                                    <div style="font-weight:600; color:#888;">Sensor 1</div>
+                                                    <div style="font-weight:600; color:#888;">Flujo</div>
                                                     <div id="display-sensor1" style="font-size:15px; color:#007bff; font-weight:700;">---</div>
                                                 </div>
                                                 </div>
                                                 <div style="position:absolute; top:73%; left:58%; min-width:90px; z-index:2;">
                                                 <div class="shadow-sm" style="background:#fff; border-radius:10px; padding:6px 12px; text-align:center; font-size:13px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
-                                                    <div style="font-weight:600; color:#888;">Sensor 2</div>
+                                                    <div style="font-weight:600; color:#888;">Temperatura</div>
                                                     <div id="display-sensor2" style="font-size:15px; color:#28a745; font-weight:700;">---</div>
                                                 </div>
                                                 </div>
                                                 <div style="position:absolute; top:7%; left:56%; min-width:90px; z-index:2;">
                                                 <div class="shadow-sm" style="background:#fff; border-radius:10px; padding:6px 12px; text-align:center; font-size:13px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
-                                                    <div style="font-weight:600; color:#888;">Sensor 3</div>
+                                                    <div style="font-weight:600; color:#888;">Presión</div>
                                                     <div id="display-sensor3" style="font-size:15px; color:#dc3545; font-weight:700;">---</div>
                                                 </div>
                                                 </div>
@@ -409,7 +409,7 @@ async function descargarReportePDF() {
 function actualizarDisplaysSensores() {
   // Sensor 1: Presión (PSI)
   const val1 = (120 + Math.random() * 10).toFixed(1);
-  document.getElementById('display-sensor1').textContent = val1 + ' PSI';
+  document.getElementById('display-sensor1').textContent = val1 + ' m³/h';
   // Sensor 2: Temperatura (°F)
   const val2 = (90 + Math.random() * 20).toFixed(1);
   document.getElementById('display-sensor2').textContent = val2 + ' °F';

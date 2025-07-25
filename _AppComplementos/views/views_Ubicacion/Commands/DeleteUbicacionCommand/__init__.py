@@ -1,0 +1,1 @@
+from .DeleteUbicacionCommand import DeleteUbicacionView
