@@ -1,0 +1,1 @@
+from .GetAllUbicacionPagQuery import UbicacionListPagView
