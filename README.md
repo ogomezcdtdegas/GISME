@@ -9,7 +9,3 @@ Corporación CDT de GAS
 Desarrolladores Noobs:
   - Jose Augusto Fuentes
   - Oscar Gómez
-  - David Días
-  - Cristian Mojica
-  - Manuel Alfonso
-  - Nestor León
