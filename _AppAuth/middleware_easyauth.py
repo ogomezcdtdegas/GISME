@@ -1,4 +1,5 @@
 # _AppAuth/middleware_easyauth.py
+import os
 import base64
 import json
 import logging
@@ -41,9 +42,9 @@ class EasyAuthMiddleware(MiddlewareMixin):
             return
 
         # (Opcional) Forzar que solo entre un tenant específico (reemplaza por el que uses)
-        # allowed_tenants = {"<TENANT_GUID_1>", "<TENANT_GUID_2>"}
-        # if claims.get(TID_CLAIM) not in allowed_tenants:
-        #     return
+        allowed_tenants = set(os.environ.get("ALLOWED_TENANTS", "").split(","))
+        if claims.get(TID_CLAIM) not in allowed_tenants:
+            return
 
         User = get_user_model()
         username = oid or email  # usa el OID si existe; estable en el tiempo
