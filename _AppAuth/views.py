@@ -1,3 +1,15 @@
+# _AppAuth/views.py
+from django.shortcuts import redirect
+from django.contrib.auth import logout as dj_logout
+
+def login_view(request):
+    return redirect('/.auth/login/aad?post_login_redirect_uri=/')
+
+def logout_view(request):
+    dj_logout(request)  # limpia sesión de Django
+    return redirect('/.auth/logout?post_logout_redirect_uri=/')
+
+'''
 from django.shortcuts import render, redirect
 from django.contrib.auth import authenticate, login
 from django.contrib.auth import logout
@@ -19,3 +31,4 @@ def login_view(request):
 def logout_view(request):
     logout(request)  # 🔹 Cierra la sesión del usuario
     return redirect('login')  # 🔹 Redirige al login después de salir
+    '''

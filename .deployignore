@@ -1,0 +1,37 @@
+# Ignorar entornos virtuales
+venv/
+env/
+ENV/
+antenv/
+
+# Ignorar archivos de Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Ignorar archivos de Django
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Ignorar variables de entorno
+.env
+
+# Ignorar archivos de sistema
+.DS_Store
+Thumbs.db
+
+# Ignorar carpetas de IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Ignorar archivos de Azure
+.azure/
+
+# Otros archivos temporales
+*.bak
+*.tmp

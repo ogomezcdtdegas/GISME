@@ -103,14 +103,23 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    '_AppAuth.middleware_easyauth.EasyAuthMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     '_AppAuth.middleware.AuthMiddleware',
 ]
+
+#LOGIN_URL = '/.auth/login/aad?post_login_redirect_uri=/'
+#LOGOUT_REDIRECT_URL = '/.auth/logout?post_logout_redirect_uri=/'
+
+# Fuerza re-autenticación y MFA en cada login
+LOGIN_URL = "/.auth/login/aad?prompt=login&amr_values=mfa&post_login_redirect_uri=/"
+LOGOUT_REDIRECT_URL = "/.auth/logout?post_logout_redirect_uri=/"
 
 ROOT_URLCONF = 'config.urls'
 
@@ -170,7 +179,7 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework.authentication.SessionAuthentication',
-        'rest_framework.authentication.TokenAuthentication',
+        # 'rest_framework.authentication.TokenAuthentication',
     ),
 }
 

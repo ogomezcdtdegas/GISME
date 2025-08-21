@@ -9,3 +9,4 @@ class NodeRedData(BaseModel):
         return f"{self.sensor}: {self.valor}"
 
 # Create your models here.
+
