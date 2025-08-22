@@ -1,4 +1,35 @@
 # _AppAuth/middleware.py
+
+# _AppAuth/middleware.py
+import time
+from django.shortcuts import redirect
+from django.contrib.auth import logout
+from django.conf import settings
+
+class AuthMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        exempt_prefixes = ("/.auth/", "/static/", "/health", "/aad/")  # 👈 agrega /aad/
+        if request.path.startswith(exempt_prefixes):
+            return self.get_response(request)
+
+        max_inactivity = 1200
+        if getattr(request, "user", None) and request.user.is_authenticated:
+            now = int(time.time())
+            last = request.session.get("last_activity", now)
+            if now - last > max_inactivity:
+                logout(request)
+                request.session.flush()
+                return redirect(settings.LOGIN_URL)  # 👈 usa settings
+            request.session["last_activity"] = now
+            return self.get_response(request)
+
+        return redirect(settings.LOGIN_URL)  # 👈 usa settings
+
+
+'''
 import time
 from django.shortcuts import redirect
 from django.contrib.auth import logout
@@ -32,7 +63,7 @@ class AuthMiddleware:
         # Si NO está autenticado → manda al login de Easy Auth
         return redirect('/.auth/login/aad?post_login_redirect_uri=/')
 
-
+'''
 
 '''import time
 from django.shortcuts import redirect

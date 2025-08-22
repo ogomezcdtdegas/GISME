@@ -14,6 +14,8 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
+'''
 from django.contrib import admin
 from django.urls import path, include
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
@@ -32,3 +34,32 @@ urlpatterns = [
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
 ]
+'''
+
+from django.contrib import admin
+from django.urls import path, include
+from django.conf import settings
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('', include('_AppHome.urls')),
+    path('monitoreo/', include('_AppMonitoreoCoriolis.urls')),
+    path('complementos/', include('_AppComplementos.urls')),
+    path('herramientas/', include('_AppHerramientas.urls')),
+    path('calc1/', include('_AppCalc1.urls')),
+    path('calc2/', include('_AppCalc2.urls')),
+    path('auth/', include('_AppAuth.urls')),
+    path('admin_panel/', include('_AppAdmin.urls')),
+    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+    path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+]
+
+if not settings.USE_EASYAUTH:
+    from _AppAuth.views_aad_local import aad_login, aad_callback, aad_logout
+    urlpatterns += [
+        path("aad/login", aad_login, name="aad_login"),
+        path("aad/callback", aad_callback, name="aad_callback"),
+        path("aad/logout", aad_logout, name="aad_logout"),
+    ]
+

@@ -118,8 +118,27 @@ MIDDLEWARE = [
 #LOGOUT_REDIRECT_URL = '/.auth/logout?post_logout_redirect_uri=/'
 
 # Fuerza re-autenticación y MFA en cada login
+'''
 LOGIN_URL = "/.auth/login/aad?prompt=login&amr_values=mfa&post_login_redirect_uri=/"
 LOGOUT_REDIRECT_URL = "/.auth/logout?post_logout_redirect_uri=/"
+'''
+
+USE_EASYAUTH = os.getenv("USE_EASYAUTH", "True").lower() == "true"
+
+# Vars de Entra ID (para MSAL en local)
+AZURE_TENANT_ID = os.getenv("AZURE_TENANT_ID")
+AZURE_CLIENT_ID = os.getenv("AZURE_CLIENT_ID")
+AZURE_CLIENT_SECRET = os.getenv("AZURE_CLIENT_SECRET")
+AZURE_REDIRECT_URI = os.getenv("AZURE_REDIRECT_URI")
+AZURE_SCOPES = [s.strip() for s in os.getenv("AZURE_SCOPES", "openid,profile,email,offline_access").split(",") if s.strip()]
+
+if USE_EASYAUTH:
+    LOGIN_URL = "/.auth/login/aad?prompt=login&amr_values=mfa&post_login_redirect_uri=/"
+    LOGOUT_REDIRECT_URL = "/.auth/logout?post_logout_redirect_uri=/"
+else:
+    # 🔁 Ahora el login local será por MSAL
+    LOGIN_URL = "/aad/login"
+    LOGOUT_REDIRECT_URL = "/aad/logout"
 
 ROOT_URLCONF = 'config.urls'
 
