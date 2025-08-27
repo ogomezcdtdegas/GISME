@@ -41,9 +41,18 @@ class EasyAuthMiddleware(MiddlewareMixin):
             return
 
         User = get_user_model()
-        username = oid or email
-        user, _ = User.objects.get_or_create(username=username, defaults={"email": email or ""})
-        request.user = user
+        
+        # Verificar si el usuario está registrado en la plataforma (solo por email)
+        user = User.objects.filter(email=email).first()
+        if user:
+            # Usuario existe en la BD, asignar a request
+            request.user = user
+        else:
+            # Usuario no está registrado, marcar en sesión para manejo posterior
+            request.session['unregistered_user_email'] = email
+            request.session['user_not_registered'] = True
+            # No asignar user (permanece anónimo)
+            return
 
 
 '''

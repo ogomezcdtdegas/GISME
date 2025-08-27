@@ -11,9 +11,17 @@ class AuthMiddleware:
         self.get_response = get_response
 
     def __call__(self, request):
-        exempt_prefixes = ("/.auth/", "/static/", "/health", "/aad/")  # 👈 agrega /aad/
+        exempt_prefixes = ("/.auth/", "/static/", "/health", "/aad/", "/auth/access-denied")  
         if request.path.startswith(exempt_prefixes):
             return self.get_response(request)
+
+        # Verificar si el usuario está autenticado pero no registrado
+        if request.session.get('user_not_registered'):
+            email = request.session.get('unregistered_user_email', 'Usuario autenticado')
+            # Limpiar la sesión para evitar bucles
+            request.session.pop('user_not_registered', None)
+            request.session.pop('unregistered_user_email', None)
+            return redirect(f'/auth/access-denied-prod/?email={email}')
 
         max_inactivity = 1200
         if getattr(request, "user", None) and request.user.is_authenticated:
@@ -22,11 +30,11 @@ class AuthMiddleware:
             if now - last > max_inactivity:
                 logout(request)
                 request.session.flush()
-                return redirect(settings.LOGIN_URL)  # 👈 usa settings
+                return redirect(settings.LOGIN_URL)
             request.session["last_activity"] = now
             return self.get_response(request)
 
-        return redirect(settings.LOGIN_URL)  # 👈 usa settings
+        return redirect(settings.LOGIN_URL)
 
 
 '''

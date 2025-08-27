@@ -3,6 +3,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model, login as dj_login, logout as dj_logout
 from django.shortcuts import redirect, render
 from django.views.decorators.csrf import csrf_exempt
+from django.http import HttpResponse
 from .msal_client import auth_url, acquire_token_by_auth_code
 
 def _to_client_principal(id_token_claims: dict) -> dict:
@@ -37,10 +38,22 @@ def aad_callback(request):
     User = get_user_model()
     email = claims.get("preferred_username") or claims.get("email") or claims.get("upn")
     username = claims.get("oid") or email
-    user, _ = User.objects.get_or_create(username=username, defaults={"email": email or ""})
-    dj_login(request, user, backend="django.contrib.auth.backends.ModelBackend")
-    return redirect("/")
+    
+    # Verificar si el usuario está registrado en la plataforma
+    user = User.objects.filter(email=email).first()
+    if user:
+        # Usuario existe en la BD, proceder con login
+        dj_login(request, user, backend="django.contrib.auth.backends.ModelBackend")
+        return redirect("/")
+    else:
+        # Usuario no está registrado en la plataforma
+        return render(request, "_AppAuth/access_denied.html", {"user_email": email})
 
 def aad_logout(request):
     dj_logout(request)
     return redirect("/")
+
+def access_denied(request):
+    """Vista para mostrar acceso denegado cuando el usuario no está registrado"""
+    user_email = request.GET.get('email', 'No disponible')
+    return render(request, "_AppAuth/access_denied.html", {"user_email": user_email})

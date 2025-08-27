@@ -1,7 +1,7 @@
 # _AppAuth/views.py
 
 
-from django.shortcuts import redirect
+from django.shortcuts import redirect, render
 from django.contrib.auth import logout as dj_logout
 from django.conf import settings
 
@@ -11,6 +11,12 @@ def login_view(request):
 def logout_view(request):
     dj_logout(request)
     return redirect(settings.LOGOUT_REDIRECT_URL)
+
+def access_denied_production(request):
+    """Vista para mostrar acceso denegado en producción cuando el usuario no está registrado"""
+    # En producción, podemos intentar extraer el email del header si aún está disponible
+    user_email = request.GET.get('email', 'Usuario autenticado')
+    return render(request, "_AppAuth/access_denied.html", {"user_email": user_email})
 
 
 '''
