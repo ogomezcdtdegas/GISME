@@ -1,5 +1,5 @@
 from django.contrib.auth.models import User
-from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.urls import reverse_lazy
 from django.views.generic.edit import CreateView, UpdateView
 from django.views.generic import ListView
@@ -9,6 +9,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 from django import forms
+from django.core.exceptions import PermissionDenied
 from .models import UserRole
 
 class UsuarioForm(forms.ModelForm):
@@ -68,12 +69,55 @@ class UsuarioCreateView(LoginRequiredMixin, CreateView):
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['active_section'] = 'admin'
-        # Obtener usuarios con sus roles
-        usuarios = User.objects.select_related('user_role').all().order_by('-date_joined')
-        context['usuarios'] = usuarios
+        
+        # Obtener rol del usuario actual
+        user_role = None
+        if hasattr(self.request.user, 'user_role'):
+            user_role = self.request.user.user_role.role
+        
+        context['current_user_role'] = user_role
+        
+        # Configurar permisos y mensajes
+        if user_role == 'supervisor':
+            context['access_denied'] = True
+            context['access_denied_message'] = 'Su tipo de usuario Supervisor no tiene permiso de acceso. Solo Administradores.'
+            context['usuarios'] = []  # No mostrar usuarios
+        elif user_role in ['admin', 'admin_principal']:
+            context['access_denied'] = False
+            # Obtener usuarios con sus roles
+            usuarios = User.objects.select_related('user_role').all().order_by('-date_joined')
+            context['usuarios'] = usuarios
+            # Permisos específicos por rol - SOLO AdministradorPrincipal tiene permisos completos
+            context['can_access_admin'] = True
+            context['can_create_users'] = user_role == 'admin_principal'  # Solo AdministradorPrincipal puede crear
+            context['can_edit_users'] = user_role == 'admin_principal'    # Solo AdministradorPrincipal puede editar
+            context['can_delete_users'] = user_role == 'admin_principal'  # Solo AdministradorPrincipal puede eliminar
+        else:
+            context['access_denied'] = True
+            context['access_denied_message'] = 'Su rol de usuario no tiene permisos para acceder al módulo de administración de usuarios.'
+            context['usuarios'] = []
+        
         return context
 
     def post(self, request, *args, **kwargs):
+        # Verificar permisos para crear usuarios
+        user_role = None
+        if hasattr(request.user, 'user_role'):
+            user_role = request.user.user_role.role
+        
+        if user_role == 'supervisor':
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'message': 'Su tipo de usuario Supervisor no tiene permiso de acceso. Solo Administradores.'})
+            else:
+                messages.warning(request, 'Su tipo de usuario Supervisor no tiene permiso de acceso. Solo Administradores.')
+                return redirect('crear_usuario')
+        elif user_role != 'admin_principal':
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'message': 'Solo AdministradorPrincipal puede crear usuarios'})
+            else:
+                messages.error(request, 'No tiene permisos para crear usuarios.')
+                return redirect('crear_usuario')
+        
         # Verificar si es petición AJAX
         is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
         
@@ -114,6 +158,25 @@ class UsuarioUpdateView(LoginRequiredMixin, UpdateView):
 
     def post(self, request, *args, **kwargs):
         self.object = self.get_object()
+        
+        # Verificar permisos para editar usuarios
+        user_role = None
+        if hasattr(request.user, 'user_role'):
+            user_role = request.user.user_role.role
+        
+        if user_role == 'supervisor':
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'message': 'Su tipo de usuario Supervisor no tiene permiso de acceso. Solo Administradores.'})
+            else:
+                messages.warning(request, 'Su tipo de usuario Supervisor no tiene permiso de acceso. Solo Administradores.')
+                return redirect('crear_usuario')
+        elif user_role != 'admin_principal':
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({'success': False, 'message': 'Solo AdministradorPrincipal puede editar usuarios'})
+            else:
+                messages.error(request, 'No tiene permisos para editar usuarios.')
+                return redirect('crear_usuario')
+        
         # Verificar si es petición AJAX
         is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
         
@@ -142,6 +205,16 @@ class UsuarioUpdateView(LoginRequiredMixin, UpdateView):
 @method_decorator(csrf_exempt, name='dispatch')
 class UsuarioDeleteView(LoginRequiredMixin, UpdateView):
     def post(self, request, *args, **kwargs):
+        # Verificar permisos para eliminar usuarios
+        user_role = None
+        if hasattr(request.user, 'user_role'):
+            user_role = request.user.user_role.role
+        
+        if user_role == 'supervisor':
+            return JsonResponse({'success': False, 'message': 'Su tipo de usuario Supervisor no tiene permiso de acceso. Solo Administradores.'})
+        elif user_role != 'admin_principal':
+            return JsonResponse({'success': False, 'message': 'Solo AdministradorPrincipal puede eliminar usuarios'})
+        
         user_id = request.POST.get('user_id')
         try:
             user = get_object_or_404(User, id=user_id)

@@ -12,6 +12,8 @@
         {% endfor %}
     {% endif %}
 
+    <!-- Verificar si el usuario tiene acceso denegado -->
+    {% if not access_denied %}
     <!-- Tabla de usuarios (ocupando todo el ancho) -->
     <div class="row">
         <div class="col-12">
@@ -22,9 +24,16 @@
                     </h4>
                     <div class="d-flex gap-2 align-items-center">
                         <span class="badge bg-light text-dark">{{ usuarios|length }} usuario{{ usuarios|length|pluralize:"s" }}</span>
+                        
+                        {% if can_create_users %}
                         <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#createUserModal">
                             <i class="bi bi-person-plus"></i> Crear Usuario
                         </button>
+                        {% elif current_user_role == 'admin' %}
+                        <button type="button" class="btn btn-secondary btn-sm" disabled title="Solo AdministradorPrincipal puede crear usuarios">
+                            <i class="bi bi-person-plus"></i> Crear Usuario
+                        </button>
+                        {% endif %}
                     </div>
                 </div>
                 
@@ -93,12 +102,20 @@
                                         </td>
                                         <td class="text-center">
                                             <div class="btn-group btn-group-sm">
+                                                {% if can_edit_users %}
                                                 <button class="btn btn-outline-primary" 
                                                         data-user-id="{{ usuario.pk }}"
                                                         onclick="editarUsuario(this.dataset.userId)"
                                                         title="Editar">
                                                     <i class="bi bi-pencil"></i>
                                                 </button>
+                                                {% elif current_user_role == 'admin' %}
+                                                <button class="btn btn-outline-secondary" disabled title="Solo AdministradorPrincipal puede editar">
+                                                    <i class="bi bi-pencil"></i>
+                                                </button>
+                                                {% endif %}
+
+                                                {% if can_delete_users %}
                                                 <button class="btn btn-outline-danger" 
                                                         data-user-id="{{ usuario.pk }}"
                                                         data-user-email="{{ usuario.email }}"
@@ -106,6 +123,11 @@
                                                         title="Eliminar">
                                                     <i class="bi bi-trash"></i>
                                                 </button>
+                                                {% elif current_user_role == 'admin' %}
+                                                <button class="btn btn-outline-secondary" disabled title="Solo AdministradorPrincipal puede eliminar">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                                {% endif %}
                                             </div>
                                         </td>
                                     </tr>
@@ -124,7 +146,37 @@
             </div>
         </div>
     </div>
+    {% endif %}
 </div>
+
+<!-- Modal de acceso denegado -->
+{% if access_denied %}
+<div class="modal fade" id="accessDeniedModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-warning">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title">
+                    <i class="bi bi-shield-exclamation"></i> Acceso Restringido
+                </h5>
+            </div>
+            <div class="modal-body text-center">
+                <div class="mb-3">
+                    <i class="bi bi-exclamation-triangle display-4 text-warning"></i>
+                </div>
+                <p class="fs-5">{{ access_denied_message }}</p>
+                <p class="text-muted">
+                    Este módulo está disponible solo para usuarios con rol de Administrador o superior.
+                </p>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <a href="{% url 'allEquiposPag' %}" class="btn btn-primary">
+                    <i class="bi bi-arrow-left"></i> Volver al Inicio
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
 
 <!-- Modal para crear usuario -->
 <div class="modal fade" id="createUserModal" tabindex="-1">
@@ -487,4 +539,13 @@ document.getElementById('editUserForm').addEventListener('submit', function(e) {
 
 });
 </script>
+
+{% if access_denied %}
+<script>
+// Mostrar modal de acceso denegado automáticamente
+document.addEventListener('DOMContentLoaded', function() {
+    new bootstrap.Modal(document.getElementById('accessDeniedModal')).show();
+});
+</script>
+{% endif %}
 {% endblock %}
