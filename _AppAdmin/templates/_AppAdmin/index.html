@@ -118,7 +118,9 @@
                                                     <i class="bi bi-pencil"></i>
                                                 </a>
                                                 <button class="btn btn-outline-danger" 
-                                                        onclick="eliminarUsuario({{ usuario.pk }}, '{{ usuario.email }}')"
+                                                        data-user-id="{{ usuario.pk }}" 
+                                                        data-user-email="{{ usuario.email }}"
+                                                        onclick="eliminarUsuario(this.dataset.userId, this.dataset.userEmail)"
                                                         title="Eliminar">
                                                     <i class="bi bi-trash"></i>
                                                 </button>
