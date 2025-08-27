@@ -12,72 +12,48 @@
         {% endfor %}
     {% endif %}
 
+    <!-- Tabla de usuarios (ocupando todo el ancho) -->
     <div class="row">
-        <!-- Formulario de creación -->
-        <div class="col-lg-5">
-            <div class="card shadow-lg">
-                <div class="card-header text-white text-center" style="background-color: #343a40;">  
-                    <h4 class="mb-0 fw-normal">
-                        <i class="bi bi-person-plus"></i> 
-                        {% if object %}Editar Usuario{% else %}Crear Usuario{% endif %}
-                    </h4>
-                </div>
-                <div class="card-body">
-                    <form method="POST" class="row g-3">
-                        {% csrf_token %}
-
-                        <div class="col-12">
-                            <label class="form-label">Correo Electrónico *</label>
-                            {{ form.email }}
-                            {% if form.email.errors %}
-                                <div class="text-danger small">{{ form.email.errors.0 }}</div>
-                            {% endif %}
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label">Nombre</label>
-                            {{ form.first_name }}
-                        </div>
-
-                        <div class="col-md-6">
-                            <label class="form-label">Apellido</label>
-                            {{ form.last_name }}
-                        </div>
-
-                        <div class="col-12">
-                            <label class="form-label">Rol *</label>
-                            {{ form.role }}
-                        </div>
-
-                        <div class="col-12 text-center mt-3">
-                            <button type="submit" class="btn btn-success w-75">
-                                <i class="bi bi-check-circle"></i> 
-                                {% if object %}Actualizar Usuario{% else %}Crear Usuario{% endif %}
-                            </button>
-                            {% if object %}
-                                <a href="{% url 'crear_usuario' %}" class="btn btn-secondary w-75 mt-2">
-                                    <i class="bi bi-arrow-left"></i> Cancelar
-                                </a>
-                            {% endif %}
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-
-        <!-- Tabla de usuarios -->
-        <div class="col-lg-7">
+        <div class="col-12">
             <div class="card shadow-lg">
                 <div class="card-header text-white d-flex justify-content-between align-items-center" style="background-color: #343a40;">
                     <h4 class="mb-0 fw-normal">
                         <i class="bi bi-people"></i> Usuarios Registrados
                     </h4>
-                    <span class="badge bg-light text-dark">{{ usuarios|length }} usuario{{ usuarios|length|pluralize:"s" }}</span>
+                    <div class="d-flex gap-2 align-items-center">
+                        <span class="badge bg-light text-dark">{{ usuarios|length }} usuario{{ usuarios|length|pluralize:"s" }}</span>
+                        <button type="button" class="btn btn-success btn-sm" data-bs-toggle="modal" data-bs-target="#createUserModal">
+                            <i class="bi bi-person-plus"></i> Crear Usuario
+                        </button>
+                    </div>
                 </div>
-                <div class="card-body p-0">
+                
+                <!-- Barra de búsqueda -->
+                <div class="card-body pb-0">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-search"></i>
+                                </span>
+                                <input type="text" id="searchInput" class="form-control" placeholder="Buscar por email, nombre o rol...">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <select id="roleFilter" class="form-select">
+                                <option value="">Todos los roles</option>
+                                <option value="admin_principal">AdministradorPrincipal</option>
+                                <option value="admin">Administrador</option>
+                                <option value="supervisor">Supervisor</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body pt-0">
                     {% if usuarios %}
                         <div class="table-responsive">
-                            <table class="table table-hover mb-0">
+                            <table class="table table-hover mb-0" id="usersTable">
                                 <thead style="background-color: #f8f9fa;">
                                     <tr>
                                         <th>Email</th>
@@ -89,7 +65,11 @@
                                 </thead>
                                 <tbody>
                                     {% for usuario in usuarios %}
-                                    <tr>
+                                    <tr class="user-row" 
+                                        data-user-id="{{ usuario.pk }}"
+                                        data-email="{{ usuario.email|lower }}" 
+                                        data-name="{{ usuario.first_name|lower }} {{ usuario.last_name|lower }}"
+                                        data-role="{% if usuario.user_role %}{{ usuario.user_role.role }}{% endif %}">
                                         <td>
                                             <strong>{{ usuario.email }}</strong>
                                         </td>
@@ -113,12 +93,14 @@
                                         </td>
                                         <td class="text-center">
                                             <div class="btn-group btn-group-sm">
-                                                <a href="{% url 'editar_usuario' usuario.pk %}" 
-                                                   class="btn btn-outline-primary" title="Editar">
+                                                <button class="btn btn-outline-primary" 
+                                                        data-user-id="{{ usuario.pk }}"
+                                                        onclick="editarUsuario(this.dataset.userId)"
+                                                        title="Editar">
                                                     <i class="bi bi-pencil"></i>
-                                                </a>
+                                                </button>
                                                 <button class="btn btn-outline-danger" 
-                                                        data-user-id="{{ usuario.pk }}" 
+                                                        data-user-id="{{ usuario.pk }}"
                                                         data-user-email="{{ usuario.email }}"
                                                         onclick="eliminarUsuario(this.dataset.userId, this.dataset.userEmail)"
                                                         title="Eliminar">
@@ -135,11 +117,114 @@
                         <div class="text-center p-4">
                             <i class="bi bi-person-x fs-1 text-muted"></i>
                             <h5 class="text-muted mt-2">No hay usuarios registrados</h5>
-                            <p class="text-muted">Crea el primer usuario usando el formulario de la izquierda.</p>
+                            <p class="text-muted">Crea el primer usuario usando el botón "Crear Usuario".</p>
                         </div>
                     {% endif %}
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para crear usuario -->
+<div class="modal fade" id="createUserModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header" style="background-color: #343a40; color: white;">
+                <h5 class="modal-title">
+                    <i class="bi bi-person-plus"></i> Crear Usuario
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="createUserForm" method="POST">
+                <div class="modal-body">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label">Correo Electrónico *</label>
+                            <input type="email" name="email" class="form-control" required>
+                            <div class="invalid-feedback"></div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Nombre</label>
+                            <input type="text" name="first_name" class="form-control">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Apellido</label>
+                            <input type="text" name="last_name" class="form-control">
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label">Rol *</label>
+                            <select name="role" class="form-select" required>
+                                <option value="supervisor">Supervisor</option>
+                                <option value="admin">Administrador</option>
+                                <option value="admin_principal">AdministradorPrincipal</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check-circle"></i> Crear Usuario
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal para editar usuario -->
+<div class="modal fade" id="editUserModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header" style="background-color: #343a40; color: white;">
+                <h5 class="modal-title">
+                    <i class="bi bi-pencil"></i> Editar Usuario
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="editUserForm" method="POST">
+                <div class="modal-body">
+                    {% csrf_token %}
+                    <input type="hidden" id="editUserId" name="user_id">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label">Correo Electrónico *</label>
+                            <input type="email" id="editEmail" name="email" class="form-control" required>
+                            <div class="invalid-feedback"></div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Nombre</label>
+                            <input type="text" id="editFirstName" name="first_name" class="form-control">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Apellido</label>
+                            <input type="text" id="editLastName" name="last_name" class="form-control">
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label">Rol *</label>
+                            <select id="editRole" name="role" class="form-select" required>
+                                <option value="supervisor">Supervisor</option>
+                                <option value="admin">Administrador</option>
+                                <option value="admin_principal">AdministradorPrincipal</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="bi bi-check-circle"></i> Actualizar Usuario
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -167,6 +252,41 @@
 <script>
 let userIdToDelete = null;
 
+// Función para editar usuario - definida globalmente
+function editarUsuario(userId) {
+    // Buscar el botón que fue clickeado para obtener la fila
+    const button = event.target.closest('button');
+    const userRow = button.closest('tr');
+    
+    // Extraer datos de la fila
+    const email = userRow.querySelector('td:nth-child(1) strong').textContent;
+    const fullName = userRow.querySelector('td:nth-child(2)').textContent.trim();
+    const nameParts = fullName.split(' ');
+    const firstName = nameParts[0] || '';
+    const lastName = nameParts.slice(1).join(' ') || '';
+    
+    // Obtener el rol del badge
+    const roleBadge = userRow.querySelector('td:nth-child(3) .badge');
+    let role = 'supervisor';
+    if (roleBadge) {
+        const roleText = roleBadge.textContent.trim();
+        if (roleText === 'AdministradorPrincipal') role = 'admin_principal';
+        else if (roleText === 'Administrador') role = 'admin';
+        else if (roleText === 'Supervisor') role = 'supervisor';
+    }
+    
+    // Llenar el modal de edición
+    document.getElementById('editUserId').value = userId;
+    document.getElementById('editEmail').value = email;
+    document.getElementById('editFirstName').value = firstName;
+    document.getElementById('editLastName').value = lastName;
+    document.getElementById('editRole').value = role;
+    
+    // Mostrar el modal
+    new bootstrap.Modal(document.getElementById('editUserModal')).show();
+}
+
+// Función para eliminar usuario - definida globalmente
 function eliminarUsuario(userId, userEmail) {
     userIdToDelete = userId;
     document.getElementById('userToDelete').textContent = userEmail;
@@ -186,7 +306,7 @@ function confirmarEliminacion() {
     .then(response => response.json())
     .then(data => {
         if (data.success) {
-            location.reload(); // Recargar página para actualizar la tabla
+            location.reload();
         } else {
             alert('Error: ' + data.message);
         }
@@ -197,5 +317,174 @@ function confirmarEliminacion() {
     
     bootstrap.Modal.getInstance(document.getElementById('deleteModal')).hide();
 }
+
+// Función de búsqueda y filtrado
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const roleFilter = document.getElementById('roleFilter');
+    const userRows = document.querySelectorAll('.user-row');
+
+    function filterUsers() {
+        const searchTerm = searchInput.value.toLowerCase();
+        const selectedRole = roleFilter.value;
+
+        userRows.forEach(row => {
+            const email = row.dataset.email;
+            const name = row.dataset.name;
+            const role = row.dataset.role;
+
+            const matchesSearch = email.includes(searchTerm) || name.includes(searchTerm);
+            const matchesRole = selectedRole === '' || role === selectedRole;
+
+            if (matchesSearch && matchesRole) {
+                row.style.display = '';
+            } else {
+                row.style.display = 'none';
+            }
+        });
+    }
+
+    searchInput.addEventListener('input', filterUsers);
+    roleFilter.addEventListener('change', filterUsers);
+
+    // Envío del formulario de creación por AJAX
+    document.getElementById('createUserForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    // Limpiar errores previos
+    const inputs = this.querySelectorAll('input, select');
+    inputs.forEach(input => {
+        input.classList.remove('is-invalid');
+    });
+    
+    const formData = new FormData(this);
+    
+    fetch('{% url "crear_usuario" %}', {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: formData
+    })
+    .then(response => {
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+            return response.json();
+        } else {
+            // Si no es JSON, probablemente sea HTML (error de servidor)
+            throw new Error('La respuesta del servidor no es JSON válido');
+        }
+    })
+    .then(data => {
+        if (data.success) {
+            // Cerrar modal y recargar página
+            bootstrap.Modal.getInstance(document.getElementById('createUserModal')).hide();
+            // Mostrar mensaje de éxito
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-success alert-dismissible fade show';
+            alertDiv.innerHTML = `
+                ${data.message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.querySelector('.container').insertBefore(alertDiv, document.querySelector('.row'));
+            
+            // Recargar después de un breve delay
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            // Mostrar errores en el formulario
+            if (data.errors) {
+                for (const [fieldName, errors] of Object.entries(data.errors)) {
+                    const input = this.querySelector(`[name="${fieldName}"]`);
+                    if (input) {
+                        input.classList.add('is-invalid');
+                        let feedback = input.nextElementSibling;
+                        if (!feedback || !feedback.classList.contains('invalid-feedback')) {
+                            feedback = document.createElement('div');
+                            feedback.className = 'invalid-feedback';
+                            input.parentNode.appendChild(feedback);
+                        }
+                        feedback.textContent = errors[0];
+                    }
+                }
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error al crear usuario: ' + error.message);
+    });
+});
+
+// Envío del formulario de edición por AJAX
+document.getElementById('editUserForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    // Limpiar errores previos
+    const inputs = this.querySelectorAll('input, select');
+    inputs.forEach(input => {
+        input.classList.remove('is-invalid');
+    });
+    
+    const formData = new FormData(this);
+    const userId = document.getElementById('editUserId').value;
+    
+    fetch(`/admin_panel/usuarios/editar/${userId}/`, {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: formData
+    })
+    .then(response => {
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+            return response.json();
+        } else {
+            throw new Error('La respuesta del servidor no es JSON válido');
+        }
+    })
+    .then(data => {
+        if (data.success) {
+            // Cerrar modal y recargar página
+            bootstrap.Modal.getInstance(document.getElementById('editUserModal')).hide();
+            // Mostrar mensaje de éxito
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-success alert-dismissible fade show';
+            alertDiv.innerHTML = `
+                ${data.message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            document.querySelector('.container').insertBefore(alertDiv, document.querySelector('.row'));
+            
+            // Recargar después de un breve delay
+            setTimeout(() => location.reload(), 1000);
+        } else {
+            // Mostrar errores en el formulario
+            if (data.errors) {
+                for (const [fieldName, errors] of Object.entries(data.errors)) {
+                    const input = this.querySelector(`[name="${fieldName}"]`);
+                    if (input) {
+                        input.classList.add('is-invalid');
+                        let feedback = input.nextElementSibling;
+                        if (!feedback || !feedback.classList.contains('invalid-feedback')) {
+                            feedback = document.createElement('div');
+                            feedback.className = 'invalid-feedback';
+                            input.parentNode.appendChild(feedback);
+                        }
+                        feedback.textContent = errors[0];
+                    }
+                }
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('Error al actualizar usuario: ' + error.message);
+    });
+});
+
+});
 </script>
 {% endblock %}

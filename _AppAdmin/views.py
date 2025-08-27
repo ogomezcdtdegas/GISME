@@ -73,13 +73,31 @@ class UsuarioCreateView(LoginRequiredMixin, CreateView):
         context['usuarios'] = usuarios
         return context
 
-    def form_valid(self, form):
-        messages.success(self.request, 'Usuario creado exitosamente.')
-        return super().form_valid(form)
-
-    def form_invalid(self, form):
-        messages.error(self.request, 'Error al crear el usuario. Revise los datos ingresados.')
-        return super().form_invalid(form)
+    def post(self, request, *args, **kwargs):
+        # Verificar si es petición AJAX
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        
+        form = self.get_form()
+        if form.is_valid():
+            user = form.save()
+            if is_ajax:
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Usuario creado exitosamente.',
+                    'user_id': user.id
+                })
+            else:
+                messages.success(request, 'Usuario creado exitosamente.')
+                return redirect(self.success_url)
+        else:
+            if is_ajax:
+                return JsonResponse({
+                    'success': False,
+                    'errors': form.errors
+                })
+            else:
+                messages.error(request, 'Error al crear el usuario. Revise los datos ingresados.')
+                return self.form_invalid(form)
 
 class UsuarioUpdateView(LoginRequiredMixin, UpdateView):
     model = User
@@ -94,9 +112,32 @@ class UsuarioUpdateView(LoginRequiredMixin, UpdateView):
             initial['role'] = self.object.user_role.role
         return initial
 
-    def form_valid(self, form):
-        messages.success(self.request, 'Usuario actualizado exitosamente.')
-        return super().form_valid(form)
+    def post(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        # Verificar si es petición AJAX
+        is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+        
+        form = self.get_form()
+        if form.is_valid():
+            user = form.save()
+            if is_ajax:
+                return JsonResponse({
+                    'success': True,
+                    'message': 'Usuario actualizado exitosamente.',
+                    'user_id': user.id
+                })
+            else:
+                messages.success(request, 'Usuario actualizado exitosamente.')
+                return redirect(self.success_url)
+        else:
+            if is_ajax:
+                return JsonResponse({
+                    'success': False,
+                    'errors': form.errors
+                })
+            else:
+                messages.error(request, 'Error al actualizar el usuario. Revise los datos ingresados.')
+                return self.form_invalid(form)
 
 @method_decorator(csrf_exempt, name='dispatch')
 class UsuarioDeleteView(LoginRequiredMixin, UpdateView):
