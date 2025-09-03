@@ -92,15 +92,15 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    '_AppAuth.middleware_easyauth.EasyAuthMiddleware',
+    '_AppAuth.middleware_msal.MSALAuthMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     '_AppAuth.middleware.AuthMiddleware',
 ]
 
-USE_EASYAUTH = os.getenv("USE_EASYAUTH", "True").lower() == "true"
+USE_EASYAUTH = os.getenv("USE_EASYAUTH", "False").lower() == "true"
 
-# Vars de Entra ID (para MSAL en local)
+# MSAL Configuration for Azure AD authentication (all environments)
 AZURE_TENANT_ID = os.getenv("AZURE_TENANT_ID")
 AZURE_CLIENT_ID = os.getenv("AZURE_CLIENT_ID")
 AZURE_CLIENT_SECRET = os.getenv("AZURE_CLIENT_SECRET")
@@ -122,6 +122,7 @@ if USE_EASYAUTH:
     LOGIN_URL = "/.auth/login/aad?prompt=login&post_login_redirect_uri=/"
     LOGOUT_REDIRECT_URL = "/.auth/logout?post_logout_redirect_uri=/"
 else:
+    # MSAL authentication - URLs directas que coinciden con Azure AD registration
     LOGIN_URL = "/aad/login"
     LOGOUT_REDIRECT_URL = "/aad/logout"
     

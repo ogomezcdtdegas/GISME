@@ -11,7 +11,7 @@ log = logging.getLogger(__name__)
 
 class LogoutView(View):
     """
-    Vista de logout que maneja tanto MSAL (desarrollo) como EasyAuth (producción)
+    Vista de logout unificada que usa MSAL para todos los entornos
     """
     
     def get(self, request):
@@ -21,10 +21,7 @@ class LogoutView(View):
         return self.handle_logout(request)
     
     def handle_logout(self, request):
-        """Maneja logout según el entorno (MSAL vs EasyAuth)"""
-        
-        # Determinar entorno
-        use_easyauth = os.getenv('USE_EASYAUTH', 'False').lower() == 'true'
+        """Maneja logout usando MSAL para todos los entornos"""
         
         # Logout de Django (siempre)
         if request.user.is_authenticated:
@@ -35,25 +32,11 @@ class LogoutView(View):
         # Limpiar sesión Django
         request.session.flush()
         
-        if use_easyauth:
-            # PRODUCCIÓN: Usar logout de EasyAuth
-            return self._easyauth_logout(request)
-        else:
-            # DESARROLLO: Usar logout de MSAL
-            return self._msal_logout(request)
-    
-    def _easyauth_logout(self, request):
-        """Logout para entorno de producción con EasyAuth"""
-        
-        # URL de logout de EasyAuth que redirige a Microsoft y luego de vuelta
-        post_logout_uri = request.build_absolute_uri('/auth/logout-complete/')
-        easyauth_logout_url = f"/.auth/logout?post_logout_redirect_uri={post_logout_uri}"
-        
-        log.info("Redirigiendo a logout de EasyAuth")
-        return redirect(easyauth_logout_url)
+        # Usar logout de MSAL para todos los entornos
+        return self._msal_logout(request)
     
     def _msal_logout(self, request):
-        """Logout para entorno de desarrollo con MSAL"""
+        """Logout usando MSAL para todos los entornos"""
         
         # Construir URL de logout de Microsoft
         tenant_id = os.getenv('AZURE_TENANT_ID')
@@ -85,12 +68,5 @@ class LoginRedirectView(View):
     """Vista para manejar redirecciones de login"""
     
     def get(self, request):
-        # Determinar entorno
-        use_easyauth = os.getenv('USE_EASYAUTH', 'False').lower() == 'true'
-        
-        if use_easyauth:
-            # PRODUCCIÓN: Redirigir a EasyAuth
-            return redirect('/.auth/login/aad')
-        else:
-            # DESARROLLO: Redirigir a MSAL
-            return redirect('/aad/login/')
+        # Siempre usar MSAL - rutas directas que coinciden con Azure AD
+        return redirect('/aad/login')
