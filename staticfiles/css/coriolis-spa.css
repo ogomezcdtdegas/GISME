@@ -1,0 +1,88 @@
+/* Estilos específicos para Coriolis SPA */
+
+/* === OVERLAY DE CARGA === */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.9);
+    display: none; /* Oculto por defecto */
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+/* === VISTAS OCULTAS === */
+.hidden {
+    display: none !important;
+}
+
+/* === TRANSICIONES SPA === */
+.spa-view {
+    transition: opacity 0.3s ease-in-out;
+}
+
+.spa-view.entering {
+    opacity: 0;
+}
+
+.spa-view.entered {
+    opacity: 1;
+}
+
+/* === NAVEGACIÓN SPA === */
+.spa-breadcrumb a {
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.spa-breadcrumb a:hover {
+    text-decoration: underline;
+}
+
+/* === CONTROLES SPA === */
+.spa-controls {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.spa-controls .btn {
+    margin-bottom: 5px;
+}
+
+/* === MAPA EN SPA === */
+.spa-map-container {
+    height: 300px;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.coriolis-card-body {
+    background: linear-gradient(135deg, #e3f0ff 0%, #eceaea 100%);
+    /* O usa un color sólido personalizado */
+    /* background: #f5f7fa; */
+    box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+    padding: 32px;
+}
+
+.coriolis-header-system{
+    background: rgba(71, 68, 68, 1);
+}
+
+/* === RESPONSIVIDAD SPA === */
+@media (max-width: 768px) {
+    .loading-overlay h5 {
+        font-size: 1.1rem;
+    }
+    
+    .spa-controls {
+        justify-content: center;
+    }
+    
+    .spa-map-container {
+        height: 250px;
+    }
+}
