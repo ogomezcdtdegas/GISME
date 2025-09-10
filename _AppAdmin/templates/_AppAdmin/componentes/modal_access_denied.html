@@ -1,0 +1,28 @@
+<!-- Modal de acceso denegado -->
+{% if access_denied %}
+<div class="modal fade" id="accessDeniedModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-warning">
+            <div class="modal-header bg-warning text-dark">
+                <h5 class="modal-title">
+                    <i class="bi bi-shield-exclamation"></i> Acceso Restringido
+                </h5>
+            </div>
+            <div class="modal-body text-center">
+                <div class="mb-3">
+                    <i class="bi bi-exclamation-triangle display-4 text-warning"></i>
+                </div>
+                <p class="fs-5">{{ access_denied_message }}</p>
+                <p class="text-muted">
+                    Este módulo está disponible solo para usuarios con rol de Administrador o superior.
+                </p>
+            </div>
+            <div class="modal-footer justify-content-center">
+                <a href="{% url 'allEquiposPag' %}" class="btn btn-primary">
+                    <i class="bi bi-arrow-left"></i> Volver al Inicio
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}

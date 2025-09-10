@@ -1,0 +1,51 @@
+<!-- Modal para editar usuario -->
+<div class="modal fade" id="editUserModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header" style="background-color: #343a40; color: white;">
+                <h5 class="modal-title">
+                    <i class="bi bi-pencil"></i> Editar Usuario
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="editUserForm" method="POST">
+                <div class="modal-body">
+                    {% csrf_token %}
+                    <input type="hidden" id="editUserId" name="user_id">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label">Correo Electrónico *</label>
+                            <input type="email" id="editEmail" name="email" class="form-control" required>
+                            <div class="invalid-feedback"></div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Nombre</label>
+                            <input type="text" id="editFirstName" name="first_name" class="form-control">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Apellido</label>
+                            <input type="text" id="editLastName" name="last_name" class="form-control">
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label">Rol *</label>
+                            <select id="editRole" name="role" class="form-select" required>
+                                <option value="supervisor">Supervisor</option>
+                                <option value="admin">Administrador</option>
+                                <option value="admin_principal">AdministradorPrincipal</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-warning">
+                        <i class="bi bi-check-circle"></i> Actualizar Usuario
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
