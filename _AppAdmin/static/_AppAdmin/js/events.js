@@ -84,12 +84,20 @@ class AdminEvents {
         this.ui.clearFormErrors(form);
         
         try {
+            // Convertir FormData a objeto JSON
             const formData = new FormData(form);
-            const result = await this.api.createUser(formData);
+            const userData = {
+                email: formData.get('email'),
+                first_name: formData.get('first_name'),
+                last_name: formData.get('last_name'),
+                role: formData.get('role')
+            };
+            
+            const result = await this.api.createUser(userData);
             
             if (result.success) {
                 this.ui.hideModal('create');
-                this.ui.showSuccessMessage(result.message);
+                this.ui.showSuccessMessage(result.message || 'Usuario creado exitosamente');
                 this.ui.reloadAfterDelay();
                 form.reset();
             } else {
@@ -113,13 +121,21 @@ class AdminEvents {
         this.ui.clearFormErrors(form);
         
         try {
+            // Convertir FormData a objeto JSON
             const formData = new FormData(form);
+            const userData = {
+                email: formData.get('email'),
+                first_name: formData.get('first_name'),
+                last_name: formData.get('last_name'),
+                role: formData.get('role')
+            };
+            
             const userId = document.getElementById('editUserId').value;
-            const result = await this.api.updateUser(userId, formData);
+            const result = await this.api.updateUser(userId, userData);
             
             if (result.success) {
                 this.ui.hideModal('edit');
-                this.ui.showSuccessMessage(result.message);
+                this.ui.showSuccessMessage(result.message || 'Usuario actualizado exitosamente');
                 this.ui.reloadAfterDelay();
             } else {
                 if (result.errors) {

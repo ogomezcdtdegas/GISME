@@ -9,6 +9,9 @@ class UserRole(models.Model):
         ('admin_principal', 'AdministradorPrincipal'),
     ]
     
+    # Alias para compatibilidad con el serializer
+    ROLE_CHOICES = ROLES
+    
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='user_role')
     role = models.CharField(max_length=20, choices=ROLES, default='supervisor')
     created_at = models.DateTimeField(auto_now_add=True)
