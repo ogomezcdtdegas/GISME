@@ -89,8 +89,32 @@ window.AdminEvents = {
     // Abrir modal de edición
     async openEditModal(userId) {
         console.log(`✏️ Abriendo modal de edición para usuario ${userId}`);
-        // TODO: Implementar modal de edición
-        alert(`Editar usuario ${userId} - Funcionalidad pendiente`);
+        
+        try {
+            // Obtener datos del usuario
+            const response = await window.AdminAPI.users.obtenerPorId(userId);
+            
+            if (response && response.success) {
+                const user = response.data;
+                
+                // Llenar formulario de edición
+                document.getElementById('editUserId').value = user.id;
+                document.getElementById('editEmail').value = user.email;
+                document.getElementById('editFirstName').value = user.first_name || '';
+                document.getElementById('editLastName').value = user.last_name || '';
+                document.getElementById('editRole').value = user.role || '';
+                
+                // Mostrar modal
+                const modal = new bootstrap.Modal(document.getElementById('editUserModal'));
+                modal.show();
+            } else {
+                console.error('❌ Error obteniendo datos del usuario:', response);
+                this.showError('Error al obtener datos del usuario');
+            }
+        } catch (error) {
+            console.error('❌ Error al cargar usuario para edición:', error);
+            this.showError('Error al cargar usuario: ' + error.message);
+        }
     },
 
     // Abrir modal de eliminación
@@ -153,6 +177,43 @@ window.AdminEvents = {
         } catch (error) {
             console.error('❌ Error al crear usuario:', error);
             this.showError('Error al crear usuario: ' + error.message);
+            return null;
+        }
+    },
+
+    // Actualizar usuario existente
+    async updateUser(userData) {
+        console.log('📝 Actualizando usuario:', userData);
+        
+        try {
+            const response = await window.AdminAPI.users.actualizar(userData.id, userData);
+            
+            if (response && response.success) {
+                console.log('✅ Usuario actualizado exitosamente:', response);
+                
+                // Cerrar modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('editUserModal'));
+                if (modal) {
+                    modal.hide();
+                }
+                
+                // Recargar usuarios
+                const currentPage = window.AdminUI.pagination.currentPage || 1;
+                const searchValue = document.getElementById('searchInput')?.value || '';
+                const perPageValue = parseInt(document.getElementById('recordsPerPage')?.value) || 10;
+                
+                await this.loadUsers(currentPage, searchValue, perPageValue);
+                
+                this.showSuccess('Usuario actualizado exitosamente');
+                return response;
+            } else {
+                console.error('❌ Error en respuesta de actualización:', response);
+                this.showError('Error al actualizar usuario: ' + (response.error || 'Error desconocido'));
+                return null;
+            }
+        } catch (error) {
+            console.error('❌ Error al actualizar usuario:', error);
+            this.showError('Error al actualizar usuario: ' + error.message);
             return null;
         }
     },
@@ -238,6 +299,27 @@ window.AdminEvents = {
                 
                 // Crear usuario
                 await this.createUser(userData);
+            });
+        }
+
+        // Formulario de edición de usuario
+        const editUserForm = document.getElementById('editUserForm');
+        if (editUserForm) {
+            editUserForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                
+                // Recopilar datos del formulario
+                const formData = new FormData(editUserForm);
+                const userData = {
+                    id: formData.get('user_id'),
+                    email: formData.get('email'),
+                    first_name: formData.get('first_name'),
+                    last_name: formData.get('last_name'),
+                    role: formData.get('role')
+                };
+                
+                // Actualizar usuario
+                await this.updateUser(userData);
             });
         }
 

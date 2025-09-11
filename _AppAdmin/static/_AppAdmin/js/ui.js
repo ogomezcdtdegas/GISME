@@ -65,7 +65,7 @@ window.AdminUI = {
             if (!users || users.length === 0) {
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="5" class="text-center">
+                        <td colspan="4" class="text-center">
                             <i class="bi bi-person-x"></i>
                             No hay usuarios registrados
                         </td>
@@ -83,21 +83,18 @@ window.AdminUI = {
                         <span class="badge ${this.getRoleBadgeClass(user.role)}">${this.getRoleDisplayName(user.role)}</span>
                     </td>
                     <td>
-                        <small>${this.formatDate(user.date_joined)}</small>
-                    </td>
-                    <td>
                         <span class="badge ${user.is_active ? 'bg-success' : 'bg-secondary'}">
                             ${user.is_active ? 'Activo' : 'Inactivo'}
                         </span>
                     </td>
-                    <td>
-                        <button class="btn btn-primary btn-sm me-1" 
-                                onclick="AdminEvents.openEditModal(${user.id})" 
+                    <td class="text-center">
+                        <button class="btn btn-warning btn-sm me-1" 
+                                onclick="window.AdminEvents.openEditModal(${user.id})" 
                                 title="Editar usuario">
                             <i class="bi bi-pencil-square"></i>
                         </button>
                         <button class="btn btn-danger btn-sm" 
-                                onclick="AdminEvents.openDeleteModal(${user.id}, '${user.email}')" 
+                                onclick="window.AdminEvents.openDeleteModal(${user.id}, '${user.email}')" 
                                 title="Eliminar usuario">
                             <i class="bi bi-trash"></i>
                         </button>
