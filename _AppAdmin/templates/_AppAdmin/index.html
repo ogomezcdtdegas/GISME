@@ -121,6 +121,17 @@
 {% load static %}
 <!-- CSRF Token para JavaScript -->
 <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+
+<!-- Variables de permisos para JavaScript -->
+<script id="admin-permissions-data" type="application/json">
+{
+    "canCreateUsers": {{ can_create_users|yesno:"true,false" }},
+    "canEditUsers": {{ can_edit_users|yesno:"true,false" }},
+    "canDeleteUsers": {{ can_delete_users|yesno:"true,false" }},
+    "currentUserRole": "{{ current_user_role|default:'' }}"
+}
+</script>
+
 <script src="{% static '_AppAdmin/js/api.js' %}"></script>
 <script src="{% static '_AppAdmin/js/ui.js' %}"></script>
 <script src="{% static '_AppAdmin/js/events.js' %}"></script>

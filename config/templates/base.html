@@ -37,10 +37,12 @@
         <a href="{% url 'allEquiposPag' %}" class="{% if active_section == 'home' %}active{% endif %}"><i class="bi bi-house-door"></i> Home</a>
 
         <!-- Menú Administración -->
+        {% if can_access_admin %}
         <a href="#" id="toggleAdministracion" data-bs-toggle="collapse" data-bs-target="#administracionSubmenu" aria-expanded="{% if active_section == 'admin' %}true{% else %}false{% endif %}" aria-controls="administracionSubmenu"><i class="bi bi-gear"></i> Administración <i class="bi bi-chevron-down float-end"></i></a>
         <div class="submenu collapse {% if active_section == 'admin' %}show{% endif %}" id="administracionSubmenu">
             <a href="{% url '_AppAdmin:crear_usuario' %}" class="{% if active_section == 'admin' %}active{% endif %}"><i class="bi bi-person-plus"></i> Crear Usuario</a>
         </div>
+        {% endif %}
         
         <!-- Monitoreo y Medición de Sistemas -->
         <a href="#" id="toggleMonitoreo" data-bs-toggle="collapse" data-bs-target="#monitoreoSubmenu" aria-expanded="{% if active_section == 'monitoreo_coriolis' %}true{% else %}false{% endif %}" aria-controls="monitoreoSubmenu"><i class="bi bi-activity"></i> Monitoreo y Medición de Sistemas <i class="bi bi-chevron-down float-end"></i></a>

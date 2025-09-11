@@ -1,5 +1,22 @@
 // _AppAdmin/js/ui.js - Funciones de interfaz de usuario para Admin Users (sin módulos ES6)
 
+// Función para obtener permisos desde el JSON
+function getAdminPermissions() {
+    const permissionsScript = document.getElementById('admin-permissions-data');
+    if (permissionsScript) {
+        try {
+            return JSON.parse(permissionsScript.textContent);
+        } catch (e) {
+            console.error('Error parsing permissions:', e);
+            return {};
+        }
+    }
+    return {};
+}
+
+// Establecer permisos en window para compatibilidad
+window.AdminPermissions = getAdminPermissions();
+
 // AdminUI - Funciones de interfaz
 window.AdminUI = {
     // Configuración de paginación
@@ -88,19 +105,57 @@ window.AdminUI = {
                         </span>
                     </td>
                     <td class="text-center">
-                        <button class="btn btn-warning btn-sm me-1" 
-                                onclick="window.AdminEvents.openEditModal(${user.id})" 
-                                title="Editar usuario">
-                            <i class="bi bi-pencil-square"></i>
-                        </button>
-                        <button class="btn btn-danger btn-sm" 
-                                onclick="window.AdminEvents.openDeleteModal(${user.id}, '${user.email}')" 
-                                title="Eliminar usuario">
-                            <i class="bi bi-trash"></i>
-                        </button>
+                        ${this.renderActionButtons(user)}
                     </td>
                 </tr>
             `).join('');
+        },
+
+        // Renderizar botones de acción según permisos
+        renderActionButtons(user) {
+            const permissions = window.AdminPermissions || {};
+            const canEdit = permissions.canEditUsers;
+            const canDelete = permissions.canDeleteUsers;
+            const currentRole = permissions.currentUserRole;
+
+            let editButton = '';
+            let deleteButton = '';
+
+            // Botón Editar
+            if (canEdit) {
+                editButton = `
+                    <button class="btn btn-warning btn-sm me-1" 
+                            onclick="window.AdminEvents.openEditModal(${user.id})" 
+                            title="Editar usuario">
+                        <i class="bi bi-pencil-square"></i>
+                    </button>`;
+            } else if (currentRole === 'admin') {
+                editButton = `
+                    <button class="btn btn-secondary btn-sm me-1" 
+                            disabled 
+                            title="Solo AdministradorPrincipal puede editar usuarios">
+                        <i class="bi bi-pencil-square"></i>
+                    </button>`;
+            }
+
+            // Botón Eliminar
+            if (canDelete) {
+                deleteButton = `
+                    <button class="btn btn-danger btn-sm" 
+                            onclick="window.AdminEvents.openDeleteModal(${user.id}, '${user.email}')" 
+                            title="Eliminar usuario">
+                        <i class="bi bi-trash"></i>
+                    </button>`;
+            } else if (currentRole === 'admin') {
+                deleteButton = `
+                    <button class="btn btn-secondary btn-sm" 
+                            disabled 
+                            title="Solo AdministradorPrincipal puede eliminar usuarios">
+                        <i class="bi bi-trash"></i>
+                    </button>`;
+            }
+
+            return editButton + deleteButton;
         },
 
         // Obtener clase CSS para el badge del rol
