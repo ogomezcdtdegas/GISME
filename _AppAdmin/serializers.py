@@ -82,11 +82,19 @@ class UserAdminCreateSerializer(serializers.ModelSerializer):
 
 class UserAdminUpdateSerializer(serializers.ModelSerializer):
     """Serializer específico para actualizar usuarios admin"""
-    role = serializers.ChoiceField(choices=UserRole.ROLE_CHOICES, write_only=True, required=False)
+    role = serializers.SerializerMethodField(read_only=True)
+    role_update = serializers.ChoiceField(choices=UserRole.ROLE_CHOICES, write_only=True, required=False)
     
     class Meta:
         model = User
-        fields = ['email', 'first_name', 'last_name', 'role']
+        fields = ['id', 'email', 'first_name', 'last_name', 'role', 'role_update']
+        read_only_fields = ['id', 'role']
+        
+    def get_role(self, obj):
+        """Obtener rol del usuario"""
+        if hasattr(obj, 'user_role') and obj.user_role:
+            return obj.user_role.role
+        return None
     
     def validate_email(self, value):
         """Validar email único"""
@@ -97,7 +105,7 @@ class UserAdminUpdateSerializer(serializers.ModelSerializer):
     
     def update(self, instance, validated_data):
         """Actualizar usuario y rol"""
-        role = validated_data.pop('role', None)
+        role = validated_data.pop('role_update', None)
         
         # Actualizar campos del usuario
         instance.email = validated_data.get('email', instance.email)

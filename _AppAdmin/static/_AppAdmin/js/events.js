@@ -22,6 +22,7 @@ window.AdminEvents = {
 
             if (response && response.results) {
                 console.log(`✅ Usuarios cargados exitosamente - ${response.results.length} usuarios encontrados`);
+                console.log('📊 Respuesta completa:', response);  // Debug log
                 
                 // Actualizar tabla
                 window.AdminUI.table.updateUsers(response.results);
@@ -90,12 +91,20 @@ window.AdminEvents = {
     async openEditModal(userId) {
         console.log(`✏️ Abriendo modal de edición para usuario ${userId}`);
         
+        // Validar que tenemos un ID válido
+        if (!userId || userId === 'undefined') {
+            console.error('❌ ID de usuario no válido:', userId);
+            this.showError('Error: ID de usuario no válido');
+            return;
+        }
+        
         try {
             // Obtener datos del usuario
             const response = await window.AdminAPI.users.obtenerPorId(userId);
             
             if (response && response.success) {
                 const user = response.data;
+                console.log('✅ Datos del usuario obtenidos:', user);
                 
                 // Llenar formulario de edición
                 document.getElementById('editUserId').value = user.id;
@@ -103,6 +112,10 @@ window.AdminEvents = {
                 document.getElementById('editFirstName').value = user.first_name || '';
                 document.getElementById('editLastName').value = user.last_name || '';
                 document.getElementById('editRole').value = user.role || '';
+                
+                // Verificar que el ID se estableció correctamente
+                const setId = document.getElementById('editUserId').value;
+                console.log('🔍 ID establecido en el formulario:', setId);
                 
                 // Mostrar modal
                 const modal = new bootstrap.Modal(document.getElementById('editUserModal'));
@@ -121,7 +134,20 @@ window.AdminEvents = {
     async openDeleteModal(userId, userEmail) {
         console.log(`🗑️ Abriendo modal de eliminación para usuario ${userId} (${userEmail})`);
         
-        if (confirm(`¿Está seguro de que desea eliminar al usuario "${userEmail}"?`)) {
+        // Usar SweetAlert2 para confirmación de eliminación
+        const result = await Swal.fire({
+            title: '¿Está seguro?',
+            text: `Va a eliminar al usuario "${userEmail}"`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#6c757d',
+            confirmButtonText: 'Sí, eliminar',
+            cancelButtonText: 'Cancelar',
+            reverseButtons: true
+        });
+
+        if (result.isConfirmed) {
             try {
                 await window.AdminAPI.users.eliminar(userId);
                 console.log(`✅ Usuario ${userId} eliminado exitosamente`);
@@ -133,10 +159,24 @@ window.AdminEvents = {
                 
                 await this.loadUsers(currentPage, searchValue, perPageValue);
                 
-                this.showSuccess(`Usuario "${userEmail}" eliminado exitosamente`);
+                // Mostrar alerta de éxito
+                Swal.fire({
+                    title: '¡Éxito!',
+                    text: `Usuario "${userEmail}" eliminado exitosamente`,
+                    icon: 'success',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#28a745'
+                });
             } catch (error) {
                 console.error('❌ Error al eliminar usuario:', error);
-                this.showError('Error al eliminar usuario: ' + error.message);
+                // Mostrar alerta de error
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Error al eliminar usuario: ' + error.message,
+                    icon: 'error',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#dc3545'
+                });
             }
         }
     },
@@ -167,16 +207,37 @@ window.AdminEvents = {
                 
                 await this.loadUsers(currentPage, searchValue, perPageValue);
                 
-                this.showSuccess('Usuario creado exitosamente');
+                // Mostrar alerta de éxito
+                Swal.fire({
+                    title: '¡Éxito!',
+                    text: 'Usuario creado exitosamente',
+                    icon: 'success',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#28a745'
+                });
                 return response;
             } else {
                 console.error('❌ Error en respuesta de creación:', response);
-                this.showError('Error al crear usuario: ' + (response.error || 'Error desconocido'));
+                // Mostrar alerta de error
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Error al crear usuario: ' + (response.error || 'Error desconocido'),
+                    icon: 'error',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#dc3545'
+                });
                 return null;
             }
         } catch (error) {
             console.error('❌ Error al crear usuario:', error);
-            this.showError('Error al crear usuario: ' + error.message);
+            // Mostrar alerta de error
+            Swal.fire({
+                title: 'Error',
+                text: 'Error al crear usuario: ' + error.message,
+                icon: 'error',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#dc3545'
+            });
             return null;
         }
     },
@@ -204,16 +265,37 @@ window.AdminEvents = {
                 
                 await this.loadUsers(currentPage, searchValue, perPageValue);
                 
-                this.showSuccess('Usuario actualizado exitosamente');
+                // Mostrar alerta de éxito
+                Swal.fire({
+                    title: '¡Éxito!',
+                    text: 'Usuario actualizado exitosamente',
+                    icon: 'success',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#28a745'
+                });
                 return response;
             } else {
                 console.error('❌ Error en respuesta de actualización:', response);
-                this.showError('Error al actualizar usuario: ' + (response.error || 'Error desconocido'));
+                // Mostrar alerta de error
+                Swal.fire({
+                    title: 'Error',
+                    text: 'Error al actualizar usuario: ' + (response.error || 'Error desconocido'),
+                    icon: 'error',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#dc3545'
+                });
                 return null;
             }
         } catch (error) {
             console.error('❌ Error al actualizar usuario:', error);
-            this.showError('Error al actualizar usuario: ' + error.message);
+            // Mostrar alerta de error
+            Swal.fire({
+                title: 'Error',
+                text: 'Error al actualizar usuario: ' + error.message,
+                icon: 'error',
+                confirmButtonText: 'OK',
+                confirmButtonColor: '#dc3545'
+            });
             return null;
         }
     },
@@ -222,24 +304,57 @@ window.AdminEvents = {
     updateRecordsInfo(response) {
         const recordsInfo = document.getElementById('recordsInfo');
         if (recordsInfo && response) {
-            const start = ((response.current_page - 1) * response.per_page) + 1;
-            const end = Math.min(start + response.per_page - 1, response.total_count);
-            recordsInfo.textContent = `Mostrando ${start}-${end} de ${response.total_count} registros`;
+            // Calcular per_page basado en la cantidad de resultados o usar el valor del selector
+            const perPageElement = document.getElementById('recordsPerPage');
+            const perPage = perPageElement ? parseInt(perPageElement.value) || 10 : 10;
+            
+            const currentPage = parseInt(response.current_page) || 1;
+            const totalCount = parseInt(response.total_count) || 0;
+            
+            console.log(`📊 Actualizando info: página ${currentPage}, total ${totalCount}, por página ${perPage}`);
+            
+            if (totalCount === 0) {
+                recordsInfo.textContent = 'No hay registros para mostrar';
+                return;
+            }
+            
+            const start = ((currentPage - 1) * perPage) + 1;
+            const end = Math.min(currentPage * perPage, totalCount);
+            
+            // Verificar que los valores sean válidos
+            if (isNaN(start) || isNaN(end) || isNaN(totalCount)) {
+                console.error('❌ Valores inválidos para el conteo:', { start, end, totalCount, currentPage, perPage });
+                recordsInfo.textContent = `Mostrando registros (total: ${totalCount})`;
+                return;
+            }
+            
+            recordsInfo.textContent = `Mostrando ${start}-${end} de ${totalCount} registros`;
+            console.log(`✅ Info actualizada: Mostrando ${start}-${end} de ${totalCount} registros`);
         }
     },
 
     // Mostrar mensaje de error
     showError(message) {
-        // TODO: Implementar sistema de notificaciones más sofisticado
         console.error('❌', message);
-        alert('Error: ' + message);
+        Swal.fire({
+            title: 'Error',
+            text: message,
+            icon: 'error',
+            confirmButtonText: 'OK',
+            confirmButtonColor: '#dc3545'
+        });
     },
 
     // Mostrar mensaje de éxito
     showSuccess(message) {
-        // TODO: Implementar sistema de notificaciones más sofisticado
         console.log('✅', message);
-        alert('Éxito: ' + message);
+        Swal.fire({
+            title: '¡Éxito!',
+            text: message,
+            icon: 'success',
+            confirmButtonText: 'OK',
+            confirmButtonColor: '#28a745'
+        });
     },
 
     // Configurar todos los event listeners
@@ -308,15 +423,26 @@ window.AdminEvents = {
             editUserForm.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 
-                // Recopilar datos del formulario
+                // Recopilar datos del formulario - obtener ID directamente del campo
+                const userId = document.getElementById('editUserId').value;
                 const formData = new FormData(editUserForm);
+                
+                // Validar que tenemos un ID
+                if (!userId || userId === 'undefined') {
+                    console.error('❌ ID de usuario no válido:', userId);
+                    this.showError('Error: ID de usuario no válido');
+                    return;
+                }
+                
                 const userData = {
-                    id: formData.get('user_id'),
+                    id: userId,
                     email: formData.get('email'),
                     first_name: formData.get('first_name'),
                     last_name: formData.get('last_name'),
-                    role: formData.get('role')
+                    role_update: formData.get('role')  // Usar role_update para la actualización
                 };
+                
+                console.log('📝 Datos de usuario para actualización:', userData);
                 
                 // Actualizar usuario
                 await this.updateUser(userData);
