@@ -9,6 +9,7 @@ from repoGenerico.views_base import BaseListView, BaseCreateView, BaseRetrieveUp
 from .serializers import UserAdminSerializer
 from .models import UserRole
 from .mixins import AdminPermissionMixin
+from _AppAuth.utils import get_admin_context
 
 
 class AdminPanelView(LoginRequiredMixin, TemplateView):
@@ -19,36 +20,20 @@ class AdminPanelView(LoginRequiredMixin, TemplateView):
         context = super().get_context_data(**kwargs)
         context['active_section'] = 'admin'
         
-        # Obtener rol del usuario actual
-        user_role = None
-        if hasattr(self.request.user, 'user_role'):
-            user_role = self.request.user.user_role.role
+        # Usar helper centralizado para obtener contexto de rol y permisos
+        role_context = get_admin_context(self.request.user)
+        context.update(role_context)
         
-        context['current_user_role'] = user_role
-        
-        # Configurar permisos y datos según rol
-        if user_role == 'supervisor':
-            context['access_denied'] = True
-            context['access_denied_message'] = 'Su tipo de usuario Supervisor no tiene permiso de acceso. Solo Administradores.'
-            context['usuarios'] = []
-        elif user_role in ['admin', 'admin_principal']:
-            context['access_denied'] = False
+        # Configurar datos específicos según permisos
+        if not context['access_denied'] and context['can_access_admin']:
             # Obtener usuarios con sus roles usando queryset directo
             usuarios = User.objects.select_related('user_role').all().order_by('-date_joined')
             context['usuarios'] = usuarios
             context['total_users'] = usuarios.count()
             
-            # Permisos específicos por rol
-            context['can_access_admin'] = True
-            context['can_create_users'] = user_role == 'admin_principal'
-            context['can_edit_users'] = user_role == 'admin_principal'
-            context['can_delete_users'] = user_role == 'admin_principal'
-            
             # Roles disponibles
             context['available_roles'] = UserRole.ROLE_CHOICES
         else:
-            context['access_denied'] = True
-            context['access_denied_message'] = 'Su rol de usuario no tiene permisos para acceder al módulo de administración de usuarios.'
             context['usuarios'] = []
         
         return context

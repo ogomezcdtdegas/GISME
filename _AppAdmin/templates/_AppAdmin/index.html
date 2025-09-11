@@ -37,111 +37,76 @@
                     </div>
                 </div>
                 
-                <!-- Barra de búsqueda -->
+                <!-- Barra de búsqueda y controles -->
                 <div class="card-body pb-0">
+                    <!-- Contenedor para título y selector de registros por página -->
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="mb-0">Lista de Usuarios</h6>
+                        <div>
+                            <label for="recordsPerPage" class="me-2">Mostrar</label>
+                            <select id="recordsPerPage" class="form-select d-inline-block w-auto" onchange="updatePagination()">
+                                <option value="5">5</option>
+                                <option value="10" selected>10</option>
+                                <option value="20">20</option>
+                                <option value="50">50</option>
+                            </select>
+                            <label>registros por página</label>
+                        </div>
+                    </div>
+
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <div class="input-group">
                                 <span class="input-group-text">
                                     <i class="bi bi-search"></i>
                                 </span>
-                                <input type="text" id="searchInput" class="form-control" placeholder="Buscar por email, nombre o rol...">
+                                <input type="text" id="searchInput" class="form-control" placeholder="Buscar por email, nombre..." autocomplete="off">
+                                <button class="btn btn-outline-secondary" type="button" id="clearSearch">
+                                    <i class="bi bi-x-lg"></i>
+                                </button>
                             </div>
-                        </div>
-                        <div class="col-md-6">
-                            <select id="roleFilter" class="form-select">
-                                <option value="">Todos los roles</option>
-                                <option value="admin_principal">AdministradorPrincipal</option>
-                                <option value="admin">Administrador</option>
-                                <option value="supervisor">Supervisor</option>
-                            </select>
                         </div>
                     </div>
                 </div>
 
                 <div class="card-body pt-0">
-                    {% if usuarios %}
-                        <div class="table-responsive">
-                            <table class="table table-hover mb-0" id="usersTable">
-                                <thead style="background-color: #f8f9fa;">
-                                    <tr>
-                                        <th>Email</th>
-                                        <th>Nombre</th>
-                                        <th>Rol</th>
-                                        <th>Fecha</th>
-                                        <th class="text-center">Acciones</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for usuario in usuarios %}
-                                    <tr class="user-row" 
-                                        data-user-id="{{ usuario.pk }}"
-                                        data-email="{{ usuario.email|lower }}" 
-                                        data-name="{{ usuario.first_name|lower }} {{ usuario.last_name|lower }}"
-                                        data-role="{% if usuario.user_role %}{{ usuario.user_role.role }}{% endif %}">
-                                        <td>
-                                            <strong>{{ usuario.email }}</strong>
-                                        </td>
-                                        <td>
-                                            {{ usuario.first_name }} {{ usuario.last_name }}
-                                        </td>
-                                        <td>
-                                            {% if usuario.user_role %}
-                                                <span class="badge 
-                                                    {% if usuario.user_role.role == 'admin_principal' %}bg-danger
-                                                    {% elif usuario.user_role.role == 'admin' %}bg-warning
-                                                    {% else %}bg-info{% endif %}">
-                                                    {{ usuario.user_role.get_role_display }}
-                                                </span>
-                                            {% else %}
-                                                <span class="badge bg-secondary">Sin rol</span>
-                                            {% endif %}
-                                        </td>
-                                        <td>
-                                            <small class="text-muted">{{ usuario.date_joined|date:"d/m/Y" }}</small>
-                                        </td>
-                                        <td class="text-center">
-                                            <div class="btn-group btn-group-sm">
-                                                {% if can_edit_users %}
-                                                <button class="btn btn-outline-primary" 
-                                                        data-user-id="{{ usuario.pk }}"
-                                                        onclick="editarUsuario(this.dataset.userId)"
-                                                        title="Editar">
-                                                    <i class="bi bi-pencil"></i>
-                                                </button>
-                                                {% elif current_user_role == 'admin' %}
-                                                <button class="btn btn-outline-secondary" disabled title="Solo AdministradorPrincipal puede editar">
-                                                    <i class="bi bi-pencil"></i>
-                                                </button>
-                                                {% endif %}
+                    <!-- Tabla de usuarios que se llenará dinámicamente -->
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0" id="usersTable">
+                            <thead style="background-color: #f8f9fa;">
+                                <tr>
+                                    <th>Email</th>
+                                    <th>Rol</th>
+                                    <th>Fecha</th>
+                                    <th>Estado</th>
+                                    <th class="text-center">Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="usersTableBody">
+                                <!-- Los usuarios se cargarán dinámicamente aquí -->
+                                <tr>
+                                    <td colspan="5" class="text-center">
+                                        <div class="spinner-border spinner-border-sm" role="status">
+                                            <span class="visually-hidden">Cargando...</span>
+                                        </div>
+                                        Cargando usuarios...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
 
-                                                {% if can_delete_users %}
-                                                <button class="btn btn-outline-danger" 
-                                                        data-user-id="{{ usuario.pk }}"
-                                                        data-user-email="{{ usuario.email }}"
-                                                        onclick="eliminarUsuario(this.dataset.userId, this.dataset.userEmail)"
-                                                        title="Eliminar">
-                                                    <i class="bi bi-trash"></i>
-                                                </button>
-                                                {% elif current_user_role == 'admin' %}
-                                                <button class="btn btn-outline-secondary" disabled title="Solo AdministradorPrincipal puede eliminar">
-                                                    <i class="bi bi-trash"></i>
-                                                </button>
-                                                {% endif %}
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+                    <!-- Controles de paginación -->
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div>
+                            <small class="text-muted" id="recordsInfo">Cargando...</small>
                         </div>
-                    {% else %}
-                        <div class="text-center p-4">
-                            <i class="bi bi-person-x fs-1 text-muted"></i>
-                            <h5 class="text-muted mt-2">No hay usuarios registrados</h5>
-                            <p class="text-muted">Crea el primer usuario usando el botón "Crear Usuario".</p>
-                        </div>
-                    {% endif %}
+                        <nav>
+                            <ul class="pagination pagination-sm mb-0">
+                                <!-- La paginación se generará dinámicamente -->
+                            </ul>
+                        </nav>
+                    </div>
                 </div>
             </div>
         </div>
@@ -157,6 +122,8 @@
 
 <!-- Scripts modulares de _AppAdmin -->
 {% load static %}
+<!-- CSRF Token para JavaScript -->
+<input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
 <script src="{% static '_AppAdmin/js/api.js' %}"></script>
 <script src="{% static '_AppAdmin/js/ui.js' %}"></script>
 <script src="{% static '_AppAdmin/js/events.js' %}"></script>

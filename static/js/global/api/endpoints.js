@@ -57,5 +57,13 @@ export const ENDPOINTS = {
         POR_ID: (id) => `/complementos/sistema/${id}/`,
         ACTUALIZAR: (id) => `/complementos/editar-sistema/${id}/`,
         ELIMINAR: (id) => `/complementos/eliminar-sistema/${id}/`
+    },
+    ADMIN_USERS: {
+        LISTAR: '/admin_panel/api/users/paginated/',
+        CREAR: '/admin_panel/api/users/create/',
+        POR_ID: (id) => `/admin_panel/api/users/${id}/`,
+        ACTUALIZAR: (id) => `/admin_panel/api/users/${id}/`,
+        ELIMINAR: (id) => `/admin_panel/api/users/${id}/delete/`,
+        ROLES: '/admin_panel/api/roles/'
     }
 };

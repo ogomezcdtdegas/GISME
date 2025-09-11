@@ -1,155 +1,146 @@
-// _AppAdmin/js/ui.js - Manipulación de interfaz y filtros
-class AdminUI {
-    constructor() {
-        this.searchInput = null;
-        this.roleFilter = null;
-        this.userRows = [];
-        this.modals = {};
-    }
+// _AppAdmin/js/ui.js - Funciones de interfaz de usuario para Admin Users (sin módulos ES6)
 
-    // Inicializar elementos de UI
-    init() {
-        this.searchInput = document.getElementById('searchInput');
-        this.roleFilter = document.getElementById('roleFilter');
-        this.userRows = document.querySelectorAll('.user-row');
+// AdminUI - Funciones de interfaz
+window.AdminUI = {
+    // Configuración de paginación
+    pagination: {
+        currentPage: 1,
+        perPage: 10,
         
-        // Inicializar modales
-        this.modals = {
-            create: document.getElementById('createUserModal'),
-            edit: document.getElementById('editUserModal'),
-            delete: document.getElementById('deleteModal'),
-            accessDenied: document.getElementById('accessDeniedModal')
-        };
-    }
+        // Actualizar controles de paginación
+        update(response) {
+            const paginationEl = document.querySelector('.pagination');
+            if (!paginationEl) return;
 
-    // Filtrar usuarios en tiempo real
-    filterUsers() {
-        if (!this.searchInput || !this.roleFilter) return;
+            paginationEl.innerHTML = '';
 
-        const searchTerm = this.searchInput.value.toLowerCase();
-        const selectedRole = this.roleFilter.value;
+            if (response.total_pages <= 1) {
+                return; // No mostrar paginación si solo hay una página
+            }
 
-        this.userRows.forEach(row => {
-            const email = row.dataset.email || '';
-            const name = row.dataset.name || '';
-            const role = row.dataset.role || '';
+            // Botón Previous
+            const prevLi = document.createElement('li');
+            prevLi.className = `page-item ${!response.has_previous ? 'disabled' : ''}`;
+            if (response.has_previous) {
+                prevLi.innerHTML = `<a class="page-link" href="#" data-page="${response.previous_page_number}">Anterior</a>`;
+            } else {
+                prevLi.innerHTML = `<span class="page-link">Anterior</span>`;
+            }
+            paginationEl.appendChild(prevLi);
 
-            const matchesSearch = email.includes(searchTerm) || name.includes(searchTerm);
-            const matchesRole = selectedRole === '' || role === selectedRole;
+            // Información de página actual
+            const currentLi = document.createElement('li');
+            currentLi.className = 'page-item disabled';
+            currentLi.innerHTML = `<span class="page-link">Página ${response.current_page} de ${response.total_pages}</span>`;
+            paginationEl.appendChild(currentLi);
 
-            row.style.display = (matchesSearch && matchesRole) ? '' : 'none';
-        });
-    }
+            // Botón Next
+            const nextLi = document.createElement('li');
+            nextLi.className = `page-item ${!response.has_next ? 'disabled' : ''}`;
+            if (response.has_next) {
+                nextLi.innerHTML = `<a class="page-link" href="#" data-page="${response.next_page_number}">Siguiente</a>`;
+            } else {
+                nextLi.innerHTML = `<span class="page-link">Siguiente</span>`;
+            }
+            paginationEl.appendChild(nextLi);
 
-    // Llenar modal de edición con datos del usuario
-    fillEditModal(userId) {
-        const button = event.target.closest('button');
-        const userRow = button.closest('tr');
-        
-        // Extraer datos de la fila
-        const email = userRow.querySelector('td:nth-child(1) strong').textContent;
-        const fullName = userRow.querySelector('td:nth-child(2)').textContent.trim();
-        const nameParts = fullName.split(' ');
-        const firstName = nameParts[0] || '';
-        const lastName = nameParts.slice(1).join(' ') || '';
-        
-        // Obtener el rol del badge
-        const roleBadge = userRow.querySelector('td:nth-child(3) .badge');
-        let role = 'supervisor';
-        if (roleBadge) {
-            const roleText = roleBadge.textContent.trim();
-            if (roleText === 'AdministradorPrincipal') role = 'admin_principal';
-            else if (roleText === 'Administrador') role = 'admin';
-            else if (roleText === 'Supervisor') role = 'supervisor';
-        }
-        
-        // Llenar el modal de edición
-        document.getElementById('editUserId').value = userId;
-        document.getElementById('editEmail').value = email;
-        document.getElementById('editFirstName').value = firstName;
-        document.getElementById('editLastName').value = lastName;
-        document.getElementById('editRole').value = role;
-    }
-
-    // Preparar modal de eliminación
-    prepareDeleteModal(userId, userEmail) {
-        window.userIdToDelete = userId;
-        document.getElementById('userToDelete').textContent = userEmail;
-    }
-
-    // Limpiar errores de formularios
-    clearFormErrors(form) {
-        const inputs = form.querySelectorAll('input, select');
-        inputs.forEach(input => {
-            input.classList.remove('is-invalid');
-        });
-    }
-
-    // Mostrar errores en formularios
-    showFormErrors(form, errors) {
-        for (const [fieldName, errorList] of Object.entries(errors)) {
-            const input = form.querySelector(`[name="${fieldName}"]`);
-            if (input) {
-                input.classList.add('is-invalid');
-                let feedback = input.nextElementSibling;
-                if (!feedback || !feedback.classList.contains('invalid-feedback')) {
-                    feedback = document.createElement('div');
-                    feedback.className = 'invalid-feedback';
-                    input.parentNode.appendChild(feedback);
+            // Agregar event listeners a los enlaces de paginación
+            paginationEl.addEventListener('click', function(e) {
+                e.preventDefault();
+                const page = e.target.dataset.page;
+                if (page && !e.target.closest('.disabled')) {
+                    window.AdminEvents.goToPage(parseInt(page));
                 }
-                feedback.textContent = errorList[0];
+            });
+        }
+    },
+
+    // Funciones de tabla
+    table: {
+        // Actualizar contenido de la tabla
+        updateUsers(users) {
+            const tbody = document.getElementById('usersTableBody');
+            if (!tbody) return;
+
+            if (!users || users.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="5" class="text-center">
+                            <i class="bi bi-person-x"></i>
+                            No hay usuarios registrados
+                        </td>
+                    </tr>`;
+                return;
             }
+
+            tbody.innerHTML = users.map(user => `
+                <tr>
+                    <td>
+                        <strong>${user.email}</strong>
+                        ${user.first_name && user.last_name ? `<br><small>${user.first_name} ${user.last_name}</small>` : ''}
+                    </td>
+                    <td>
+                        <span class="badge ${this.getRoleBadgeClass(user.role)}">${this.getRoleDisplayName(user.role)}</span>
+                    </td>
+                    <td>
+                        <small>${this.formatDate(user.date_joined)}</small>
+                    </td>
+                    <td>
+                        <span class="badge ${user.is_active ? 'bg-success' : 'bg-secondary'}">
+                            ${user.is_active ? 'Activo' : 'Inactivo'}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="btn btn-primary btn-sm me-1" 
+                                onclick="AdminEvents.openEditModal(${user.id})" 
+                                title="Editar usuario">
+                            <i class="bi bi-pencil-square"></i>
+                        </button>
+                        <button class="btn btn-danger btn-sm" 
+                                onclick="AdminEvents.openDeleteModal(${user.id}, '${user.email}')" 
+                                title="Eliminar usuario">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        },
+
+        // Obtener clase CSS para el badge del rol
+        getRoleBadgeClass(role) {
+            const roleClasses = {
+                'AdministradorPrincipal': 'bg-danger',
+                'Administrador': 'bg-warning',
+                'Supervisor': 'bg-primary',
+                'Usuario': 'bg-info'
+            };
+            return roleClasses[role] || 'bg-secondary';
+        },
+
+        // Obtener nombre de visualización del rol
+        getRoleDisplayName(role) {
+            const roleNames = {
+                'AdministradorPrincipal': 'Administrador Principal',
+                'Administrador': 'Administrador',
+                'Supervisor': 'Supervisor',
+                'Usuario': 'Usuario'
+            };
+            return roleNames[role] || role;
+        },
+
+        // Formatear fecha
+        formatDate(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('es-ES', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
         }
     }
+};
 
-    // Mostrar mensaje de éxito
-    showSuccessMessage(message) {
-        const alertDiv = document.createElement('div');
-        alertDiv.className = 'alert alert-success alert-dismissible fade show';
-        alertDiv.innerHTML = `
-            ${message}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        `;
-        document.querySelector('.container').insertBefore(alertDiv, document.querySelector('.row'));
-        
-        // Auto-remove después de 5 segundos
-        setTimeout(() => {
-            if (alertDiv.parentNode) {
-                alertDiv.remove();
-            }
-        }, 5000);
-    }
-
-    // Mostrar modales
-    showModal(modalType, options = {}) {
-        const modal = this.modals[modalType];
-        if (modal) {
-            if (modalType === 'edit' && options.userId) {
-                this.fillEditModal(options.userId);
-            }
-            if (modalType === 'delete' && options.userId && options.userEmail) {
-                this.prepareDeleteModal(options.userId, options.userEmail);
-            }
-            new bootstrap.Modal(modal).show();
-        }
-    }
-
-    // Cerrar modales
-    hideModal(modalType) {
-        const modal = this.modals[modalType];
-        if (modal) {
-            const bsModal = bootstrap.Modal.getInstance(modal);
-            if (bsModal) {
-                bsModal.hide();
-            }
-        }
-    }
-
-    // Recargar página después de operación exitosa
-    reloadAfterDelay(delay = 1000) {
-        setTimeout(() => location.reload(), delay);
-    }
-}
-
-// Exportar instancia para uso global
-window.AdminUI = new AdminUI();
+console.log('✅ AdminUI cargado');

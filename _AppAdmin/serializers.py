@@ -4,14 +4,20 @@ from django.contrib.auth.models import User
 from .models import UserRole
 
 class UserAdminSerializer(serializers.ModelSerializer):
-    role = serializers.CharField(write_only=True)
+    role = serializers.SerializerMethodField(read_only=True)
     user_role = serializers.SerializerMethodField(read_only=True)
     full_name = serializers.SerializerMethodField(read_only=True)
     
     class Meta:
         model = User
-        fields = ['id', 'email', 'first_name', 'last_name', 'date_joined', 'role', 'user_role', 'full_name']
-        read_only_fields = ['id', 'date_joined', 'user_role', 'full_name']
+        fields = ['id', 'email', 'first_name', 'last_name', 'date_joined', 'is_active', 'role', 'user_role', 'full_name']
+        read_only_fields = ['id', 'date_joined', 'user_role', 'full_name', 'role']
+    
+    def get_role(self, obj):
+        """Obtener rol del usuario"""
+        if hasattr(obj, 'user_role') and obj.user_role:
+            return obj.user_role.role
+        return None
     
     def get_user_role(self, obj):
         """Obtener información del rol del usuario"""
@@ -36,12 +42,20 @@ class UserAdminSerializer(serializers.ModelSerializer):
             if User.objects.filter(email=value).exists():
                 raise serializers.ValidationError('Este correo electrónico ya está registrado.')
         return value
+
+
+class UserAdminCreateSerializer(serializers.ModelSerializer):
+    """Serializer específico para crear usuarios admin"""
+    role = serializers.ChoiceField(choices=UserRole.ROLE_CHOICES, write_only=True)
     
-    def validate_role(self, value):
-        """Validar que el rol sea válido"""
-        valid_roles = [choice[0] for choice in UserRole.ROLE_CHOICES]
-        if value not in valid_roles:
-            raise serializers.ValidationError(f'Rol inválido. Opciones válidas: {valid_roles}')
+    class Meta:
+        model = User
+        fields = ['email', 'first_name', 'last_name', 'role']
+    
+    def validate_email(self, value):
+        """Validar email único"""
+        if User.objects.filter(email=value).exists():
+            raise serializers.ValidationError('Este correo electrónico ya está registrado.')
         return value
     
     def create(self, validated_data):
@@ -64,6 +78,22 @@ class UserAdminSerializer(serializers.ModelSerializer):
         UserRole.objects.create(user=user, role=role)
         
         return user
+
+
+class UserAdminUpdateSerializer(serializers.ModelSerializer):
+    """Serializer específico para actualizar usuarios admin"""
+    role = serializers.ChoiceField(choices=UserRole.ROLE_CHOICES, write_only=True, required=False)
+    
+    class Meta:
+        model = User
+        fields = ['email', 'first_name', 'last_name', 'role']
+    
+    def validate_email(self, value):
+        """Validar email único"""
+        if self.instance:
+            if User.objects.filter(email=value).exclude(pk=self.instance.pk).exists():
+                raise serializers.ValidationError('Este correo electrónico ya está registrado.')
+        return value
     
     def update(self, instance, validated_data):
         """Actualizar usuario y rol"""
