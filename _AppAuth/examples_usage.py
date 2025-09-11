@@ -3,6 +3,8 @@ Ejemplo de cómo usar los mixins y helpers centralizados de _AppAuth
 en cualquier otra app del proyecto
 """
 
+"""
+
 # EJEMPLO 1: Usando el helper get_user_role_context
 from _AppAuth.utils import get_user_role_context
 
@@ -35,6 +37,7 @@ class VistaProtegida(RoleRequiredMixin, TemplateView):
     template_name = 'mi_app/solo_admin.html'
     required_roles = ['admin', 'admin_principal']  # Solo admin pueden acceder
 
+"""
 
 # EJEMPLO 4: En tus templates HTML
 """
