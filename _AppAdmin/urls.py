@@ -11,6 +11,10 @@ from .views.views_AdminUser.Queries.GetAdminUserByIdQuery import GetAdminUserByI
 from .views.views_AdminUser.Queries.GetAdminRolesQuery import GetAdminRolesQuery
 from .views.views_AdminUser.Queries.GetAdminUserPaginatedAPI import AdminUserPaginatedAPI
 
+# Login Log imports
+from .views.views_LoginLog.views_template import LoginLogTemplateView
+from .views.views_LoginLog.Queries.GetLoginLogPaginatedQuery import GetLoginLogPaginatedQuery
+
 app_name = '_AppAdmin'
 
 urlpatterns = [
@@ -32,4 +36,8 @@ urlpatterns = [
     # URLs de compatibilidad con las URLs originales
     path('usuarios/editar/<int:pk>/', UpdateAdminUserCommand.as_view(), name='editar_usuario'),
     path('usuarios/eliminar/', DeleteAdminUserCommand.as_view(), name='eliminar_usuario'),
+    
+    # LoginLog - Template View and API
+    path('loginLog/', LoginLogTemplateView.as_view(), name='login_log_template'),
+    path('api/loginLog/paginated/', GetLoginLogPaginatedQuery.as_view(), name='api_login_log_paginated'),
 ]

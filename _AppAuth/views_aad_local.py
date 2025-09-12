@@ -5,6 +5,16 @@ from django.shortcuts import redirect, render
 from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpResponse
 from .msal_client import auth_url, acquire_token_by_auth_code
+from .models import UserLoginLog
+
+def _get_client_ip(request):
+    """Obtener la IP del cliente considerando proxies"""
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0].strip()
+    else:
+        ip = request.META.get('REMOTE_ADDR', 'Unknown')
+    return ip
 
 def _to_client_principal(id_token_claims: dict) -> dict:
     claims = []
@@ -44,6 +54,19 @@ def aad_callback(request):
     if user:
         # Usuario existe en la BD, proceder con login
         dj_login(request, user, backend="django.contrib.auth.backends.ModelBackend")
+        
+        # Registrar el login exitoso
+        try:
+            ip_address = _get_client_ip(request)
+            UserLoginLog.objects.create(
+                user=user,
+                email=email,
+                ip_address=ip_address
+            )
+        except Exception as e:
+            # No fallar el login si hay error guardando el log
+            print(f"Error guardando log de login: {e}")
+        
         return redirect("/")
     else:
         # Usuario no está registrado en la plataforma

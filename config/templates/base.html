@@ -41,13 +41,7 @@
         <a href="#" id="toggleAdministracion" data-bs-toggle="collapse" data-bs-target="#administracionSubmenu" aria-expanded="{% if active_section == 'admin' %}true{% else %}false{% endif %}" aria-controls="administracionSubmenu"><i class="bi bi-gear"></i> Administración <i class="bi bi-chevron-down float-end"></i></a>
         <div class="submenu collapse {% if active_section == 'admin' %}show{% endif %}" id="administracionSubmenu">
             <a href="{% url '_AppAdmin:crear_usuario' %}" class="{% if active_section == 'admin' %}active{% endif %}"><i class="bi bi-person-plus"></i>Gestión de Usuario</a>
-        </div>
-
-        <div class="submenu collapse {% if active_section == 'admin' %}show{% endif %}" id="administracionSubmenu">
-            <a href="#" class="{% if active_section == 'admin' %}active{% endif %}"><i class="bi bi-door-open"></i>Registro Login de Usuarios</a>
-        </div>
-
-        <div class="submenu collapse {% if active_section == 'admin' %}show{% endif %}" id="administracionSubmenu">
+            <a href="{% url '_AppAdmin:login_log_template' %}" class="{% if active_section == 'admin' %}active{% endif %}"><i class="bi bi-door-open"></i>Registro Login de Usuarios</a>
             <a href="#" class="{% if active_section == 'admin' %}active{% endif %}"><i class="bi bi-activity"></i>Transacciones/Actividades</a>
         </div>
         {% endif %}

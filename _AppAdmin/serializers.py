@@ -2,6 +2,15 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from .models import UserRole
+from _AppAuth.models import UserLoginLog
+
+class UserLoginLogSerializer(serializers.ModelSerializer):
+    """Serializer para los logs de login de usuarios"""
+    
+    class Meta:
+        model = UserLoginLog
+        fields = ['email', 'login_datetime', 'ip_address']
+        read_only_fields = ['email', 'login_datetime', 'ip_address']
 
 class UserAdminSerializer(serializers.ModelSerializer):
     role = serializers.SerializerMethodField(read_only=True)
