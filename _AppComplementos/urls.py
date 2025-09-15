@@ -40,9 +40,7 @@ from .views.views_Tecnologia.views_template import TecnologiaPaginatedHTML
 
 '''.....................................................................................................................................'''
 # Ubicación
-from .views.views_Ubicacion.Commands.CreateUbicacionCommand import CreateUbicacionView
-from .views.views_Ubicacion.Commands.UpdateUbicacionCommand import UpdateUbicacionView
-from .views.views_Ubicacion.Commands.DeleteUbicacionCommand import DeleteUbicacionView
+from .views.views_Ubicacion.views_with_logging import CreateUbicacionWithLogging, UpdateUbicacionWithLogging, DeleteUbicacionWithLogging
 from .views.views_Ubicacion.Queries.GetAllUbicacionPagQuery import UbicacionListPagView
 from .views.views_Ubicacion.Queries.GetAllUbicacionListQuery import UbicacionListAllView
 from .views.views_Ubicacion.Queries.GetUbicacionByIdQuery import GetUbicacionByIdView
@@ -50,11 +48,10 @@ from .views.views_Ubicacion.views_template import UbicacionListPagHTML
 #---------------------------------------------------------------------------------------
 
 '''.....................................................................................................................................'''
-# Sistema
-from .views.views_Sistema import CrearSistemaCommandView, EditarSistemaCommandView, EliminarSistemaCommandView, ListarSistemasQueryView, ListarTodosSistemasQueryView, SistemaBaseView, SistemasIndexView, ObtenerSistemaQueryView
-#---------------------------------------------------------------------------------------
-
-# Grouped URL patterns by resource
+# Sistema  
+from .views.views_Sistema.views_with_logging import CreateSistemaWithLogging, UpdateSistemaWithLogging, DeleteSistemaWithLogging
+from .views.views_Sistema import ListarSistemasQueryView, ListarTodosSistemasQueryView, SistemaBaseView, SistemasIndexView, ObtenerSistemaQueryView
+#---------------------------------------------------------------------------------------# Grouped URL patterns by resource
 criticidad_urls = [
     path('', CriticidadPaginatedHTML.as_view(), name='allCriticidadesPag'),
     path('criticidad/', CriticidadPaginatedHTML.as_view(), name='criticidad_paginated_html'),
@@ -113,10 +110,10 @@ ubicacion_urls = [
     path('ubicaciones/', UbicacionListPagHTML.as_view(), name='ubicacion_paginated_html'),
     path('ubicaciones-list-pag/', UbicacionListPagView.as_view(), name='ubicacion_paginated_api'),
     path('listar-todo-ubicaciones/', UbicacionListAllView.as_view(), name='listarTodoUbicaciones'),
-    path('crear-ubicacion/', CreateUbicacionView.as_view(), name='crearUbicacion'),
+    path('crear-ubicacion/', CreateUbicacionWithLogging.as_view(), name='crearUbicacion'),
     path('ubicacion/<uuid:obj_id>/', GetUbicacionByIdView.as_view(), name='obtenerUbicacion'),
-    path('editar-ubicacion/<uuid:obj_id>/', UpdateUbicacionView.as_view(), name='editarUbicacion'),
-    path('eliminar-ubicacion/<uuid:obj_id>/', DeleteUbicacionView.as_view(), name='eliminarUbicacion'),
+    path('editar-ubicacion/<uuid:obj_id>/', UpdateUbicacionWithLogging.as_view(), name='editarUbicacion'),
+    path('eliminar-ubicacion/<uuid:obj_id>/', DeleteUbicacionWithLogging.as_view(), name='eliminarUbicacion'),
 ]
 
 sistema_urls = [
@@ -124,9 +121,9 @@ sistema_urls = [
     path('listar-sistemas-pag/', ListarSistemasQueryView.as_view(), name='listarSistemasPag'),
     path('listar-todo-sistemas/', ListarTodosSistemasQueryView.as_view(), name='listarTodoSistemas'),
     path('sistema/<uuid:sistema_id>/', ObtenerSistemaQueryView.as_view(), name='obtenerSistema'),
-    path('crear-sistema/', CrearSistemaCommandView.as_view(), name='crearSistema'),
-    path('editar-sistema/<uuid:sistema_id>/', EditarSistemaCommandView.as_view(), name='editarSistema'),
-    path('eliminar-sistema/<uuid:sistema_id>/', EliminarSistemaCommandView.as_view(), name='eliminarSistema'),
+    path('crear-sistema/', CreateSistemaWithLogging.as_view(), name='crearSistema'),
+    path('editar-sistema/<uuid:sistema_id>/', UpdateSistemaWithLogging.as_view(), name='editarSistema'),
+    path('eliminar-sistema/<uuid:sistema_id>/', DeleteSistemaWithLogging.as_view(), name='eliminarSistema'),
     path('debug-sistema/<uuid:pk>/', SistemaBaseView.as_view(), name='debugSistema'),
 ]
 

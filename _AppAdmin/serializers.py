@@ -1,7 +1,7 @@
 # Serializer para User con UserRole
 from rest_framework import serializers
 from django.contrib.auth.models import User
-from .models import UserRole
+from .models import UserRole, UserActionLog
 from _AppAuth.models import UserLoginLog
 
 class UserLoginLogSerializer(serializers.ModelSerializer):
@@ -130,3 +130,43 @@ class UserAdminUpdateSerializer(serializers.ModelSerializer):
             user_role.save()
         
         return instance
+
+
+class UserActionLogSerializer(serializers.ModelSerializer):
+    """Serializer para los logs de acciones de usuarios"""
+    usuario = serializers.SerializerMethodField(read_only=True)
+    accion_display = serializers.SerializerMethodField(read_only=True)
+    tipo_display = serializers.SerializerMethodField(read_only=True)
+    fecha_formateada = serializers.SerializerMethodField(read_only=True)
+    
+    class Meta:
+        model = UserActionLog
+        fields = [
+            'id', 'usuario', 'email', 'action', 'accion_display', 
+            'action_datetime', 'fecha_formateada', 'affected_type', 
+            'tipo_display', 'affected_value', 'affected_id', 'ip_address'
+        ]
+        read_only_fields = [
+            'id', 'usuario', 'email', 'action', 'accion_display',
+            'action_datetime', 'fecha_formateada', 'affected_type',
+            'tipo_display', 'affected_value', 'affected_id', 'ip_address'
+        ]
+    
+    def get_usuario(self, obj):
+        """Obtener información del usuario que realizó la acción"""
+        if obj.user:
+            full_name = f"{obj.user.first_name} {obj.user.last_name}".strip()
+            return full_name if full_name else obj.user.email
+        return obj.email
+    
+    def get_accion_display(self, obj):
+        """Obtener el display de la acción"""
+        return obj.get_action_display()
+    
+    def get_tipo_display(self, obj):
+        """Obtener el display del tipo afectado"""
+        return obj.get_affected_type_display()
+    
+    def get_fecha_formateada(self, obj):
+        """Obtener fecha formateada"""
+        return obj.action_datetime.strftime('%Y-%m-%d %H:%M:%S')

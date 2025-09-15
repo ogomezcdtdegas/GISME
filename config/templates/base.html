@@ -42,7 +42,7 @@
         <div class="submenu collapse {% if active_section == 'admin' %}show{% endif %}" id="administracionSubmenu">
             <a href="{% url '_AppAdmin:crear_usuario' %}" class="{% if active_section == 'admin' %}active{% endif %}"><i class="bi bi-person-plus"></i>Gestión de Usuario</a>
             <a href="{% url '_AppAdmin:login_log_template' %}" class="{% if active_section == 'admin' %}active{% endif %}"><i class="bi bi-door-open"></i>Registro Login de Usuarios</a>
-            <a href="#" class="{% if active_section == 'admin' %}active{% endif %}"><i class="bi bi-activity"></i>Transacciones/Actividades</a>
+            <a href="{% url '_AppAdmin:action_log_template' %}" class="{% if active_section == 'admin_actionlog' %}active{% endif %}"><i class="bi bi-clipboard-check"></i>Transacciones/Actividades</a>
         </div>
         {% endif %}
         

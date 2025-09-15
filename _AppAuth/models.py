@@ -1,9 +1,10 @@
 from django.db import models
 from django.contrib.auth import get_user_model
+from _AppCommon.models import BaseModel
 
 User = get_user_model()
 
-class UserLoginLog(models.Model):
+class UserLoginLog(BaseModel):
     """
     Modelo para registrar los logs de login de usuarios
     Almacena información básica de cada inicio de sesión exitoso

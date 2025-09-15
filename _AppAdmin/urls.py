@@ -15,6 +15,10 @@ from .views.views_AdminUser.Queries.GetAdminUserPaginatedAPI import AdminUserPag
 from .views.views_LoginLog.views_template import LoginLogTemplateView
 from .views.views_LoginLog.Queries.GetLoginLogPaginatedQuery import GetLoginLogPaginatedQuery
 
+# Action Log imports
+from .views.views_ActionLog.views_template import ActionLogTemplateView
+from .views.views_ActionLog.Queries.GetActionLogPaginatedQuery import GetActionLogPaginatedQuery
+
 app_name = '_AppAdmin'
 
 urlpatterns = [
@@ -40,4 +44,8 @@ urlpatterns = [
     # LoginLog - Template View and API
     path('loginLog/', LoginLogTemplateView.as_view(), name='login_log_template'),
     path('api/loginLog/paginated/', GetLoginLogPaginatedQuery.as_view(), name='api_login_log_paginated'),
+    
+    # ActionLog - Template View and API
+    path('actionLog/', ActionLogTemplateView.as_view(), name='action_log_template'),
+    path('api/actionLog/paginated/', GetActionLogPaginatedQuery.as_view(), name='api_action_log_paginated'),
 ]
