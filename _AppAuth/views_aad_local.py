@@ -11,7 +11,8 @@ def _get_client_ip(request):
     """Obtener la IP del cliente considerando proxies"""
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
     if x_forwarded_for:
-        ip = x_forwarded_for.split(',')[0].strip()
+        ip = (x_forwarded_for.split(',')[0].strip()).split(':')[0]
+        print(ip)
     else:
         ip = request.META.get('REMOTE_ADDR', 'Unknown')
     return ip
