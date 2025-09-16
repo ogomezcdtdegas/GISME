@@ -1,1 +1,0 @@
-from .CalcularVelocidadSonidoGasQuery import CalcularVelocidadSonidoGasQuery

@@ -1,4 +1,0 @@
-from .CreateTipoCriticidadCommand import CreateTipoCriticidadCommand
-from .UpdateTipoCriticidadCommand import UpdateTipoCriticidadCommand
-from .DeleteTipoCriticidadCommand import DeleteTipoCriticidadCommand
-from .DeleteTipoCriticidadRelacionCommand import DeleteTipoCriticidadRelacionCommand

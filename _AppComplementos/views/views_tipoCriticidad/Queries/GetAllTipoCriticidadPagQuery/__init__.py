@@ -1,2 +1,0 @@
-from .GetAllTipoCriticidadPagQuery import TipoCriticidadPaginatedAPI
-from ...views_template import TipoCriticidadPaginatedHTML

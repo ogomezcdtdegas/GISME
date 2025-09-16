@@ -1,3 +1,0 @@
-from .CreateTecnologiaCommand.CreateTecnologiaCommand import crearTecnologia
-from .UpdateTecnologiaCommand.UpdateTecnologiaCommand import EditarTecnologiaView
-from .DeleteTecnologiaCommand.DeleteTecnologiaCommand import DeleteTecnologiaCommand

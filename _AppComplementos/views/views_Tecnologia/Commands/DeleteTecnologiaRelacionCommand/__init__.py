@@ -1,1 +1,0 @@
-from .DeleteTecnologiaRelacionCommand import DeleteTecnologiaRelacionCommand

@@ -1,2 +1,0 @@
-from .GetAllCriticidadPagQuery import CriticidadPaginatedAPI
-from ...views_template import CriticidadPaginatedHTML

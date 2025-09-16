@@ -1,3 +1,0 @@
-from .CreateTipoEquipoCommand import crearTipoEquipo
-from .UpdateTipoEquipoCommand import EditarTipoEquipoView
-from .DeleteTipoEquipoCommand import DeleteTipoEquipoCommand, DeleteTipoEquipoRelacionCommand
