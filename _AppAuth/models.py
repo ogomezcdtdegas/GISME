@@ -1,14 +1,17 @@
 from django.db import models
 from django.contrib.auth import get_user_model
-from _AppCommon.models import BaseModel
+from django.utils import timezone
 
 User = get_user_model()
 
-class UserLoginLog(BaseModel):
+class UserLoginLog(models.Model):
     """
     Modelo para registrar los logs de login de usuarios
     Almacena información básica de cada inicio de sesión exitoso
     """
+    # Campos propios en lugar de heredar de BaseModel
+    created_at = models.DateTimeField(default=timezone.now, help_text="Fecha y hora de creación")
+    
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='login_logs')
     email = models.EmailField(help_text="Email del usuario que hizo login")
     login_datetime = models.DateTimeField(auto_now_add=True, help_text="Fecha y hora del login")
