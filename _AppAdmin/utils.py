@@ -16,8 +16,16 @@ def log_user_action(user, action, affected_type, affected_value, affected_id, ip
         affected_id: ID del registro afectado
         ip_address: Dirección IP del usuario (opcional)
     """
+    print(f"DEBUG LOG_USER_ACTION: Llamada con parametros:")
+    print(f"  user: {user}")
+    print(f"  action: {action}")
+    print(f"  affected_type: {affected_type}")
+    print(f"  affected_value: {affected_value}")
+    print(f"  affected_id: {affected_id}")
+    print(f"  ip_address: {ip_address}")
+    
     try:
-        UserActionLog.objects.create(
+        log_entry = UserActionLog.objects.create(
             user=user,
             email=user.email if user else '',
             action=action,
@@ -26,9 +34,12 @@ def log_user_action(user, action, affected_type, affected_value, affected_id, ip
             affected_id=affected_id,
             ip_address=ip_address or ''
         )
+        print(f"DEBUG LOG_USER_ACTION: Log creado exitosamente con ID: {log_entry.id}")
     except Exception as e:
         # En caso de error, solo registrar en logs pero no interrumpir el flujo
         print(f"Error al registrar acción del usuario: {e}")
+        import traceback
+        traceback.print_exc()
 
 
 def get_client_ip(request):

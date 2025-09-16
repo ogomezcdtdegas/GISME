@@ -53,29 +53,40 @@ class UpdateUbicacionWithLogging(UpdateUbicacionView):
     
     def put(self, request, *args, **kwargs):
         # Obtener datos antes de la actualización para el logging
+        print(f"DEBUG PUT: kwargs = {kwargs}")
         try:
-            ubicacion_id = kwargs.get('pk')
-            ubicacion = self.get_object()
-            ubicacion_nombre = getattr(ubicacion, 'nombre', getattr(ubicacion, 'name', 'Sin nombre'))
-        except Exception:
+            ubicacion_id = kwargs.get('pk') or kwargs.get('obj_id')
+            print(f"DEBUG PUT: ubicacion_id = {ubicacion_id}")
+            # Obtener el objeto directamente de la base de datos
+            from ...models import Ubicacion
+            ubicacion = Ubicacion.objects.get(id=ubicacion_id)
+            ubicacion_nombre = getattr(ubicacion, 'nombre', 'Sin nombre')
+            print(f"DEBUG PUT: ubicacion_nombre = {ubicacion_nombre}")
+        except Exception as e:
+            print(f"DEBUG PUT: Error obteniendo ubicación: {e}")
             ubicacion_id = None
             ubicacion_nombre = 'Desconocido'
         
         # Llamar al método padre para actualizar
         response = super().put(request, *args, **kwargs)
+        print(f"DEBUG PUT: response.status_code = {response.status_code}")
         
         # Si la actualización fue exitosa, registrar la acción
         if response.status_code == status.HTTP_200_OK and ubicacion_id:
             try:
+                print(f"DEBUG PUT: Registrando acción de editar ubicación")
+                # Obtener el objeto actualizado para el nombre correcto
+                ubicacion_actualizada = Ubicacion.objects.get(id=ubicacion_id)
                 # Registrar la acción
                 log_user_action(
                     user=request.user,
                     action='editar',
                     affected_type='ubicacion',
-                    affected_value=ubicacion_nombre,
+                    affected_value=ubicacion_actualizada.nombre,
                     affected_id=ubicacion_id,
                     ip_address=get_client_ip(request)
                 )
+                print(f"DEBUG PUT: Acción registrada exitosamente")
             except Exception as e:
                 print(f"Error al registrar acción de editar ubicación: {e}")
         
@@ -83,26 +94,37 @@ class UpdateUbicacionWithLogging(UpdateUbicacionView):
     
     def patch(self, request, *args, **kwargs):
         # Similar lógica para PATCH
+        print(f"DEBUG PATCH: kwargs = {kwargs}")
         try:
-            ubicacion_id = kwargs.get('pk')
-            ubicacion = self.get_object()
-            ubicacion_nombre = getattr(ubicacion, 'nombre', getattr(ubicacion, 'name', 'Sin nombre'))
-        except Exception:
+            ubicacion_id = kwargs.get('pk') or kwargs.get('obj_id')
+            print(f"DEBUG PATCH: ubicacion_id = {ubicacion_id}")
+            # Obtener el objeto directamente de la base de datos
+            from ...models import Ubicacion
+            ubicacion = Ubicacion.objects.get(id=ubicacion_id)
+            ubicacion_nombre = getattr(ubicacion, 'nombre', 'Sin nombre')
+            print(f"DEBUG PATCH: ubicacion_nombre = {ubicacion_nombre}")
+        except Exception as e:
+            print(f"DEBUG PATCH: Error obteniendo ubicación: {e}")
             ubicacion_id = None
             ubicacion_nombre = 'Desconocido'
         
         response = super().patch(request, *args, **kwargs)
+        print(f"DEBUG PATCH: response.status_code = {response.status_code}")
         
         if response.status_code == status.HTTP_200_OK and ubicacion_id:
             try:
+                print(f"DEBUG PATCH: Registrando acción de editar ubicación")
+                # Obtener el objeto actualizado para el nombre correcto
+                ubicacion_actualizada = Ubicacion.objects.get(id=ubicacion_id)
                 log_user_action(
                     user=request.user,
                     action='editar',
                     affected_type='ubicacion',
-                    affected_value=ubicacion_nombre,
+                    affected_value=ubicacion_actualizada.nombre,
                     affected_id=ubicacion_id,
                     ip_address=get_client_ip(request)
                 )
+                print(f"DEBUG PATCH: Acción registrada exitosamente")
             except Exception as e:
                 print(f"Error al registrar acción de editar ubicación: {e}")
         
