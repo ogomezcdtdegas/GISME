@@ -5,6 +5,11 @@ from django.urls import path
 from .views.views_AdminUser.views_template import AdminUserPaginatedHTML
 # Importar las nuevas vistas con logging
 from .views.views_AdminUser.views_with_logging import CreateAdminUserWithLogging, UpdateAdminUserWithLogging, DeleteAdminUserWithLogging
+
+# Debugging: verificar que la vista correcta se está importando
+print(f"🔧 DEBUGGING URLS:")
+print(f"   - CreateAdminUserWithLogging: {CreateAdminUserWithLogging}")
+print(f"   - MRO: {[cls.__name__ for cls in CreateAdminUserWithLogging.__mro__]}")
 from .views.views_AdminUser.Queries.GetAdminUserListQuery import GetAdminUserListQuery
 from .views.views_AdminUser.Queries.GetAdminUserByIdQuery import GetAdminUserByIdQuery
 from .views.views_AdminUser.Queries.GetAdminRolesQuery import GetAdminRolesQuery

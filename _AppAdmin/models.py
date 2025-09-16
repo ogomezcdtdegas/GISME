@@ -45,6 +45,7 @@ class UserActionLog(models.Model):
     AFFECTED_TYPES = [
         ('ubicacion', 'Ubicación'),
         ('sistema', 'Sistema'),
+        ('usuario', 'Usuario'),  # Agregar usuario
     ]
     
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='action_logs')
@@ -53,7 +54,7 @@ class UserActionLog(models.Model):
     action_datetime = models.DateTimeField(auto_now_add=True, help_text="Fecha y hora de la acción")
     affected_type = models.CharField(max_length=20, choices=AFFECTED_TYPES, help_text="Tipo de registro afectado")
     affected_value = models.CharField(max_length=255, help_text="Valor del registro afectado")
-    affected_id = models.UUIDField(help_text="ID del registro afectado")
+    affected_id = models.CharField(max_length=255, help_text="ID del registro afectado")
     ip_address = models.CharField(max_length=45, help_text="Dirección IP del usuario")
 
     class Meta:

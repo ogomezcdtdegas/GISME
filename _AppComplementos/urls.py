@@ -12,7 +12,7 @@ from .views.views_Ubicacion.views_template import UbicacionListPagHTML
 
 '''.....................................................................................................................................'''
 # Sistema  
-from .views.views_Sistema.views_with_logging import CreateSistemaWithLogging, UpdateSistemaWithLogging, DeleteSistemaWithLogging
+from .views.views_Sistema.views_logging_universal import CreateSistemaWithLogging, UpdateSistemaWithLogging, DeleteSistemaWithLogging
 from .views.views_Sistema import ListarSistemasQueryView, ListarTodosSistemasQueryView, SistemaBaseView, SistemasIndexView, ObtenerSistemaQueryView
 #---------------------------------------------------------------------------------------# Grouped URL patterns by resource
 
