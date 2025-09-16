@@ -1,6 +1,7 @@
 # Mixins para permisos de administración
 from rest_framework.response import Response
 from rest_framework import status
+from .utils import log_user_action, get_client_ip
 
 class AdminPermissionMixin:
     """Mixin para verificar permisos de administración de usuarios"""
@@ -72,3 +73,63 @@ class AdminPermissionMixin:
             return error_response
         
         return super().dispatch(request, *args, **kwargs)
+
+
+class ActionLogMixin:
+    """
+    Mixin reutilizable para registrar acciones de usuario en el log de auditoría.
+    
+    Úsalo en cualquier vista que necesite logging de acciones:
+    - Hereda de este mixin
+    - Llama a self.log_action(...) con los datos relevantes
+    
+    Ejemplo de uso:
+        class MiVistaConLogging(ActionLogMixin, MiVistaBase):
+            def post(self, request, *args, **kwargs):
+                response = super().post(request, *args, **kwargs)
+                if response.status_code == 201:
+                    self.log_action(
+                        request=request,
+                        action='crear',
+                        affected_type='mi_tipo',
+                        affected_value='valor_relevante',
+                        affected_id=objeto_id
+                    )
+                return response
+    """
+    
+    def log_action(self, request, action, affected_type, affected_value, affected_id):
+        """
+        Registrar una acción en el log de auditoría.
+        
+        Args:
+            request: HttpRequest - Request de Django/DRF
+            action: str - Acción realizada ('crear', 'editar', 'inactivar', 'activar')
+            affected_type: str - Tipo de registro afectado ('ubicacion', 'sistema', 'usuario', etc.)
+            affected_value: str - Valor representativo del registro (nombre, email, tag, etc.)
+            affected_id: int/str - ID del registro afectado
+        """
+        try:
+            log_user_action(
+                user=request.user,
+                action=action,
+                affected_type=affected_type,
+                affected_value=str(affected_value),
+                affected_id=affected_id,
+                ip_address=get_client_ip(request)
+            )
+        except Exception as e:
+            # No interrumpir el flujo principal si hay error en el logging
+            print(f"Error en ActionLogMixin.log_action: {e}")
+    
+    def log_create_action(self, request, affected_type, affected_value, affected_id):
+        """Helper para registrar acciones de creación"""
+        self.log_action(request, 'crear', affected_type, affected_value, affected_id)
+    
+    def log_update_action(self, request, affected_type, affected_value, affected_id):
+        """Helper para registrar acciones de edición"""
+        self.log_action(request, 'editar', affected_type, affected_value, affected_id)
+    
+    def log_delete_action(self, request, affected_type, affected_value, affected_id):
+        """Helper para registrar acciones de eliminación/inactivación"""
+        self.log_action(request, 'inactivar', affected_type, affected_value, affected_id)

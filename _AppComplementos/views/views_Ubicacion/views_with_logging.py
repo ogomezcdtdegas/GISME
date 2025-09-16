@@ -4,13 +4,13 @@ Vistas extendidas para Ubicación con logging de acciones
 from django.http import JsonResponse
 from rest_framework import status
 from rest_framework.response import Response
-from _AppAdmin.utils import log_user_action, get_client_ip
+from _AppAdmin.mixins import ActionLogMixin
 from .Commands.CreateUbicacionCommand.CreateUbicacionCommand import CreateUbicacionView
 from .Commands.UpdateUbicacionCommand.UpdateUbicacionCommand import UpdateUbicacionView
 from .Commands.DeleteUbicacionCommand.DeleteUbicacionCommand import DeleteUbicacionView
 
 
-class CreateUbicacionWithLogging(CreateUbicacionView):
+class CreateUbicacionWithLogging(ActionLogMixin, CreateUbicacionView):
     """
     Vista de creación de ubicación con logging de acciones
     """
@@ -29,16 +29,13 @@ class CreateUbicacionWithLogging(CreateUbicacionView):
                     # Obtener el objeto recién creado de la base de datos para tener todos los datos
                     from ...models import Ubicacion
                     ubicacion = Ubicacion.objects.get(id=ubicacion_id)
-                    ubicacion_nombre = ubicacion.nombre
                     
-                    # Registrar la acción
-                    log_user_action(
-                        user=request.user,
-                        action='crear',
+                    # Registrar la acción usando el mixin
+                    self.log_create_action(
+                        request=request,
                         affected_type='ubicacion',
-                        affected_value=ubicacion_nombre,
-                        affected_id=ubicacion_id,
-                        ip_address=get_client_ip(request)
+                        affected_value=ubicacion.nombre,
+                        affected_id=ubicacion_id
                     )
             except Exception as e:
                 print(f"Error al registrar acción de crear ubicación: {e}")
@@ -46,47 +43,32 @@ class CreateUbicacionWithLogging(CreateUbicacionView):
         return response
 
 
-class UpdateUbicacionWithLogging(UpdateUbicacionView):
+class UpdateUbicacionWithLogging(ActionLogMixin, UpdateUbicacionView):
     """
     Vista de actualización de ubicación con logging de acciones
     """
     
     def put(self, request, *args, **kwargs):
-        # Obtener datos antes de la actualización para el logging
-        print(f"DEBUG PUT: kwargs = {kwargs}")
-        try:
-            ubicacion_id = kwargs.get('pk') or kwargs.get('obj_id')
-            print(f"DEBUG PUT: ubicacion_id = {ubicacion_id}")
-            # Obtener el objeto directamente de la base de datos
-            from ...models import Ubicacion
-            ubicacion = Ubicacion.objects.get(id=ubicacion_id)
-            ubicacion_nombre = getattr(ubicacion, 'nombre', 'Sin nombre')
-            print(f"DEBUG PUT: ubicacion_nombre = {ubicacion_nombre}")
-        except Exception as e:
-            print(f"DEBUG PUT: Error obteniendo ubicación: {e}")
-            ubicacion_id = None
-            ubicacion_nombre = 'Desconocido'
+        # Obtener ID de la ubicación
+        ubicacion_id = kwargs.get('pk') or kwargs.get('obj_id')
         
         # Llamar al método padre para actualizar
         response = super().put(request, *args, **kwargs)
-        print(f"DEBUG PUT: response.status_code = {response.status_code}")
         
         # Si la actualización fue exitosa, registrar la acción
         if response.status_code == status.HTTP_200_OK and ubicacion_id:
             try:
-                print(f"DEBUG PUT: Registrando acción de editar ubicación")
                 # Obtener el objeto actualizado para el nombre correcto
+                from ...models import Ubicacion
                 ubicacion_actualizada = Ubicacion.objects.get(id=ubicacion_id)
-                # Registrar la acción
-                log_user_action(
-                    user=request.user,
-                    action='editar',
+                
+                # Registrar la acción usando el mixin
+                self.log_update_action(
+                    request=request,
                     affected_type='ubicacion',
                     affected_value=ubicacion_actualizada.nombre,
-                    affected_id=ubicacion_id,
-                    ip_address=get_client_ip(request)
+                    affected_id=ubicacion_id
                 )
-                print(f"DEBUG PUT: Acción registrada exitosamente")
             except Exception as e:
                 print(f"Error al registrar acción de editar ubicación: {e}")
         
@@ -94,44 +76,30 @@ class UpdateUbicacionWithLogging(UpdateUbicacionView):
     
     def patch(self, request, *args, **kwargs):
         # Similar lógica para PATCH
-        print(f"DEBUG PATCH: kwargs = {kwargs}")
-        try:
-            ubicacion_id = kwargs.get('pk') or kwargs.get('obj_id')
-            print(f"DEBUG PATCH: ubicacion_id = {ubicacion_id}")
-            # Obtener el objeto directamente de la base de datos
-            from ...models import Ubicacion
-            ubicacion = Ubicacion.objects.get(id=ubicacion_id)
-            ubicacion_nombre = getattr(ubicacion, 'nombre', 'Sin nombre')
-            print(f"DEBUG PATCH: ubicacion_nombre = {ubicacion_nombre}")
-        except Exception as e:
-            print(f"DEBUG PATCH: Error obteniendo ubicación: {e}")
-            ubicacion_id = None
-            ubicacion_nombre = 'Desconocido'
+        ubicacion_id = kwargs.get('pk') or kwargs.get('obj_id')
         
         response = super().patch(request, *args, **kwargs)
-        print(f"DEBUG PATCH: response.status_code = {response.status_code}")
         
         if response.status_code == status.HTTP_200_OK and ubicacion_id:
             try:
-                print(f"DEBUG PATCH: Registrando acción de editar ubicación")
                 # Obtener el objeto actualizado para el nombre correcto
+                from ...models import Ubicacion
                 ubicacion_actualizada = Ubicacion.objects.get(id=ubicacion_id)
-                log_user_action(
-                    user=request.user,
-                    action='editar',
+                
+                # Registrar la acción usando el mixin
+                self.log_update_action(
+                    request=request,
                     affected_type='ubicacion',
                     affected_value=ubicacion_actualizada.nombre,
-                    affected_id=ubicacion_id,
-                    ip_address=get_client_ip(request)
+                    affected_id=ubicacion_id
                 )
-                print(f"DEBUG PATCH: Acción registrada exitosamente")
             except Exception as e:
                 print(f"Error al registrar acción de editar ubicación: {e}")
         
         return response
 
 
-class DeleteUbicacionWithLogging(DeleteUbicacionView):
+class DeleteUbicacionWithLogging(ActionLogMixin, DeleteUbicacionView):
     """
     Vista de eliminación de ubicación con logging de acciones
     """
@@ -151,14 +119,12 @@ class DeleteUbicacionWithLogging(DeleteUbicacionView):
         # Si la eliminación fue exitosa, registrar la acción
         if isinstance(response, Response) and response.status_code == status.HTTP_200_OK:
             try:
-                # Registrar la acción como "inactivar" ya que es una eliminación
-                log_user_action(
-                    user=request.user,
-                    action='inactivar',
+                # Registrar la acción usando el mixin
+                self.log_delete_action(
+                    request=request,
                     affected_type='ubicacion',
                     affected_value=ubicacion_nombre,
-                    affected_id=ubicacion_id,
-                    ip_address=get_client_ip(request)
+                    affected_id=ubicacion_id
                 )
             except Exception as e:
                 print(f"Error al registrar acción de inactivar ubicación: {e}")
