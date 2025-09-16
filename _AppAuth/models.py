@@ -1,17 +1,14 @@
 from django.db import models
 from django.contrib.auth import get_user_model
-from django.utils import timezone
+from _AppCommon.models import BaseModel
 
 User = get_user_model()
 
-class UserLoginLog(models.Model):
+class UserLoginLog(BaseModel):
     """
     Modelo para registrar los logs de login de usuarios
     Almacena información básica de cada inicio de sesión exitoso
     """
-    # Campos propios en lugar de heredar de BaseModel
-    created_at = models.DateTimeField(default=timezone.now, help_text="Fecha y hora de creación")
-    
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='login_logs')
     email = models.EmailField(help_text="Email del usuario que hizo login")
     login_datetime = models.DateTimeField(auto_now_add=True, help_text="Fecha y hora del login")
@@ -20,14 +17,14 @@ class UserLoginLog(models.Model):
     class Meta:
         verbose_name = "Log de Login"
         verbose_name_plural = "Logs de Login"
-        ordering = ['-login_datetime']
+        ordering = ['-created_at']  # Usar created_at de BaseModel
         indexes = [
             models.Index(fields=['email']),
-            models.Index(fields=['login_datetime']),
+            models.Index(fields=['created_at']),  # Usar created_at de BaseModel
             models.Index(fields=['user']),
         ]
 
     def __str__(self):
-        return f"{self.email} - {self.login_datetime.strftime('%Y-%m-%d %H:%M:%S')} - {self.ip_address}"
+        return f"{self.email} - {self.created_at.strftime('%Y-%m-%d %H:%M:%S')} - {self.ip_address}"
 
 # Create your models here.
