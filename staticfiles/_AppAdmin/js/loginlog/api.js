@@ -17,11 +17,11 @@ export async function fetchLoginLogs(page = 1, email = '', perPage = 10) {
     try {
         const params = new URLSearchParams({
             page: page.toString(),
-            page_size: perPage.toString()
+            per_page: perPage.toString()
         });
         
         if (email && email.trim() !== '') {
-            params.append('email', email.trim());
+            params.append('search', email.trim());
         }
         
         const response = await fetch(`${API_BASE}?${params}`, {

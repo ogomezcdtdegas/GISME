@@ -48,25 +48,31 @@ export function renderPagination(paginationData) {
     const paginationContainer = document.querySelector('.pagination');
     if (!paginationContainer) return;
 
+    // Limpiar contenido previo completamente  
     paginationContainer.innerHTML = '';
+    
+    // Crear nuevo container para evitar event listeners múltiples
+    const newContainer = paginationContainer.cloneNode(false);
+    paginationContainer.parentNode.replaceChild(newContainer, paginationContainer);
+    
+    // Usar el nuevo container para el resto de la función
+    const activeContainer = document.querySelector('.pagination');
 
     // Si es un array simple o no hay datos de paginación, no mostrar controles
-    if (Array.isArray(paginationData) || !paginationData || !paginationData.count) {
+    if (Array.isArray(paginationData) || !paginationData || !paginationData.total_count) {
         return;
     }
 
-    const count = paginationData.count || 0;
-    const pageSize = paginationData.page_size || 10;
+    const count = paginationData.total_count || 0;
     const currentPage = paginationData.current_page || 1;
-    const totalPages = Math.ceil(count / pageSize);
+    const totalPages = paginationData.total_pages || 1;
+    const hasPrevious = paginationData.has_previous || false;
+    const hasNext = paginationData.has_next || false;
     
     // No mostrar paginación si solo hay una página
     if (totalPages <= 1) {
         return;
     }
-
-    const hasPrevious = paginationData.previous !== null;
-    const hasNext = paginationData.next !== null;
 
     // Botón Previous
     const prevLi = document.createElement('li');
@@ -76,13 +82,13 @@ export function renderPagination(paginationData) {
     } else {
         prevLi.innerHTML = `<span class="page-link">Anterior</span>`;
     }
-    paginationContainer.appendChild(prevLi);
+    activeContainer.appendChild(prevLi);
 
     // Información de página actual
     const currentLi = document.createElement('li');
     currentLi.className = 'page-item disabled';
     currentLi.innerHTML = `<span class="page-link">Página ${currentPage} de ${totalPages}</span>`;
-    paginationContainer.appendChild(currentLi);
+    activeContainer.appendChild(currentLi);
 
     // Botón Next
     const nextLi = document.createElement('li');
@@ -92,20 +98,17 @@ export function renderPagination(paginationData) {
     } else {
         nextLi.innerHTML = `<span class="page-link">Siguiente</span>`;
     }
-    paginationContainer.appendChild(nextLi);
-    if (hasNext) {
-        nextLi.innerHTML = `<a class="page-link" href="#" data-page="${currentPage + 1}">Siguiente</a>`;
-    } else {
-        nextLi.innerHTML = `<span class="page-link">Siguiente</span>`;
-    }
-    paginationContainer.appendChild(nextLi);
+    activeContainer.appendChild(nextLi);
 
-    // Agregar event listeners a los enlaces de paginación
-    paginationContainer.addEventListener('click', function(e) {
+    // Agregar event listener único
+    activeContainer.addEventListener('click', function(e) {
         e.preventDefault();
         const page = e.target.dataset.page;
         if (page && !e.target.closest('.disabled')) {
-            window.LoginLogEvents.goToPage(parseInt(page));
+            // Importar y usar goToPage desde events
+            import('./events.js').then(({ goToPage }) => {
+                goToPage(parseInt(page));
+            });
         }
     });
 }
@@ -124,15 +127,15 @@ export function updateRecordsInfo(paginationData) {
         return;
     }
 
-    // Si es objeto de paginación
+    // Si es objeto de paginación con BaseListView
     if (paginationData && typeof paginationData === 'object') {
-        const count = paginationData.count || 0;
-        const pageSize = paginationData.page_size || 10;
+        const count = paginationData.total_count || 0;
         const currentPage = paginationData.current_page || 1;
+        const recordsPerPage = 10; // Default per page
         
         if (count > 0) {
-            const start = ((currentPage - 1) * pageSize) + 1;
-            const end = Math.min(currentPage * pageSize, count);
+            const start = ((currentPage - 1) * recordsPerPage) + 1;
+            const end = Math.min(currentPage * recordsPerPage, count);
             recordsInfo.textContent = `Mostrando ${start} a ${end} de ${count} registros`;
         } else {
             recordsInfo.textContent = 'No hay registros disponibles';

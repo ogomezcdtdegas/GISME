@@ -8,30 +8,40 @@ import { renderActionLogs, renderPagination, updateRecordsInfo } from './ui.js';
 
 // Estado global
 let currentPage = 1;
-let currentEmail = '';
+let currentSearchQuery = '';
 let currentAction = '';
 let currentAffectedType = '';
-let currentAffectedValue = '';
+let currentEmail = '';
 let currentPerPage = 10;
+let isLoading = false; // Bandera para evitar múltiples consultas
 
 /**
  * Cargar logs de acciones con parámetros actuales
  */
-export async function loadActionLogs(page = currentPage, email = currentEmail, action = currentAction, 
-                                   affectedType = currentAffectedType, affectedValue = currentAffectedValue, 
-                                   perPage = currentPerPage) {
+export async function loadActionLogs(page = currentPage, searchQuery = currentSearchQuery, 
+                                   action = currentAction, affectedType = currentAffectedType, 
+                                   email = currentEmail, perPage = currentPerPage) {
+    
+    // Evitar múltiples llamadas simultáneas
+    if (isLoading) {
+        console.log('⏳ Carga ya en progreso, ignorando nueva solicitud');
+        return;
+    }
+    
     try {
+        isLoading = true;
+        
         // Mostrar loading
         showLoading();
         
-        const data = await fetchActionLogs(page, email, action, affectedType, affectedValue, perPage);
+        const data = await fetchActionLogs(page, searchQuery, action, affectedType, email, perPage);
         
         // Actualizar estado
         currentPage = page;
-        currentEmail = email;
+        currentSearchQuery = searchQuery;
         currentAction = action;
         currentAffectedType = affectedType;
-        currentAffectedValue = affectedValue;
+        currentEmail = email;
         currentPerPage = perPage;
         
         // Manejar respuesta: si es array directo o objeto paginado
@@ -45,6 +55,8 @@ export async function loadActionLogs(page = currentPage, email = currentEmail, a
     } catch (error) {
         console.error('Error loading action logs:', error);
         showError('Error al cargar los registros de acciones');
+    } finally {
+        isLoading = false; // Liberar la bandera independientemente del resultado
     }
 }
 
@@ -54,12 +66,12 @@ export async function loadActionLogs(page = currentPage, email = currentEmail, a
  */
 export function goToPage(page) {
     if (page !== currentPage) {
-        loadActionLogs(page, currentEmail, currentAction, currentAffectedType, currentAffectedValue, currentPerPage);
+        loadActionLogs(page, currentSearchQuery, currentAction, currentAffectedType, currentEmail, currentPerPage);
     }
 }
 
 /**
- * Configurar búsqueda por email
+ * Configurar búsqueda general
  */
 export function setupSearch() {
     const searchInput = document.getElementById('searchInput');
@@ -73,8 +85,8 @@ export function setupSearch() {
     searchInput.addEventListener('input', function() {
         clearTimeout(searchTimeout);
         searchTimeout = setTimeout(() => {
-            const email = searchInput.value.trim();
-            loadActionLogs(1, email, currentAction, currentAffectedType, currentAffectedValue, currentPerPage);
+            const searchQuery = searchInput.value.trim();
+            loadActionLogs(1, searchQuery, currentAction, currentAffectedType, currentEmail, currentPerPage);
         }, 500); // Esperar 500ms después del último keystroke
     });
     
@@ -82,7 +94,7 @@ export function setupSearch() {
     if (clearButton) {
         clearButton.addEventListener('click', function() {
             searchInput.value = '';
-            loadActionLogs(1, '', currentAction, currentAffectedType, currentAffectedValue, currentPerPage);
+            loadActionLogs(1, '', currentAction, currentAffectedType, currentEmail, currentPerPage);
         });
     }
 }
@@ -99,7 +111,7 @@ export function setupFilters() {
     if (actionFilter) {
         actionFilter.addEventListener('change', function() {
             const action = actionFilter.value;
-            loadActionLogs(1, currentEmail, action, currentAffectedType, currentAffectedValue, currentPerPage);
+            loadActionLogs(1, currentSearchQuery, action, currentAffectedType, currentEmail, currentPerPage);
         });
     }
     
@@ -107,7 +119,7 @@ export function setupFilters() {
     if (typeFilter) {
         typeFilter.addEventListener('change', function() {
             const type = typeFilter.value;
-            loadActionLogs(1, currentEmail, currentAction, type, currentAffectedValue, currentPerPage);
+            loadActionLogs(1, currentSearchQuery, currentAction, type, currentEmail, currentPerPage);
         });
     }
     
@@ -115,11 +127,12 @@ export function setupFilters() {
     if (clearFilters) {
         clearFilters.addEventListener('click', function() {
             // Resetear todos los campos
-            document.getElementById('searchInput').value = '';
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) searchInput.value = '';
             if (actionFilter) actionFilter.value = '';
             if (typeFilter) typeFilter.value = '';
             
-            // Cargar datos sin filtros
+            // Recargar sin filtros
             loadActionLogs(1, '', '', '', '', currentPerPage);
         });
     }
@@ -134,7 +147,7 @@ export function setupPagination() {
     if (recordsSelect) {
         recordsSelect.addEventListener('change', function() {
             const perPage = parseInt(recordsSelect.value) || 10;
-            loadActionLogs(1, currentEmail, currentAction, currentAffectedType, currentAffectedValue, perPage);
+            loadActionLogs(1, currentSearchQuery, currentAction, currentAffectedType, currentEmail, perPage);
         });
     }
 }

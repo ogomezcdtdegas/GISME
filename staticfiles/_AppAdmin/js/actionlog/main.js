@@ -11,7 +11,7 @@ import { loadActionLogs, setupSearch, setupFilters, setupPagination } from './ev
 function initializeActionLogs() {
     // Configurar eventos
     setupSearch();
-    setupFilters();
+    setupFilters(); // Reactivado para filtros específicos
     setupPagination();
     
     // Cargar datos iniciales
