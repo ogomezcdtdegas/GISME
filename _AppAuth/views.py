@@ -13,10 +13,14 @@ def logout_view(request):
     return redirect(settings.LOGOUT_REDIRECT_URL)
 
 def access_denied_production(request):
-    """Vista para mostrar acceso denegado en producción cuando el usuario no está registrado"""
+    """Vista para mostrar acceso denegado en producción cuando el usuario no está registrado o está inactivo"""
     # En producción, podemos intentar extraer el email del header si aún está disponible
     user_email = request.GET.get('email', 'Usuario autenticado')
-    return render(request, "_AppAuth/access_denied.html", {"user_email": user_email})
+    access_reason = request.GET.get('reason', 'not_registered')
+    return render(request, "_AppAuth/access_denied.html", {
+        "user_email": user_email,
+        "access_reason": access_reason
+    })
 
 
 '''

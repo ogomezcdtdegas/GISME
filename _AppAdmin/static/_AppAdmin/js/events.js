@@ -113,6 +113,13 @@ window.AdminEvents = {
                 document.getElementById('editLastName').value = user.last_name || '';
                 document.getElementById('editRole').value = user.role || '';
                 
+                // Establecer el estado is_active correctamente
+                const isActiveCheckbox = document.getElementById('editIsActive');
+                if (isActiveCheckbox) {
+                    isActiveCheckbox.checked = user.is_active === true;
+                    console.log('🔍 Estado del usuario:', user.is_active, '→ Checkbox marcado:', isActiveCheckbox.checked);
+                }
+                
                 // Verificar que el ID se estableció correctamente
                 const setId = document.getElementById('editUserId').value;
                 console.log('🔍 ID establecido en el formulario:', setId);
@@ -425,7 +432,6 @@ window.AdminEvents = {
                 
                 // Recopilar datos del formulario - obtener ID directamente del campo
                 const userId = document.getElementById('editUserId').value;
-                const formData = new FormData(editUserForm);
                 
                 // Validar que tenemos un ID
                 if (!userId || userId === 'undefined') {
@@ -434,15 +440,19 @@ window.AdminEvents = {
                     return;
                 }
                 
+                // Recopilar datos manualmente para asegurar que is_active se incluya siempre
+                const isActiveElement = document.getElementById('editIsActive');
                 const userData = {
                     id: userId,
-                    email: formData.get('email'),
-                    first_name: formData.get('first_name'),
-                    last_name: formData.get('last_name'),
-                    role_update: formData.get('role')  // Usar role_update para la actualización
+                    email: document.getElementById('editEmail').value,
+                    first_name: document.getElementById('editFirstName').value,
+                    last_name: document.getElementById('editLastName').value,
+                    role_update: document.getElementById('editRole').value,
+                    is_active: isActiveElement ? isActiveElement.checked : true
                 };
                 
                 console.log('📝 Datos de usuario para actualización:', userData);
+                console.log('🔍 Estado is_active específico:', userData.is_active, typeof userData.is_active);
                 
                 // Actualizar usuario
                 await this.updateUser(userData);

@@ -96,7 +96,7 @@ class UserAdminUpdateSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = User
-        fields = ['id', 'email', 'first_name', 'last_name', 'role', 'role_update']
+        fields = ['id', 'email', 'first_name', 'last_name', 'is_active', 'role', 'role_update']
         read_only_fields = ['id', 'role']
         
     def get_role(self, obj):
@@ -121,6 +121,7 @@ class UserAdminUpdateSerializer(serializers.ModelSerializer):
         instance.username = instance.email  # Mantener username = email
         instance.first_name = validated_data.get('first_name', instance.first_name)
         instance.last_name = validated_data.get('last_name', instance.last_name)
+        instance.is_active = validated_data.get('is_active', instance.is_active)
         instance.save()
         
         # Actualizar rol si se proporciona

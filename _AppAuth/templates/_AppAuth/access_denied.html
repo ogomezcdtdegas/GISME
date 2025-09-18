@@ -64,16 +64,29 @@
 <body>
     <div class="container">
         <div class="icon">🚫</div>
-        <h1>Acceso Denegado</h1>
-        <div class="message">
-            Su cuenta ha sido autenticada exitosamente con Azure AD, pero no está registrada en la plataforma GISME.
-        </div>
-        <div class="email">
-            Email: {{ user_email }}
-        </div>
-        <div class="message">
-            Para obtener acceso a la plataforma, contacte al administrador del sistema.
-        </div>
+        {% if access_reason == 'inactive' %}
+            <h1>Cuenta Inactiva</h1>
+            <div class="message">
+                Su cuenta ha sido autenticada exitosamente con Azure AD, pero se encuentra inactiva en la plataforma GISME.
+            </div>
+            <div class="email">
+                Email: {{ user_email }}
+            </div>
+            <div class="message">
+                Para reactivar su cuenta, contacte al administrador del sistema.
+            </div>
+        {% else %}
+            <h1>Acceso Denegado</h1>
+            <div class="message">
+                Su cuenta ha sido autenticada exitosamente con Azure AD, pero no está registrada en la plataforma GISME.
+            </div>
+            <div class="email">
+                Email: {{ user_email }}
+            </div>
+            <div class="message">
+                Para obtener acceso a la plataforma, contacte al administrador del sistema.
+            </div>
+        {% endif %}
         <a href="{% url 'logout' %}" class="btn">Cerrar Sesión</a>
     </div>
 </body>

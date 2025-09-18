@@ -53,7 +53,15 @@ def aad_callback(request):
     # Verificar si el usuario está registrado en la plataforma
     user = User.objects.filter(email=email).first()
     if user:
-        # Usuario existe en la BD, proceder con login
+        # Verificar si el usuario está activo
+        if not user.is_active:
+            # Usuario existe pero está inactivo
+            return render(request, "_AppAuth/access_denied.html", {
+                "user_email": email,
+                "access_reason": "inactive"
+            })
+        
+        # Usuario existe y está activo, proceder con login
         dj_login(request, user, backend="django.contrib.auth.backends.ModelBackend")
         
         # Registrar el login exitoso
@@ -71,13 +79,20 @@ def aad_callback(request):
         return redirect("/")
     else:
         # Usuario no está registrado en la plataforma
-        return render(request, "_AppAuth/access_denied.html", {"user_email": email})
+        return render(request, "_AppAuth/access_denied.html", {
+            "user_email": email,
+            "access_reason": "not_registered"
+        })
 
 def aad_logout(request):
     dj_logout(request)
     return redirect("/")
 
 def access_denied(request):
-    """Vista para mostrar acceso denegado cuando el usuario no está registrado"""
+    """Vista para mostrar acceso denegado cuando el usuario no está registrado o está inactivo"""
     user_email = request.GET.get('email', 'No disponible')
-    return render(request, "_AppAuth/access_denied.html", {"user_email": user_email})
+    access_reason = request.GET.get('reason', 'not_registered')
+    return render(request, "_AppAuth/access_denied.html", {
+        "user_email": user_email,
+        "access_reason": access_reason
+    })

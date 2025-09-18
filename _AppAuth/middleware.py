@@ -25,6 +25,13 @@ class AuthMiddleware:
 
         max_inactivity = 1200
         if getattr(request, "user", None) and request.user.is_authenticated:
+            # Verificar si el usuario sigue activo
+            if not request.user.is_active:
+                email = getattr(request.user, 'email', 'Usuario autenticado')
+                logout(request)
+                request.session.flush()
+                return redirect(f'/auth/access-denied-prod/?email={email}&reason=inactive')
+            
             now = int(time.time())
             last = request.session.get("last_activity", now)
             if now - last > max_inactivity:
