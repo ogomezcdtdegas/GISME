@@ -9,24 +9,26 @@ const API_BASE = '/admin_panel/api/actionLog/paginated/';
 /**
  * Obtener logs de acciones con paginación y filtros
  * @param {number} page - Número de página
- * @param {string} email - Filtro por email (opcional)
- * @param {string} action - Filtro por acción (opcional)
+ * @param {string} searchQuery - Búsqueda general (opcional)
+ * @param {string} action - Filtro por acción específica (opcional)
  * @param {string} affectedType - Filtro por tipo afectado (opcional)
- * @param {string} affectedValue - Filtro por valor afectado (opcional)
+ * @param {string} email - Filtro por email específico (opcional)
  * @param {number} perPage - Registros por página
  * @returns {Promise} - Respuesta con logs paginados
  */
-export async function fetchActionLogs(page = 1, email = '', action = '', affectedType = '', affectedValue = '', perPage = 10) {
+export async function fetchActionLogs(page = 1, searchQuery = '', action = '', affectedType = '', email = '', perPage = 10) {
     try {
         const params = new URLSearchParams({
             page: page.toString(),
-            page_size: perPage.toString()
+            per_page: perPage.toString()
         });
         
-        if (email && email.trim() !== '') {
-            params.append('email', email.trim());
+        // Búsqueda general
+        if (searchQuery && searchQuery.trim() !== '') {
+            params.append('search', searchQuery.trim());
         }
         
+        // Filtros específicos
         if (action && action.trim() !== '') {
             params.append('action', action.trim());
         }
@@ -35,8 +37,8 @@ export async function fetchActionLogs(page = 1, email = '', action = '', affecte
             params.append('affected_type', affectedType.trim());
         }
         
-        if (affectedValue && affectedValue.trim() !== '') {
-            params.append('affected_value', affectedValue.trim());
+        if (email && email.trim() !== '') {
+            params.append('email', email.trim());
         }
         
         const response = await fetch(`${API_BASE}?${params}`, {

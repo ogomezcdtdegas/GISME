@@ -10,12 +10,22 @@ import { renderLoginLogs, renderPagination, updateRecordsInfo } from './ui.js';
 let currentPage = 1;
 let currentEmail = '';
 let currentPerPage = 10;
+let isLoading = false; // Bandera para evitar múltiples consultas
 
 /**
  * Cargar logs de login con parámetros actuales
  */
 export async function loadLoginLogs(page = currentPage, email = currentEmail, perPage = currentPerPage) {
+    
+    // Evitar múltiples llamadas simultáneas
+    if (isLoading) {
+        console.log('⏳ Carga ya en progreso, ignorando nueva solicitud');
+        return;
+    }
+    
     try {
+        isLoading = true;
+        
         // Mostrar loading
         showLoading();
         
@@ -37,6 +47,8 @@ export async function loadLoginLogs(page = currentPage, email = currentEmail, pe
     } catch (error) {
         console.error('Error loading login logs:', error);
         showError('Error al cargar los registros de login');
+    } finally {
+        isLoading = false; // Liberar la bandera independientemente del resultado
     }
 }
 
