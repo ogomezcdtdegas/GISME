@@ -2,7 +2,7 @@ from django.db import models
 from _AppCommon.models import BaseModel
 
 class NodeRedData(BaseModel):
-    tag_system = models.CharField(max_length=100, null=True, blank=True)
+    mac_gateway = models.CharField(max_length=100, null=True, blank=True)
     total_volume = models.FloatField(null=True, blank=True)
     forward_volume = models.FloatField(null=True, blank=True)
     reverse_volume = models.FloatField(null=True, blank=True)
