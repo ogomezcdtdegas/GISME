@@ -200,11 +200,11 @@ class SistemaManager {
             title: 'Editar Sistema',
             html: `
                 <div class="mb-3">
-                    <label for="swal-tag" class="form-label">Tag:</label>
+                    <label for="swal-tag" class="form-label">Nombre:</label>
                     <input type="text" id="swal-tag" class="form-control" value="${sistema.tag}">
                 </div>
                 <div class="mb-3">
-                    <label for="swal-sistema-id" class="form-label">ID Sistema:</label>
+                    <label for="swal-sistema-id" class="form-label">MAC Gateway:</label>
                     <input type="text" id="swal-sistema-id" class="form-control" value="${sistema.sistema_id}">
                 </div>
                 <div class="mb-3">
