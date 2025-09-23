@@ -31,19 +31,11 @@ export const BaseAPI = {
             
             const data = await response.json();
             
-            // Si hay error de duplicado
-            if (response.status === 400 && data.error?.includes('duplicate key value violates')) {
-                return {
-                    success: false,
-                    error: "Ya existe un registro con estos valores"
-                };
-            }
-            
-            // Si hay otros errores del servidor
+            // Si hay errores del servidor (400, 500, etc.)
             if (!response.ok) {
                 return {
                     success: false,
-                    error: data.error || "Error en la operación"
+                    error: data.error || data.message || "Error en la operación"
                 };
             }
 
