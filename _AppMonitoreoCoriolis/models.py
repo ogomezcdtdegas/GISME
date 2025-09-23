@@ -33,7 +33,8 @@ class NodeRedData(BaseModel):
 
     redundant_temperature = models.FloatField(null=True, blank=True)
 
-    pressure = models.FloatField(null=True, blank=True)
+    pressure_in = models.FloatField(null=True, blank=True)
+    pressure_out = models.FloatField(null=True, blank=True)
 
     coriolis_frecuency = models.FloatField(null=True, blank=True)
     coriolis_frecuency_alm = models.FloatField(null=True, blank=True)
