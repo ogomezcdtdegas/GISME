@@ -37,6 +37,10 @@ class SistemaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Sistema
         fields = ["id", "tag", "sistema_id", "ubicacion", "ubicacion_nombre", "ubicacion_lat", "ubicacion_lng", "ubicacion_coordenadas", "created_at"]
+        extra_kwargs = {
+            'tag': {'validators': []},  # Desactivar validadores automáticos
+            'sistema_id': {'validators': []},  # Desactivar validadores automáticos
+        }
     
     def get_ubicacion_coordenadas(self, obj):
         """Retorna las coordenadas de la ubicación como string"""
@@ -45,32 +49,42 @@ class SistemaSerializer(serializers.ModelSerializer):
         return "Sin coordenadas"
         
     def validate(self, attrs):
-        """Validación a nivel de modelo para evitar duplicados"""
-        tag = attrs.get('tag')
-        sistema_id = attrs.get('sistema_id') 
-        ubicacion = attrs.get('ubicacion')
-        
-        # Si estamos actualizando, excluir el objeto actual
-        queryset = Sistema.objects.filter(tag=tag, sistema_id=sistema_id, ubicacion=ubicacion)
-        if self.instance:
-            queryset = queryset.exclude(pk=self.instance.pk)
-            
-        if queryset.exists():
-            raise serializers.ValidationError(
-                f"Ya existe un sistema con Tag '{tag}', ID '{sistema_id}' y ubicación '{ubicacion.nombre}'"
-            )
-        
+        """Validación general a nivel de modelo"""
+        # Las validaciones de unicidad están en validate_tag y validate_sistema_id
+        # Aquí solo validaciones adicionales si las necesitamos
         return attrs
         
     def validate_tag(self, value):
-        """Validar que el tag no esté vacío y tenga formato correcto"""
+        """Validar que el tag no esté vacío y sea único"""
         if not value or not value.strip():
-            raise serializers.ValidationError("El Tag es obligatorio.")
-        return value.strip()
+            raise serializers.ValidationError("El Nombre es obligatorio.")
+        
+        value = value.strip()
+        
+        # Validar unicidad del tag
+        queryset = Sistema.objects.filter(tag=value)
+        if self.instance:
+            queryset = queryset.exclude(pk=self.instance.pk)
+        
+        if queryset.exists():
+            raise serializers.ValidationError("Ya existe un sistema con este Nombre.")
+        
+        return value
     
     def validate_sistema_id(self, value):
-        """Validar que el sistema_id no esté vacío"""
+        """Validar que el sistema_id no esté vacío y sea único"""
         if not value or not value.strip():
-            raise serializers.ValidationError("El ID Sistema es obligatorio.")
-        return value.strip()
+            raise serializers.ValidationError("El MAC Gateway es obligatorio.")
+        
+        value = value.strip()
+        
+        # Validar unicidad del sistema_id
+        queryset = Sistema.objects.filter(sistema_id=value)
+        if self.instance:
+            queryset = queryset.exclude(pk=self.instance.pk)
+        
+        if queryset.exists():
+            raise serializers.ValidationError("Ya existe un sistema con este MAC Gateway.")
+        
+        return value
 '''xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'''

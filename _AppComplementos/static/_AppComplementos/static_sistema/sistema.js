@@ -148,14 +148,14 @@ class SistemaManager {
                 e.target.reset();
                 await this.loadSistemas();
             } else {
-                console.error('❌ Error del servidor:', response.error);
-                // Mostrar error específico si es de duplicado
-                const errorMsg = response.error || response.details?.non_field_errors?.[0] || 'Error al crear sistema';
-                this.showAlert('Error al crear sistema: ' + errorMsg, 'error');
+                console.error('❌ Error del servidor:', response);
+                // Mostrar error específico del backend
+                const errorMsg = response.error || 'Error al crear sistema';
+                this.showAlert(errorMsg, 'error');
             }
         } catch (error) {
             console.error('❌ Error al crear sistema:', error);
-            this.showAlert('Error al crear sistema', 'error');
+            this.showAlert('Error de conexión con el servidor', 'error');
         }
     }
 
@@ -178,11 +178,13 @@ class SistemaManager {
                     this.showAlert('Sistema eliminado exitosamente', 'success');
                     await this.loadSistemas();
                 } else {
-                    this.showAlert('Error al eliminar sistema: ' + response.error, 'error');
+                    console.error('❌ Error del servidor:', response);
+                    const errorMsg = response.error || 'Error al eliminar sistema';
+                    this.showAlert(errorMsg, 'error');
                 }
             } catch (error) {
                 console.error('Error al eliminar:', error);
-                this.showAlert('Error al eliminar sistema', 'error');
+                this.showAlert('Error de conexión con el servidor', 'error');
             }
         }
     }
@@ -240,12 +242,14 @@ class SistemaManager {
                     this.showAlert('Sistema actualizado exitosamente', 'success');
                     await this.loadSistemas();
                 } else {
-                    const errorMsg = response.error || response.details?.non_field_errors?.[0] || 'Error al actualizar sistema';
-                    this.showAlert('Error al actualizar sistema: ' + errorMsg, 'error');
+                    console.error('❌ Error del servidor:', response);
+                    // Mostrar error específico del backend
+                    const errorMsg = response.error || 'Error al actualizar sistema';
+                    this.showAlert(errorMsg, 'error');
                 }
             } catch (error) {
                 console.error('Error al actualizar:', error);
-                this.showAlert('Error al actualizar sistema', 'error');
+                this.showAlert('Error de conexión con el servidor', 'error');
             }
         }
     }
