@@ -6,8 +6,7 @@ from django.shortcuts import get_object_or_404
 
 from .....models import Sistema
 from .....serializers import SistemaSerializer
-from _AppAdmin.models import UserActionLog
-from django.utils import timezone
+
 
 from drf_spectacular.utils import extend_schema, extend_schema_view
 
@@ -35,19 +34,6 @@ class EditarSistemaCommandView(BaseRetrieveUpdateView):
             if serializer.is_valid():
                 instance = serializer.save()
                 print(f"✅ Actualización exitosa para ID: {obj_id}")
-                
-                # Registrar la acción en el log
-                UserActionLog.objects.create(
-                    user=request.user,
-                    email=request.user.email,
-                    action='editar',
-                    action_datetime=timezone.now(),
-                    affected_type='sistema',
-                    affected_value=f"{instance.tag} - {instance.sistema_id}",
-                    affected_id=instance.id,
-                    ip_address=request.META.get('REMOTE_ADDR', '')
-                )
-                
                 return Response({"success": True, "message": "Actualización exitosa"}, status=status.HTTP_200_OK)
             
             print(f"❌ Errores de validación: {serializer.errors}")

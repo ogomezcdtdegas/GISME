@@ -10,6 +10,26 @@ class UbicacionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Ubicacion
         fields = ["id", "nombre", "latitud", "longitud", "created_at"]
+        extra_kwargs = {
+            'nombre': {'validators': []},  # Desactivar validadores automáticos
+        }
+        
+    def validate_nombre(self, value):
+        """Validar que el nombre no esté vacío y sea único"""
+        if not value or not value.strip():
+            raise serializers.ValidationError("El nombre de ubicación es obligatorio.")
+        
+        value = value.strip()
+        
+        # Validar unicidad del nombre
+        queryset = Ubicacion.objects.filter(nombre=value)
+        if self.instance:
+            queryset = queryset.exclude(pk=self.instance.pk)
+        
+        if queryset.exists():
+            raise serializers.ValidationError("Ya existe una ubicación con este nombre.")
+        
+        return value
         
     def validate_latitud(self, value):
         """Validar que la latitud esté en el rango correcto"""

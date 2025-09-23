@@ -156,11 +156,7 @@ class UniversalActionLogMixin:
     }
     
     def post(self, request, *args, **kwargs):
-        print(f"🚀 UniversalActionLogMixin.post() llamado")
-        print(f"   - self.__class__: {self.__class__}")
-        print(f"   - MRO: {[cls.__name__ for cls in self.__class__.__mro__]}")
         response = super().post(request, *args, **kwargs)
-        print(f"   - Response status: {getattr(response, 'status_code', 'No status')}")
         self._log_if_successful(request, response, 'crear', args, kwargs)
         return response
     
@@ -181,28 +177,14 @@ class UniversalActionLogMixin:
     
     def _log_if_successful(self, request, response, action, args, kwargs):
         """Registra la acción si fue exitosa"""
-        print(f"🔎 _log_if_successful llamado:")
-        print(f"   - action: {action}")
-        print(f"   - response: {response}")
-        print(f"   - response.status_code: {getattr(response, 'status_code', 'No status')}")
         
         if not self._is_successful_response(response, action):
-            print(f"   - ❌ Response no es exitosa")
             return
-        
-        print(f"   - ✅ Response es exitosa, intentando logging")
         
         try:
             obj, obj_id = self._get_object_and_id(response, action, args, kwargs)
             if obj and obj_id:
                 affected_value = self.log_config['get_value'](obj)
-                
-                print(f"   - 📝 Registrando log:")
-                print(f"     - user: {request.user}")
-                print(f"     - action: {action}")
-                print(f"     - affected_type: {self.log_config['affected_type']}")
-                print(f"     - affected_value: {affected_value}")
-                print(f"     - affected_id: {obj_id}")
                 
                 log_user_action(
                     user=request.user,
@@ -212,11 +194,7 @@ class UniversalActionLogMixin:
                     affected_id=str(obj_id),
                     ip_address=get_client_ip(request)
                 )
-                print(f"   - ✅ Log registrado exitosamente")
-            else:
-                print(f"   - ❌ No se pudo obtener obj o obj_id")
         except Exception as e:
-            print(f"   - ❌ Error en logging: {e}")
             import logging
             logger = logging.getLogger(__name__)
             logger.error(f"Error logging {action}: {e}")
@@ -232,23 +210,13 @@ class UniversalActionLogMixin:
         """Obtiene el objeto y su ID según la acción"""
         obj_id = None
         
-        print(f"🔍 Debug _get_object_and_id:")
-        print(f"   - action: {action}")
-        print(f"   - response type: {type(response)}")
-        print(f"   - has data attr: {hasattr(response, 'data')}")
-        print(f"   - args: {args}")
-        print(f"   - kwargs: {kwargs}")
-        
         if action == 'crear':
             # Para crear, intentar obtener el ID de la respuesta
             if hasattr(response, 'data') and isinstance(response.data, dict):
                 obj_id = response.data.get('id')
-                print(f"   - obj_id from response.data: {obj_id}")
-                print(f"   - response.data: {response.data}")
             # Si no está en data, intentar con response directamente si es dict
             elif isinstance(response, dict):
                 obj_id = response.get('id')
-                print(f"   - obj_id from response dict: {obj_id}")
         else:
             # Para editar/eliminar, obtener ID de kwargs o args
             obj_id = kwargs.get('pk') or kwargs.get('user_id') or kwargs.get('obj_id')
@@ -258,24 +226,17 @@ class UniversalActionLogMixin:
                 for key, value in kwargs.items():
                     if key.endswith('_id') and value:
                         obj_id = value
-                        print(f"   - Found ID in kwargs[{key}]: {obj_id}")
                         break
             
             # Como último recurso, intentar con args
             if not obj_id and args:
                 obj_id = args[0] if args else None
-            print(f"   - obj_id from kwargs/args: {obj_id}")
-        
-        print(f"   - final obj_id: {obj_id}, type: {type(obj_id)}")
         
         if obj_id and self.log_config['model_class']:
             try:
                 obj = self.log_config['model_class'].objects.get(id=obj_id)
-                print(f"   - ✅ Found object: {obj}")
                 return obj, obj_id
             except Exception as e:
-                print(f"   - ❌ Error getting object with ID {obj_id}: {e}")
                 return None, None
         
-        print(f"   - ⚠️ No valid obj_id or model_class")
         return None, None
