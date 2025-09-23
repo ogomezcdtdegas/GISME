@@ -19,10 +19,24 @@ class NodeRedReceiverView(BasicNodeRedAuthMixin, BaseCreateView):
             return auth_error
 
         mac_gateway = request.data.get("mac_gateway")
-        if not mac_gateway or not Sistema.objects.filter(sistema_id=mac_gateway).exists():
+        sistema = Sistema.objects.filter(sistema_id=mac_gateway).first()
+        if not mac_gateway or not sistema:
             return Response(
                 {"detail": "mac_gateway no registrado como sistema_id en sistemas."},
                 status=400
             )
 
-        return super().post(request, *args, **kwargs)
+        # Copia los datos y agrega el systemId
+        data = request.data.copy()
+        data['systemId'] = str(sistema.id)  # UUID a string
+
+        serializer = self.serializer_class(data=data)
+        if serializer.is_valid():
+            obj = serializer.save()
+            return Response({
+                "success": True,
+                "message": "Registro exitoso",
+                "id": obj.id
+            }, status=201)
+        
+        return Response({"success": False, "error": serializer.errors}, status=400)
