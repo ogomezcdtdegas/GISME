@@ -18,6 +18,26 @@
 {% endblock %}
 
 {% block content %}
+<style>
+.hidden {
+    display: none !important;
+}
+</style>
+
+<script>
+// Variables globales del sistema desde Django
+{% if sistema %}
+    const SISTEMA_ACTUAL = {
+        id: '{{ sistema.id }}',
+        tag: '{{ sistema.tag }}',
+        sistema_id: '{{ sistema.sistema_id }}',
+        nombre: '{{ sistema.nombre|default:"" }}'
+    };
+{% else %}
+    const SISTEMA_ACTUAL = null;
+{% endif %}
+</script>
+
 <div class="container-fluid mt-4">
     <!-- Loading Overlay -->
     <div id="loadingOverlay" class="loading-overlay">
@@ -124,9 +144,15 @@
             <div class="col-12">
                 <div class="card">
                     <div class="card-header coriolis-header-system text-white d-flex justify-content-between align-items-center">
-                        <h4 class="mb-0" id="sistemaTitle">
-                            <i class="bi bi-diagram-3"></i> Monitoreo de Medidores Coriolis
-                        </h4>
+                        <div>
+                            <h4 class="mb-0" id="sistemaTitle">
+                                <i class="bi bi-diagram-3"></i> Monitoreo de Medidores Coriolis
+                            </h4>
+                            <small class="text-light opacity-75">
+                                <i class="bi bi-clock"></i> Última actualización: 
+                                <span id="ultima-actualizacion">---</span> (Hora Colombia)
+                            </small>
+                        </div>
                         <div>
                             <button class="btn btn-outline-danger btn-sm me-2" onclick="descargarReportePDF()">
                                 <i class="bi bi-file-earmark-pdf"></i> Descargar Reporte PDF
@@ -282,32 +308,91 @@
     </div>
 </div>
 
-<!-- Modal Histórico (reutilizable para los 3 sensores) -->
+<!-- Modal Histórico con dos gráficos para flujo -->
 <div class="modal fade" id="historicoModal" tabindex="-1" aria-labelledby="historicoModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-xl">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="historicoModalLabel">Histórico</h5>
+        <h5 class="modal-title" id="historicoModalLabel">
+          <i class="bi bi-graph-up"></i> Histórico de Flujo
+        </h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <div class="mb-3">
-          <label>Selecciona el rango de fechas</label>
-          <input type="date" id="fechaInicio" value="2025-07-14"> &rarr;
-          <input type="date" id="fechaFin" value="2025-07-17">
-          <button class="btn btn-outline-success" onclick="buscarHistorico()"><i class="bi bi-search"></i></button>
+        <!-- Controles superiores -->
+        <div class="row mb-3">
+          <div class="col-md-8">
+            <div class="d-flex align-items-center gap-3">
+              <label><strong>Rango de fechas:</strong></label>
+              <input type="date" id="fechaInicio" class="form-control" style="width: auto;">
+              <span>→</span>
+              <input type="date" id="fechaFin" class="form-control" style="width: auto;">
+              <button class="btn btn-outline-success" onclick="buscarHistoricoFlujo()">
+                <i class="bi bi-search"></i> Buscar
+              </button>
+            </div>
+          </div>
+          <div class="col-md-4 text-end">
+            <button type="button" class="btn btn-outline-info btn-sm" onclick="exportarDatos()">
+              <i class="bi bi-download"></i> Exportar Datos
+            </button>
+          </div>
         </div>
-        <div class="card">
-          <div class="card-body">
-            <h6 class="mb-3" id="tituloGrafica">Presión del Sistema</h6>
-            <div style="width:100%; min-width:300px; height:260px;">
-              <canvas id="graficaHistorico" height="220" style="width:100% !important; display:block;"></canvas>
+        
+        <!-- Instrucciones de uso -->
+        <div class="alert alert-info mb-3">
+          <i class="bi bi-info-circle"></i>
+          <strong>Información:</strong> 
+          Los gráficos muestran los datos de flujo volumétrico y másico para el período seleccionado.
+          <strong>Hover</strong> sobre los puntos para ver detalles de cada medición.
+        </div>
+        
+        <!-- Dos gráficos lado a lado -->
+        <div class="row">
+          <!-- Flujo Volumétrico -->
+          <div class="col-lg-6">
+            <div class="card mb-3">
+              <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h6 class="mb-0"><i class="bi bi-graph-up"></i> Flujo Volumétrico</h6>
+                <span id="contador-volumetrico" class="badge bg-light text-primary">0 registros</span>
+              </div>
+              <div class="card-body">
+                <div style="height: 350px; position: relative;">
+                  <canvas id="graficaFlujoVolumetrico"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Flujo Másico -->
+          <div class="col-lg-6">
+            <div class="card mb-3">
+              <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                <h6 class="mb-0"><i class="bi bi-graph-up"></i> Flujo Másico</h6>
+                <span id="contador-masico" class="badge bg-light text-success">0 registros</span>
+              </div>
+              <div class="card-body">
+                <div style="height: 350px; position: relative;">
+                  <canvas id="graficaFlujoMasico"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Información adicional -->
+        <div class="row mt-3">
+          <div class="col-12">
+            <div class="alert alert-secondary">
+              <i class="bi bi-clock-history"></i>
+              <strong>Información:</strong> Los gráficos muestran los datos de flujo volumétrico (m³/h) y flujo másico (kg/h) para el período seleccionado.
+              <span id="info-periodo"></span>
             </div>
           </div>
         </div>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">CERRAR</button>
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
       </div>
     </div>
   </div>
@@ -405,119 +490,608 @@ async function descargarReportePDF() {
 <script src="{% static 'js/coriolis-map.js' %}"></script>
 <script src="{% static 'js/coriolis-spa.js' %}"></script>
 <script>
-// Simulación de valores aleatorios para los displays de sensores
-function actualizarDisplaysSensores() {
-  // Sensor 1: Presión (PSI)
-  const val1 = (120 + Math.random() * 10).toFixed(1);
-  document.getElementById('display-sensor1').textContent = val1 + ' m³/h';
-  // Sensor 2: Temperatura (°F)
-  const val2 = (90 + Math.random() * 20).toFixed(1);
-  document.getElementById('display-sensor2').textContent = val2 + ' °F';
-  // Sensor 3: Presión (PSI)
-  const val3 = (40 + Math.random() * 10).toFixed(1);
-  document.getElementById('display-sensor3').textContent = val3 + ' PSI';
-}
-setInterval(actualizarDisplaysSensores, 1000);
-document.addEventListener('DOMContentLoaded', actualizarDisplaysSensores);
-
 // =====================
-// Simulación de datos en tiempo real para el gráfico del modal histórico
+// SISTEMA CON DATOS REALES DE LA BASE DE DATOS
 // =====================
-let historicoChart = null;
-let historicoData = [];
-let historicoLabels = [];
-let historicoSensorId = 'sensor1';
-let historicoInterval = null;
 
-function abrirModal(sensorId) {
-    document.getElementById('tituloGrafica').textContent = 'Histórico - ' + sensorId;
-    historicoSensorId = sensorId;
-    // Inicializar datos
-    historicoData = [];
-    historicoLabels = [];
-    const now = new Date();
-    for (let i = 59; i >= 0; i--) {
-        const fecha = new Date(now.getTime() - i * 100);
-        historicoLabels.push(fecha.toLocaleTimeString() + ':' + fecha.getMilliseconds().toString().padStart(3, '0'));
-        historicoData.push(generarValorSensor(sensorId));
+// Variables globales
+let sistemaActual = null;
+let chartFlujoVolumetrico = null;
+let chartFlujoMasico = null;
+let tiempoRealInterval = null;
+
+// Función para obtener el sistema actual (prioridad: contexto Django > URL)
+function obtenerSistemaActual() {
+    // 1. Primero intentar obtener del contexto de Django
+    if (typeof SISTEMA_ACTUAL !== 'undefined' && SISTEMA_ACTUAL && SISTEMA_ACTUAL.id) {
+        console.log('✅ Sistema obtenido desde contexto Django:', SISTEMA_ACTUAL.tag);
+        return SISTEMA_ACTUAL.id;
     }
-    renderHistoricoChart(historicoLabels, historicoData, sensorId);
-    if (historicoInterval) clearInterval(historicoInterval);
-    historicoInterval = setInterval(actualizarHistoricoChart, 100);
+    
+    // 2. Fallback: intentar extraer de la URL
+    const url = window.location.pathname;
+    const match = url.match(/\/sistema\/([a-f0-9-]{36})\//);
+    if (match) {
+        console.log('✅ Sistema obtenido desde URL:', match[1]);
+        return match[1];
+    }
+    
+    console.warn('⚠️ No se pudo obtener ID del sistema desde contexto Django ni URL');
+    return null;
+}
+
+// Función para actualizar displays con datos reales
+async function actualizarDisplaysConDatosReales() {
+    const sistemaId = obtenerSistemaActual();
+    if (!sistemaId) {
+        console.warn('No se detectó un sistema específico en la URL');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/monitoreo/api/datos-tiempo-real/${sistemaId}/`);
+        const data = await response.json();
+        
+        if (data.success) {
+            // Actualizar displays con datos reales
+            document.getElementById('display-sensor1').textContent = 
+                `${data.datos.flujo.valor.toFixed(1)} ${data.datos.flujo.unidad}`;
+            document.getElementById('display-sensor2').textContent = 
+                `${data.datos.temperatura.valor.toFixed(1)} ${data.datos.temperatura.unidad}`;
+            document.getElementById('display-sensor3').textContent = 
+                `${data.datos.presion.valor.toFixed(1)} ${data.datos.presion.unidad}`;
+            
+            // Actualizar fecha de última actualización
+            const ultimaActualizacion = document.getElementById('ultima-actualizacion');
+            if (ultimaActualizacion && data.fecha_legible) {
+                ultimaActualizacion.textContent = data.fecha_legible;
+            }
+                
+            console.log('✅ Datos tiempo real actualizados:', data.timestamp);
+        } else {
+            console.error('❌ Error obteniendo datos tiempo real:', data.error);
+            // Fallback a valores por defecto
+            mostrarDatosNoDisponibles();
+        }
+    } catch (error) {
+        console.error('❌ Error en la petición de datos tiempo real:', error);
+        mostrarDatosNoDisponibles();
+    }
+}
+
+// Función fallback para mostrar mensaje cuando no hay datos
+function mostrarDatosNoDisponibles() {
+    document.getElementById('display-sensor1').textContent = 'Sin datos';
+    document.getElementById('display-sensor2').textContent = 'Sin datos';
+    document.getElementById('display-sensor3').textContent = 'Sin datos';
+    
+    const ultimaActualizacion = document.getElementById('ultima-actualizacion');
+    if (ultimaActualizacion) {
+        ultimaActualizacion.textContent = 'Sin datos';
+    }
+}
+
+// Función para abrir modal de flujo (sensor1) con dos gráficos REALES
+async function abrirModal(sensorId) {
+    if (sensorId !== 'sensor1') {
+        // Para sensor2 y sensor3, mostrar mensaje temporal
+        alert(`Funcionalidad para ${sensorId} en desarrollo.\nActualmente solo está disponible el histórico de flujo (sensor1).`);
+        return;
+    }
+    
+    const sistemaId = obtenerSistemaActual();
+    if (!sistemaId) {
+        console.error('❌ No se pudo obtener el ID del sistema');
+        alert('Error: No se pudo identificar el sistema actual.\n\nVerifique que:\n1. Está accediendo desde un sistema específico\n2. El sistema existe en la base de datos\n3. La URL contiene el ID del sistema');
+        return;
+    }
+    
+    // Configurar fechas por defecto (últimos 7 días)
+    const fechaFin = new Date();
+    const fechaInicio = new Date();
+    fechaInicio.setDate(fechaFin.getDate() - 7);
+    
+    document.getElementById('fechaInicio').value = fechaInicio.toISOString().split('T')[0];
+    document.getElementById('fechaFin').value = fechaFin.toISOString().split('T')[0];
+    
+    // Cargar datos históricos de flujo REALES
+    await cargarDatosHistoricosFlujo(sistemaId);
+    
+    // Mostrar modal
     var modal = new bootstrap.Modal(document.getElementById('historicoModal'));
     modal.show();
-    // Detener actualización al cerrar el modal
-    document.getElementById('historicoModal').addEventListener('hidden.bs.modal', function() {
-        clearInterval(historicoInterval);
-    }, { once: true });
+    
+    console.log(`✅ Modal de flujo abierto para sistema: ${sistemaId}`);
 }
 
-function generarValorSensor(sensorId) {
-    if (sensorId === 'sensor1') return (120 + Math.random() * 10).toFixed(1);
-    if (sensorId === 'sensor2') return (90 + Math.random() * 20).toFixed(1);
-    if (sensorId === 'sensor3') return (40 + Math.random() * 10).toFixed(1);
-    return (100 + Math.random() * 10).toFixed(1);
-}
-
-function actualizarHistoricoChart() {
-    const now = new Date();
-    historicoLabels.push(now.toLocaleTimeString() + ':' + now.getMilliseconds().toString().padStart(3, '0'));
-    historicoData.push(generarValorSensor(historicoSensorId));
-    if (historicoLabels.length > 60) {
-        historicoLabels.shift();
-        historicoData.shift();
+// Función para renderizar gráfico de flujo volumétrico CON DATOS REALES
+function renderGraficoFlujoVolumetrico(datosVolumetrico) {
+    const ctx = document.getElementById('graficaFlujoVolumetrico').getContext('2d');
+    
+    if (chartFlujoVolumetrico) {
+        chartFlujoVolumetrico.destroy();
     }
-    if (historicoChart) {
-        historicoChart.data.labels = [...historicoLabels];
-        historicoChart.data.datasets[0].data = [...historicoData];
-        historicoChart.update('none');
-    }
-}
-
-function renderHistoricoChart(labels, data, sensorId) {
-    const ctx = document.getElementById('graficaHistorico').getContext('2d');
-    if (historicoChart) {
-        historicoChart.destroy();
-    }
-    historicoChart = new Chart(ctx, {
+    
+    const labels = datosVolumetrico.datos.map(item => item.fecha);
+    const valores = datosVolumetrico.datos.map(item => item.valor);
+    
+    chartFlujoVolumetrico = new Chart(ctx, {
         type: 'line',
         data: {
             labels: labels,
             datasets: [{
-                label: sensorId === 'sensor2' ? 'Temperatura (°F)' : 'Presión (PSI)',
-                data: data,
-                borderColor: sensorId === 'sensor1' ? '#007bff' : sensorId === 'sensor2' ? '#28a745' : '#dc3545',
-                backgroundColor: 'rgba(0,0,0,0.05)',
+                label: `Flujo Volumétrico (${datosVolumetrico.unidad})`,
+                data: valores,
+                borderColor: '#007bff',
+                backgroundColor: 'rgba(0, 123, 255, 0.1)',
                 tension: 0.3,
-                pointRadius: 2
+                pointRadius: 3,
+                pointHoverRadius: 6,
+                borderWidth: 2,
+                fill: true
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            animation: false,
             plugins: {
-                legend: { display: true },
-                title: { display: false }
+                legend: { 
+                    display: true,
+                    position: 'top'
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    titleColor: '#fff',
+                    bodyColor: '#fff',
+                    borderColor: '#007bff',
+                    borderWidth: 1,
+                    callbacks: {
+                        title: function(tooltipItems) {
+                            return 'Fecha: ' + tooltipItems[0].label;
+                        },
+                        label: function(tooltipItem) {
+                            return `${tooltipItem.dataset.label}: ${tooltipItem.parsed.y.toFixed(2)}`;
+                        }
+                    }
+                }
             },
             scales: {
                 x: {
-                    title: { display: true, text: 'Hora' },
-                    ticks: { maxRotation: 45, minRotation: 45, autoSkip: true }
+                    title: { 
+                        display: true, 
+                        text: 'Fecha y Hora',
+                        color: '#666',
+                        font: { size: 12, weight: 'bold' }
+                    },
+                    ticks: { 
+                        maxRotation: 45, 
+                        minRotation: 45, 
+                        autoSkip: true,
+                        maxTicksLimit: 10,
+                        color: '#666'
+                    },
+                    grid: {
+                        color: '#e0e0e0',
+                        lineWidth: 0.5
+                    }
                 },
                 y: {
-                    title: { display: true, text: sensorId === 'sensor2' ? 'Temperatura (°F)' : 'Presión (PSI)' },
-                    beginAtZero: true
+                    title: { 
+                        display: true, 
+                        text: `Flujo Volumétrico (${datosVolumetrico.unidad})`,
+                        color: '#666',
+                        font: { size: 12, weight: 'bold' }
+                    },
+                    beginAtZero: false,
+                    ticks: {
+                        color: '#666',
+                        callback: function(value) {
+                            return value.toFixed(1);
+                        }
+                    },
+                    grid: {
+                        color: '#e0e0e0',
+                        lineWidth: 0.5
+                    }
                 }
+            },
+            interaction: {
+                intersect: false,
+                mode: 'index'
+            },
+            hover: {
+                mode: 'nearest',
+                intersect: false
             }
         }
     });
 }
 
-function buscarHistorico() {
-    // Solo refrescar el gráfico, sin overlays ni efectos visuales
-    const sensorId = document.getElementById('tituloGrafica').textContent.split(' - ')[1] || 'sensor1';
-    abrirModal(sensorId);
+// Función para renderizar gráfico de flujo másico CON DATOS REALES
+function renderGraficoFlujoMasico(datosMasico) {
+    const ctx = document.getElementById('graficaFlujoMasico').getContext('2d');
+    
+    if (chartFlujoMasico) {
+        chartFlujoMasico.destroy();
+    }
+    
+    const labels = datosMasico.datos.map(item => item.fecha);
+    const valores = datosMasico.datos.map(item => item.valor);
+    
+    chartFlujoMasico = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: `Flujo Másico (${datosMasico.unidad})`,
+                data: valores,
+                borderColor: '#28a745',
+                backgroundColor: 'rgba(40, 167, 69, 0.1)',
+                tension: 0.3,
+                pointRadius: 3,
+                pointHoverRadius: 6,
+                borderWidth: 2,
+                fill: true
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { 
+                    display: true,
+                    position: 'top'
+                },
+                tooltip: {
+                    mode: 'index',
+                    intersect: false,
+                    backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                    titleColor: '#fff',
+                    bodyColor: '#fff',
+                    borderColor: '#28a745',
+                    borderWidth: 1,
+                    callbacks: {
+                        title: function(tooltipItems) {
+                            return 'Fecha: ' + tooltipItems[0].label;
+                        },
+                        label: function(tooltipItem) {
+                            return `${tooltipItem.dataset.label}: ${tooltipItem.parsed.y.toFixed(2)}`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    title: { 
+                        display: true, 
+                        text: 'Fecha y Hora',
+                        color: '#666',
+                        font: { size: 12, weight: 'bold' }
+                    },
+                    ticks: { 
+                        maxRotation: 45, 
+                        minRotation: 45, 
+                        autoSkip: true,
+                        maxTicksLimit: 10,
+                        color: '#666'
+                    },
+                    grid: {
+                        color: '#e0e0e0',
+                        lineWidth: 0.5
+                    }
+                },
+                y: {
+                    title: { 
+                        display: true, 
+                        text: `Flujo Másico (${datosMasico.unidad})`,
+                        color: '#666',
+                        font: { size: 12, weight: 'bold' }
+                    },
+                    beginAtZero: false,
+                    ticks: {
+                        color: '#666',
+                        callback: function(value) {
+                            return value.toFixed(1);
+                        }
+                    },
+                    grid: {
+                        color: '#e0e0e0',
+                        lineWidth: 0.5
+                    }
+                }
+            },
+            interaction: {
+                intersect: false,
+                mode: 'index'
+            },
+            hover: {
+                mode: 'nearest',
+                intersect: false
+            }
+        }
+    });
 }
+
+// Función para renderizar gráficos vacíos con mensaje de error
+function renderGraficosVacios(mensaje) {
+    // Flujo Volumétrico
+    const ctxVol = document.getElementById('graficaFlujoVolumetrico').getContext('2d');
+    if (chartFlujoVolumetrico) chartFlujoVolumetrico.destroy();
+    
+    chartFlujoVolumetrico = new Chart(ctxVol, {
+        type: 'line',
+        data: {
+            labels: ['Sin datos'],
+            datasets: [{
+                label: mensaje,
+                data: [0],
+                borderColor: '#6c757d',
+                backgroundColor: '#6c757d20'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                title: { display: true, text: mensaje }
+            }
+        }
+    });
+    
+    // Flujo Másico
+    const ctxMas = document.getElementById('graficaFlujoMasico').getContext('2d');
+    if (chartFlujoMasico) chartFlujoMasico.destroy();
+    
+    chartFlujoMasico = new Chart(ctxMas, {
+        type: 'line',
+        data: {
+            labels: ['Sin datos'],
+            datasets: [{
+                label: mensaje,
+                data: [0],
+                borderColor: '#6c757d',
+                backgroundColor: '#6c757d20'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                title: { display: true, text: mensaje }
+            }
+        }
+    });
+}
+
+// Función para exportar datos como CSV
+function exportarDatos() {
+    const sistemaId = obtenerSistemaActual();
+    if (!sistemaId) {
+        alert('No se pudo obtener el sistema actual');
+        return;
+    }
+    
+    const fechaInicio = document.getElementById('fechaInicio').value;
+    const fechaFin = document.getElementById('fechaFin').value;
+    
+    if (!fechaInicio || !fechaFin) {
+        alert('Por favor selecciona un rango de fechas válido');
+        return;
+    }
+    
+    // Crear URL para descarga
+    const url = `/monitoreo/api/datos-flujo/${sistemaId}/?fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}`;
+    
+    // Abrir en nueva ventana para descargar
+    window.open(url, '_blank');
+    
+    console.log('📥 Descargando datos para el período:', fechaInicio, 'al', fechaFin);
+}
+
+// Mejorar la función de carga de datos históricos para mostrar contadores
+async function cargarDatosHistoricosFlujo(sistemaId) {
+    try {
+        const fechaInicio = document.getElementById('fechaInicio').value;
+        const fechaFin = document.getElementById('fechaFin').value;
+        
+        const url = `/monitoreo/api/datos-flujo/${sistemaId}/?fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}`;
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        if (data.success) {
+            // Renderizar gráficos
+            renderGraficoFlujoVolumetrico(data.flujo_volumetrico);
+            renderGraficoFlujoMasico(data.flujo_masico);
+            
+            // Actualizar contadores
+            document.getElementById('contador-volumetrico').textContent = 
+                `${data.flujo_volumetrico.total_registros} registros`;
+            document.getElementById('contador-masico').textContent = 
+                `${data.flujo_masico.total_registros} registros`;
+            
+            // Actualizar información del período
+            const infoPeriodo = document.getElementById('info-periodo');
+            if (infoPeriodo) {
+                infoPeriodo.textContent = ` Período: ${fechaInicio} al ${fechaFin}`;
+            }
+                
+            console.log('✅ Datos históricos cargados:', {
+                volumetrico: data.flujo_volumetrico.total_registros,
+                masico: data.flujo_masico.total_registros
+            });
+        } else {
+            console.error('❌ Error cargando datos históricos de flujo:', data.error);
+            renderGraficosVacios('Error: ' + data.error);
+        }
+    } catch (error) {
+        console.error('❌ Error en la petición de datos históricos de flujo:', error);
+        renderGraficosVacios('Error de conexión');
+    }
+}
+
+// Función para buscar histórico con filtros de fecha (BOTÓN BUSCAR)
+async function buscarHistoricoFlujo() {
+    const sistemaId = obtenerSistemaActual();
+    if (!sistemaId) {
+        alert('Error: No se pudo identificar el sistema actual para realizar la búsqueda.');
+        return;
+    }
+    
+    console.log('🔍 Buscando histórico con nuevos filtros...');
+    await cargarDatosHistoricosFlujo(sistemaId);
+}
+
+// Inicialización cuando se carga la página
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Iniciando sistema de monitoreo Coriolis con datos REALES');
+    
+    // Mostrar información de debugging
+    console.log('🔍 Información del contexto:');
+    console.log('  - SISTEMA_ACTUAL disponible:', typeof SISTEMA_ACTUAL !== 'undefined' && SISTEMA_ACTUAL);
+    console.log('  - URL actual:', window.location.pathname);
+    
+    const sistemaId = obtenerSistemaActual();
+    
+    if (sistemaId) {
+        console.log(`✅ Sistema detectado: ${sistemaId}`);
+        
+        // Mostrar información adicional si viene del contexto Django
+        if (typeof SISTEMA_ACTUAL !== 'undefined' && SISTEMA_ACTUAL) {
+            console.log(`  - Tag: ${SISTEMA_ACTUAL.tag}`);
+            console.log(`  - Sistema ID: ${SISTEMA_ACTUAL.sistema_id}`);
+        }
+        
+        // ✅ LÓGICA CORREGIDA: Si se detecta cualquier sistema (contexto Django O URL), mostrar vista de monitoreo
+        mostrarVistaMonitoreo();
+        
+        // Actualizar displays inmediatamente
+        actualizarDisplaysConDatosReales();
+        
+        // Configurar actualización automática cada 5 segundos
+        if (tiempoRealInterval) clearInterval(tiempoRealInterval);
+        tiempoRealInterval = setInterval(actualizarDisplaysConDatosReales, 5000);
+        
+        console.log('⏰ Actualización automática configurada cada 5 segundos');
+    } else {
+        console.warn('⚠️ No se detectó un sistema específico - mostrar tabla de selección');
+        // Mostrar la vista de selección de sistemas
+        mostrarVistaSelector();
+        // Fallback a datos simulados para vista general
+        actualizarDisplaysSimulados();
+    }
+});
+
+// Función para mostrar la vista de monitoreo
+function mostrarVistaMonitoreo() {
+    console.log('📊 Mostrando vista de monitoreo específica');
+    
+    // Ocultar vista de selector
+    const selectorView = document.getElementById('sistema-selector-view');
+    if (selectorView) {
+        selectorView.classList.add('hidden');
+        selectorView.style.display = 'none';
+        console.log('✅ Vista selector ocultada');
+    } else {
+        console.warn('⚠️ No se encontró elemento sistema-selector-view');
+    }
+    
+    // Mostrar vista de monitoreo
+    const monitoringView = document.getElementById('sistema-monitoring-view');
+    if (monitoringView) {
+        monitoringView.classList.remove('hidden');
+        monitoringView.style.display = 'block';
+        console.log('✅ Vista monitoreo mostrada');
+    } else {
+        console.error('❌ No se encontró elemento sistema-monitoring-view');
+    }
+    
+    // Actualizar información del breadcrumb y título 
+    if (typeof SISTEMA_ACTUAL !== 'undefined' && SISTEMA_ACTUAL) {
+        // Si hay contexto Django, usar esa información
+        const breadcrumbSistema = document.getElementById('breadcrumbSistema');
+        if (breadcrumbSistema) {
+            breadcrumbSistema.textContent = `${SISTEMA_ACTUAL.tag} - ${SISTEMA_ACTUAL.sistema_id}`;
+        }
+        
+        const sistemaTitle = document.getElementById('sistemaTitle');
+        if (sistemaTitle) {
+            sistemaTitle.innerHTML = `<i class="bi bi-diagram-3"></i> ${SISTEMA_ACTUAL.tag} - Monitoreo Coriolis`;
+        }
+    } else {
+        // Si no hay contexto Django pero sí sistemId por URL, mostrar genérico
+        const sistemaId = obtenerSistemaActual();
+        if (sistemaId) {
+            const breadcrumbSistema = document.getElementById('breadcrumbSistema');
+            if (breadcrumbSistema) {
+                breadcrumbSistema.textContent = `Sistema ${sistemaId.substring(0, 8)}...`;
+            }
+            
+            const sistemaTitle = document.getElementById('sistemaTitle');
+            if (sistemaTitle) {
+                sistemaTitle.innerHTML = `<i class="bi bi-diagram-3"></i> Sistema ${sistemaId.substring(0, 8)}... - Monitoreo Coriolis`;
+            }
+        }
+    }
+}
+
+// Función para mostrar la vista de selector
+function mostrarVistaSelector() {
+    console.log('📋 Mostrando vista de selección de sistemas');
+    
+    // Mostrar vista de selector
+    const selectorView = document.getElementById('sistema-selector-view');
+    if (selectorView) {
+        selectorView.classList.remove('hidden');
+        selectorView.style.display = 'block';
+        console.log('✅ Vista selector mostrada');
+    } else {
+        console.warn('⚠️ No se encontró elemento sistema-selector-view');
+    }
+    
+    // Ocultar vista de monitoreo
+    const monitoringView = document.getElementById('sistema-monitoring-view');
+    if (monitoringView) {
+        monitoringView.classList.add('hidden');
+        monitoringView.style.display = 'none';
+        console.log('✅ Vista monitoreo ocultada');
+    } else {
+        console.warn('⚠️ No se encontró elemento sistema-monitoring-view');
+    }
+}
+
+// Función fallback para datos simulados (cuando no hay sistema específico)
+function actualizarDisplaysSimulados() {
+    const val1 = (120 + Math.random() * 10).toFixed(1);
+    document.getElementById('display-sensor1').textContent = val1 + ' m³/h';
+    const val2 = (90 + Math.random() * 20).toFixed(1);
+    document.getElementById('display-sensor2').textContent = val2 + ' °F';
+    const val3 = (40 + Math.random() * 10).toFixed(1);
+    document.getElementById('display-sensor3').textContent = val3 + ' PSI';
+}
+
+// Limpiar intervals cuando se abandone la página
+window.addEventListener('beforeunload', function() {
+    if (tiempoRealInterval) {
+        clearInterval(tiempoRealInterval);
+        console.log('🧹 Intervals limpiados al salir de la página');
+    }
+});
+
+// Función alias para compatibilidad con botones existentes
+function showSelectorView() {
+    console.log('🔄 Cambiando a vista de selector (showSelectorView)');
+    mostrarVistaSelector();
+    
+    // También detener actualizaciones automáticas cuando volvemos al selector
+    if (tiempoRealInterval) {
+        clearInterval(tiempoRealInterval);
+        tiempoRealInterval = null;
+        console.log('⏸️ Actualizaciones automáticas pausadas');
+    }
+}
+
+console.log('✅ Sistema de monitoreo Coriolis con datos REALES cargado');
 </script>
 {% endblock %}

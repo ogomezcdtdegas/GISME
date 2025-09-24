@@ -3,9 +3,13 @@ from . import views
 from .views_node_red import NodeRedReceiverView
 
 urlpatterns = [
-    # Vista base SPA - Una sola ruta que maneja todo
+    # Vistas principales SPA (CBVs)
     path('', views.MonitoreoCoriolisBaseView.as_view(), name='monitoreo_coriolis'),
-    path('<uuid:sistema_id>/', views.MonitoreoCoriolisBaseView.as_view(), name='monitoreo_coriolis_sistema')
+    path('sistema/<uuid:sistema_id>/', views.MonitoreoCoriolisSistemaView.as_view(), name='monitoreo_coriolis_sistema'),
+    
+    # APIs para datos históricos (CBVs)
+    path('api/datos-flujo/<uuid:sistema_id>/', views.DatosHistoricosFlujoView.as_view(), name='datos_flujo'),
+    path('api/datos-tiempo-real/<uuid:sistema_id>/', views.DatosTiempoRealView.as_view(), name='datos_tiempo_real'),
 ]
 
 urlpatterns += [
