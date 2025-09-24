@@ -26,16 +26,19 @@
 
 <script>
 // Variables globales del sistema desde Django
-{% if sistema %}
-    const SISTEMA_ACTUAL = {
-        id: '{{ sistema.id }}',
-        tag: '{{ sistema.tag }}',
-        sistema_id: '{{ sistema.sistema_id }}',
+let SISTEMA_ACTUAL;
+
+// Configuración del sistema desde Django template
+/*{% if sistema %}*/
+    SISTEMA_ACTUAL = {
+        id: '{{ sistema.id|default:"" }}',
+        tag: '{{ sistema.tag|default:"" }}',
+        sistema_id: '{{ sistema.sistema_id|default:"" }}',
         nombre: '{{ sistema.nombre|default:"" }}'
     };
-{% else %}
-    const SISTEMA_ACTUAL = null;
-{% endif %}
+/*{% else %}*/
+    SISTEMA_ACTUAL = null;
+/*{% endif %}*/
 </script>
 
 <div class="container-fluid mt-4">
@@ -511,7 +514,7 @@ let intervalActualizacionGraficos = null;
 function obtenerSistemaActual() {
     // 1. Primero intentar obtener del contexto de Django
     if (typeof SISTEMA_ACTUAL !== 'undefined' && SISTEMA_ACTUAL && SISTEMA_ACTUAL.id) {
-        console.log('✅ Sistema obtenido desde contexto Django:', SISTEMA_ACTUAL.tag);
+        // console.log('✅ Sistema obtenido desde contexto Django:', SISTEMA_ACTUAL.tag);
         return SISTEMA_ACTUAL.id;
     }
     
@@ -519,7 +522,7 @@ function obtenerSistemaActual() {
     const url = window.location.pathname;
     const match = url.match(/\/sistema\/([a-f0-9-]{36})\//);
     if (match) {
-        console.log('✅ Sistema obtenido desde URL:', match[1]);
+        // console.log('✅ Sistema obtenido desde URL:', match[1]);
         return match[1];
     }
     
@@ -554,14 +557,14 @@ async function actualizarDisplaysConDatosReales() {
                 ultimaActualizacion.textContent = data.fecha_legible;
             }
                 
-            console.log('✅ Datos tiempo real actualizados:', data.timestamp);
+            // console.log('✅ Datos tiempo real actualizados:', data.timestamp);
         } else {
-            console.error('❌ Error obteniendo datos tiempo real:', data.error);
+            // console.error('❌ Error obteniendo datos tiempo real:', data.error);
             // Fallback a valores por defecto
             mostrarDatosNoDisponibles();
         }
     } catch (error) {
-        console.error('❌ Error en la petición de datos tiempo real:', error);
+        // console.error('❌ Error en la petición de datos tiempo real:', error);
         mostrarDatosNoDisponibles();
     }
 }
@@ -594,10 +597,10 @@ async function cargarUltimos7DiasDinamico(sistemaId) {
         const data = await response.json();
         
         if (data.success) {
-            console.log('🔄 Cargando datos reales de últimos 7 días:', {
-                volumetrico: data.flujo_volumetrico.total_registros,
-                masico: data.flujo_masico.total_registros
-            });
+            // console.log('🔄 Cargando datos reales de últimos 7 días:', {
+            //     volumetrico: data.flujo_volumetrico.total_registros,
+            //     masico: data.flujo_masico.total_registros
+            // });
             
             // Renderizar gráficos en modo tiempo real
             renderGraficoFlujoVolumetrico(data.flujo_volumetrico, true);
@@ -617,12 +620,12 @@ async function cargarUltimos7DiasDinamico(sistemaId) {
             
             return true;
         } else {
-            console.error('❌ Error cargando datos de últimos 7 días:', data.error);
+            // console.error('❌ Error cargando datos de últimos 7 días:', data.error);
             renderGraficosVacios('Error: ' + data.error);
             return false;
         }
     } catch (error) {
-        console.error('❌ Error en la petición de últimos 7 días:', error);
+        // console.error('❌ Error en la petición de últimos 7 días:', error);
         renderGraficosVacios('Error de conexión');
         return false;
     }
@@ -633,7 +636,7 @@ function inicializarModoTiempoReal() {
     const sistemaId = obtenerSistemaActual();
     if (!sistemaId) return;
     
-    console.log('🔄 Iniciando modo tiempo real - últimos 7 días dinámico');
+    // console.log('🔄 Iniciando modo tiempo real - últimos 7 días dinámico');
     modoTiempoReal = true;
     
     // Cargar datos iniciales
@@ -646,17 +649,17 @@ function inicializarModoTiempoReal() {
     
     intervalActualizacionGraficos = setInterval(async () => {
         if (modoTiempoReal) {
-            console.log('🔄 Actualizando gráficos automáticamente...');
+            // console.log('🔄 Actualizando gráficos automáticamente...');
             await cargarUltimos7DiasDinamico(sistemaId);
         }
     }, 30000); // Cada 30 segundos
     
-    console.log('✅ Modo tiempo real iniciado - se actualiza cada 30 segundos');
+    // console.log('✅ Modo tiempo real iniciado - se actualiza cada 30 segundos');
 }
 
 // Función para cambiar a modo filtrado (estático)
 function cambiarAModoFiltrado() {
-    console.log('⏸️ Cambiando a modo filtrado - pausando actualizaciones automáticas');
+    // console.log('⏸️ Cambiando a modo filtrado - pausando actualizaciones automáticas');
     modoTiempoReal = false;
     
     // Detener actualizaciones automáticas
@@ -683,12 +686,12 @@ function configurarEventosModal() {
         btnReset.onclick = resetearAModoTiempoReal;
     }
     
-    console.log('🔧 Eventos del modal configurados');
+    // console.log('🔧 Eventos del modal configurados');
 }
 
 // Función para resetear a modo tiempo real
 function resetearAModoTiempoReal() {
-    console.log('▶️ Reseteando a modo tiempo real - últimos 7 días dinámico');
+    // console.log('▶️ Reseteando a modo tiempo real - últimos 7 días dinámico');
     
     // Resetear fechas a valores por defecto (últimos 7 días)
     const fechaFin = new Date();
@@ -712,7 +715,7 @@ async function abrirModal(sensorId) {
     
     const sistemaId = obtenerSistemaActual();
     if (!sistemaId) {
-        console.error('❌ No se pudo obtener el ID del sistema');
+        // console.error('❌ No se pudo obtener el ID del sistema');
         alert('Error: No se pudo identificar el sistema actual.\n\nVerifique que:\n1. Está accediendo desde un sistema específico\n2. El sistema existe en la base de datos\n3. La URL contiene el ID del sistema');
         return;
     }
@@ -735,7 +738,7 @@ async function abrirModal(sensorId) {
     // Configurar eventos del modal
     configurarEventosModal();
     
-    console.log(`✅ Modal de flujo abierto para sistema: ${sistemaId}`);
+    // console.log(`✅ Modal de flujo abierto para sistema: ${sistemaId}`);
 }
 
 // Función para renderizar gráfico de flujo volumétrico CON DATOS REALES
@@ -1029,7 +1032,7 @@ function exportarDatos() {
     // Abrir en nueva ventana para descargar
     window.open(url, '_blank');
     
-    console.log('📥 Descargando datos para el período:', fechaInicio, 'al', fechaFin);
+    // console.log('📥 Descargando datos para el período:', fechaInicio, 'al', fechaFin);
 }
 
 // Mejorar la función de carga de datos históricos para mostrar contadores
@@ -1059,16 +1062,16 @@ async function cargarDatosHistoricosFlujo(sistemaId) {
                 infoPeriodo.textContent = ` Período: ${fechaInicio} al ${fechaFin}`;
             }
                 
-            console.log('✅ Datos históricos cargados:', {
-                volumetrico: data.flujo_volumetrico.total_registros,
-                masico: data.flujo_masico.total_registros
-            });
+            // console.log('✅ Datos históricos cargados:', {
+            //     volumetrico: data.flujo_volumetrico.total_registros,
+            //     masico: data.flujo_masico.total_registros
+            // });
         } else {
-            console.error('❌ Error cargando datos históricos de flujo:', data.error);
+            // console.error('❌ Error cargando datos históricos de flujo:', data.error);
             renderGraficosVacios('Error: ' + data.error);
         }
     } catch (error) {
-        console.error('❌ Error en la petición de datos históricos de flujo:', error);
+        // console.error('❌ Error en la petición de datos históricos de flujo:', error);
         renderGraficosVacios('Error de conexión');
     }
 }
@@ -1081,28 +1084,28 @@ async function buscarHistoricoFlujo() {
         return;
     }
     
-    console.log('🔍 Buscando histórico con nuevos filtros...');
+    // console.log('🔍 Buscando histórico con nuevos filtros...');
     await cargarDatosHistoricosFlujo(sistemaId);
 }
 
 // Inicialización cuando se carga la página
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 Iniciando sistema de monitoreo Coriolis con datos REALES');
+    // console.log('🚀 Iniciando sistema de monitoreo Coriolis con datos REALES');
     
     // Mostrar información de debugging
-    console.log('🔍 Información del contexto:');
-    console.log('  - SISTEMA_ACTUAL disponible:', typeof SISTEMA_ACTUAL !== 'undefined' && SISTEMA_ACTUAL);
-    console.log('  - URL actual:', window.location.pathname);
+    // console.log('🔍 Información del contexto:');
+    // console.log('  - SISTEMA_ACTUAL disponible:', typeof SISTEMA_ACTUAL !== 'undefined' && SISTEMA_ACTUAL);
+    // console.log('  - URL actual:', window.location.pathname);
     
     const sistemaId = obtenerSistemaActual();
     
     if (sistemaId) {
-        console.log(`✅ Sistema detectado: ${sistemaId}`);
+        // console.log(`✅ Sistema detectado: ${sistemaId}`);
         
         // Mostrar información adicional si viene del contexto Django
         if (typeof SISTEMA_ACTUAL !== 'undefined' && SISTEMA_ACTUAL) {
-            console.log(`  - Tag: ${SISTEMA_ACTUAL.tag}`);
-            console.log(`  - Sistema ID: ${SISTEMA_ACTUAL.sistema_id}`);
+            // console.log(`  - Tag: ${SISTEMA_ACTUAL.tag}`);
+            // console.log(`  - Sistema ID: ${SISTEMA_ACTUAL.sistema_id}`);
         }
         
         // ✅ LÓGICA CORREGIDA: Si se detecta cualquier sistema (contexto Django O URL), mostrar vista de monitoreo
@@ -1146,7 +1149,7 @@ function mostrarVistaMonitoreo() {
         monitoringView.style.display = 'block';
         console.log('✅ Vista monitoreo mostrada');
     } else {
-        console.error('❌ No se encontró elemento sistema-monitoring-view');
+        // console.error('❌ No se encontró elemento sistema-monitoring-view');
     }
     
     // Actualizar información del breadcrumb y título 

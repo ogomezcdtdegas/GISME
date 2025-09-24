@@ -221,7 +221,7 @@ const CoriolisSPA = {
                 </td>
                 <td><small class="text-muted">${sistema.ubicacion_coordenadas}</small></td>
                 <td>
-                    <button class="btn btn-primary btn-sm me-1" onclick="CoriolisSPA.loadSistemaDetail('${sistema.id}')">
+                    <button class="btn btn-primary btn-sm me-1" onclick="window.location.href='/monitoreo/sistema/${sistema.id}/'">
                         <i class="bi bi-activity"></i> Monitorear
                     </button>
                     <button class="btn btn-outline-secondary btn-sm" 
