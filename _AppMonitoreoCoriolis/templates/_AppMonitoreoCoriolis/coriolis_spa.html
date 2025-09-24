@@ -327,12 +327,15 @@
               <input type="date" id="fechaInicio" class="form-control" style="width: auto;">
               <span>→</span>
               <input type="date" id="fechaFin" class="form-control" style="width: auto;">
-              <button class="btn btn-outline-success" onclick="buscarHistoricoFlujo()">
+              <button id="buscarHistoricoFlujo" class="btn btn-outline-success">
                 <i class="bi bi-search"></i> Buscar
               </button>
             </div>
           </div>
           <div class="col-md-4 text-end">
+            <button id="volverTiempoReal" type="button" class="btn btn-outline-warning btn-sm me-2" onclick="resetearAModoTiempoReal()">
+              <i class="bi bi-arrow-clockwise"></i> Volver a Tiempo Real
+            </button>
             <button type="button" class="btn btn-outline-info btn-sm" onclick="exportarDatos()">
               <i class="bi bi-download"></i> Exportar Datos
             </button>
@@ -494,11 +497,15 @@ async function descargarReportePDF() {
 // SISTEMA CON DATOS REALES DE LA BASE DE DATOS
 // =====================
 
-// Variables globales
+// Variables globales para controlar los gráficos
 let sistemaActual = null;
 let chartFlujoVolumetrico = null;
 let chartFlujoMasico = null;
 let tiempoRealInterval = null;
+
+// Variables para controlar el modo de los gráficos
+let modoTiempoReal = true; // true = últimos 7 días actualizándose, false = filtrado estático
+let intervalActualizacionGraficos = null;
 
 // Función para obtener el sistema actual (prioridad: contexto Django > URL)
 function obtenerSistemaActual() {
@@ -571,6 +578,130 @@ function mostrarDatosNoDisponibles() {
     }
 }
 
+// Función para cargar datos de los últimos 7 días (MODO TIEMPO REAL)
+async function cargarUltimos7DiasDinamico(sistemaId) {
+    try {
+        // Calcular fechas de los últimos 7 días
+        const fechaFin = new Date();
+        const fechaInicio = new Date();
+        fechaInicio.setDate(fechaFin.getDate() - 7);
+        
+        const fechaInicioStr = fechaInicio.toISOString().split('T')[0];
+        const fechaFinStr = fechaFin.toISOString().split('T')[0];
+        
+        const url = `/monitoreo/api/datos-flujo/${sistemaId}/?fecha_inicio=${fechaInicioStr}&fecha_fin=${fechaFinStr}`;
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        if (data.success) {
+            console.log('🔄 Cargando datos reales de últimos 7 días:', {
+                volumetrico: data.flujo_volumetrico.total_registros,
+                masico: data.flujo_masico.total_registros
+            });
+            
+            // Renderizar gráficos en modo tiempo real
+            renderGraficoFlujoVolumetrico(data.flujo_volumetrico, true);
+            renderGraficoFlujoMasico(data.flujo_masico, true);
+            
+            // Actualizar contadores con indicación de tiempo real
+            document.getElementById('contador-volumetrico').textContent = 
+                `${data.flujo_volumetrico.total_registros} registros (Últimos 7 días - Actualizando)`;
+            document.getElementById('contador-masico').textContent = 
+                `${data.flujo_masico.total_registros} registros (Últimos 7 días - Actualizando)`;
+            
+            // Actualizar información del período
+            const infoPeriodo = document.getElementById('info-periodo');
+            if (infoPeriodo) {
+                infoPeriodo.textContent = ` Últimos 7 días - Se actualiza automáticamente`;
+            }
+            
+            return true;
+        } else {
+            console.error('❌ Error cargando datos de últimos 7 días:', data.error);
+            renderGraficosVacios('Error: ' + data.error);
+            return false;
+        }
+    } catch (error) {
+        console.error('❌ Error en la petición de últimos 7 días:', error);
+        renderGraficosVacios('Error de conexión');
+        return false;
+    }
+}
+
+// Función para inicializar modo tiempo real (últimos 7 días que se actualizan)
+function inicializarModoTiempoReal() {
+    const sistemaId = obtenerSistemaActual();
+    if (!sistemaId) return;
+    
+    console.log('🔄 Iniciando modo tiempo real - últimos 7 días dinámico');
+    modoTiempoReal = true;
+    
+    // Cargar datos iniciales
+    cargarUltimos7DiasDinamico(sistemaId);
+    
+    // Configurar actualización automática cada 30 segundos
+    if (intervalActualizacionGraficos) {
+        clearInterval(intervalActualizacionGraficos);
+    }
+    
+    intervalActualizacionGraficos = setInterval(async () => {
+        if (modoTiempoReal) {
+            console.log('🔄 Actualizando gráficos automáticamente...');
+            await cargarUltimos7DiasDinamico(sistemaId);
+        }
+    }, 30000); // Cada 30 segundos
+    
+    console.log('✅ Modo tiempo real iniciado - se actualiza cada 30 segundos');
+}
+
+// Función para cambiar a modo filtrado (estático)
+function cambiarAModoFiltrado() {
+    console.log('⏸️ Cambiando a modo filtrado - pausando actualizaciones automáticas');
+    modoTiempoReal = false;
+    
+    // Detener actualizaciones automáticas
+    if (intervalActualizacionGraficos) {
+        clearInterval(intervalActualizacionGraficos);
+        intervalActualizacionGraficos = null;
+    }
+}
+
+// Función para configurar eventos del modal
+function configurarEventosModal() {
+    // Agregar evento al botón buscar
+    const btnBuscar = document.getElementById('buscarHistoricoFlujo');
+    if (btnBuscar) {
+        btnBuscar.onclick = function() {
+            cambiarAModoFiltrado();  // Cambiar a modo filtrado
+            buscarHistoricoFlujo();   // Buscar con filtros
+        };
+    }
+    
+    // Agregar evento al botón reset (volver a tiempo real)
+    const btnReset = document.getElementById('volverTiempoReal');
+    if (btnReset) {
+        btnReset.onclick = resetearAModoTiempoReal;
+    }
+    
+    console.log('🔧 Eventos del modal configurados');
+}
+
+// Función para resetear a modo tiempo real
+function resetearAModoTiempoReal() {
+    console.log('▶️ Reseteando a modo tiempo real - últimos 7 días dinámico');
+    
+    // Resetear fechas a valores por defecto (últimos 7 días)
+    const fechaFin = new Date();
+    const fechaInicio = new Date();
+    fechaInicio.setDate(fechaFin.getDate() - 7);
+    
+    document.getElementById('fechaInicio').value = fechaInicio.toISOString().split('T')[0];
+    document.getElementById('fechaFin').value = fechaFin.toISOString().split('T')[0];
+    
+    // Reiniciar modo tiempo real
+    inicializarModoTiempoReal();
+}
+
 // Función para abrir modal de flujo (sensor1) con dos gráficos REALES
 async function abrirModal(sensorId) {
     if (sensorId !== 'sensor1') {
@@ -594,12 +725,15 @@ async function abrirModal(sensorId) {
     document.getElementById('fechaInicio').value = fechaInicio.toISOString().split('T')[0];
     document.getElementById('fechaFin').value = fechaFin.toISOString().split('T')[0];
     
-    // Cargar datos históricos de flujo REALES
-    await cargarDatosHistoricosFlujo(sistemaId);
+    // Iniciar en modo tiempo real por defecto (últimos 7 días que se actualizan)
+    inicializarModoTiempoReal();
     
     // Mostrar modal
     var modal = new bootstrap.Modal(document.getElementById('historicoModal'));
     modal.show();
+    
+    // Configurar eventos del modal
+    configurarEventosModal();
     
     console.log(`✅ Modal de flujo abierto para sistema: ${sistemaId}`);
 }
@@ -625,8 +759,8 @@ function renderGraficoFlujoVolumetrico(datosVolumetrico) {
                 borderColor: '#007bff',
                 backgroundColor: 'rgba(0, 123, 255, 0.1)',
                 tension: 0.3,
-                pointRadius: 3,
-                pointHoverRadius: 6,
+                pointRadius: 1,
+                pointHoverRadius: 4,
                 borderWidth: 2,
                 fill: true
             }]
@@ -697,6 +831,10 @@ function renderGraficoFlujoVolumetrico(datosVolumetrico) {
                     }
                 }
             },
+            animation: {
+                duration: 750,
+                easing: 'easeInOutQuart'
+            },
             interaction: {
                 intersect: false,
                 mode: 'index'
@@ -730,8 +868,8 @@ function renderGraficoFlujoMasico(datosMasico) {
                 borderColor: '#28a745',
                 backgroundColor: 'rgba(40, 167, 69, 0.1)',
                 tension: 0.3,
-                pointRadius: 3,
-                pointHoverRadius: 6,
+                pointRadius: 1,
+                pointHoverRadius: 4,
                 borderWidth: 2,
                 fill: true
             }]
@@ -801,6 +939,10 @@ function renderGraficoFlujoMasico(datosMasico) {
                         lineWidth: 0.5
                     }
                 }
+            },
+            animation: {
+                duration: 750,
+                easing: 'easeInOutQuart'
             },
             interaction: {
                 intersect: false,
