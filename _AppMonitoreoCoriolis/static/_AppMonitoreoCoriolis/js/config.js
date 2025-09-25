@@ -17,6 +17,22 @@ const CONFIG = {
         DIAS_POR_DEFECTO: 1,                // Días hacia atrás para mostrar por defecto (últimos 3 días)
     },
     
+    // Configuración de gráficos
+    GRAFICOS: {
+        FLUJO_VOLUMETRICO: {
+            color: '#007bff',
+            colorFondo: 'rgba(0, 123, 255, 0.1)',
+            label: 'Flujo Volumétrico',
+            canvasId: 'graficaFlujoVolumetrico'
+        },
+        FLUJO_MASICO: {
+            color: '#28a745', 
+            colorFondo: 'rgba(40, 167, 69, 0.1)',
+            label: 'Flujo Másico',
+            canvasId: 'graficaFlujoMasico'
+        }
+    },
+    
     // Textos dinámicos que se calculan automáticamente basados en la configuración
     TEXTOS: {
         get MODO_TIEMPO_REAL() {
