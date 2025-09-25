@@ -1,28 +1,28 @@
 /* === PALETA DE COLORES SUAVES === */
 :root {
-    /* Colores principales más suaves */
-    --primary-soft: #6c9bd1;
-    --secondary-soft: #9e9e9e;
-    --success-soft: #7db97d;
-    --warning-soft: #d4ac0d;
-    --danger-soft: #d19999;
-    --info-soft: #7dc4e4;
+    /* Colores principales más vibrantes como en la imagen original */
+    --primary-soft: #007bff;
+    --secondary-soft: #6c757d;
+    --success-soft: #28a745;
+    --warning-soft: #ffc107;
+    --danger-soft: #dc3545;
+    --info-soft: #17a2b8;
     --light-soft: #f8f9fa;
-    --dark-soft: #6c757d;
+    --dark-soft: #343a40;
     
-    /* Fondos suaves */
-    --bg-success: #e8f5e8;
-    --bg-warning: #fef9e7;
-    --bg-danger: #fdebeb;
-    --bg-info: #e3f2fd;
+    /* Fondos más saturados */
+    --bg-success: #d1ecf1;
+    --bg-warning: #fff3cd;
+    --bg-danger: #f8d7da;
+    --bg-info: #d1ecf1;
     --bg-light: #ffffff;
     
-    /* Textos suaves */
-    --text-success: #2d5a2d;
-    --text-warning: #7a6608;
+    /* Textos más contrastantes */
+    --text-success: #155724;
+    --text-warning: #856404;
     --text-danger: #721c24;
-    --text-info: #1976d2;
-    --text-muted: #9e9e9e;
+    --text-info: #0c5460;
+    --text-muted: #6c757d;
 }
 
 /* === OVERRIDE DE COLORES BOOTSTRAP === */
@@ -72,7 +72,7 @@
 .btn-warning {
     background-color: var(--warning-soft) !important;
     border-color: var(--warning-soft) !important;
-    color: white !important;
+    color: black !important;
 }
 
 .btn-danger {
