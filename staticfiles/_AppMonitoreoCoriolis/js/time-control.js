@@ -122,3 +122,137 @@ async function buscarHistoricoFlujo() {
     // console.log('🔍 Buscando histórico con nuevos filtros...');
     await cargarDatosHistoricosFlujo(sistemaId);
 }
+
+// ====================================================================
+// FUNCIONES DE CONTROL DE TIEMPO PARA PRESIÓN
+// ====================================================================
+
+// Función para inicializar modo tiempo real de presión
+function inicializarModoTiempoRealPresion() {
+    const sistemaId = obtenerSistemaActual();
+    if (!sistemaId) return;
+    
+    console.log('🔄 Iniciando modo tiempo real presión');
+    modoTiempoRealPresion = true;
+    
+    // Cargar datos iniciales
+    cargarUltimosDiasPresion(sistemaId);
+    
+    // Configurar actualización automática usando CONFIG
+    if (intervalActualizacionPresion) {
+        clearInterval(intervalActualizacionPresion);
+    }
+    
+    intervalActualizacionPresion = setInterval(async () => {
+        if (modoTiempoRealPresion) {
+            console.log('🔄 Actualizando gráfico de presión automáticamente...');
+            await cargarUltimosDiasPresion(sistemaId);
+        }
+    }, CONFIG.INTERVALOS.ACTUALIZACION_GRAFICOS);
+    
+    // Actualizar indicador de modo
+    actualizarIndicadorModoPresion(true);
+    
+    console.log(CONFIG.TEXTOS.CONSOLE_MODO_TIEMPO_REAL);
+}
+
+// Función para actualizar indicador de modo de presión
+function actualizarIndicadorModoPresion(esTiempoReal, fechaInicio = null, fechaFin = null) {
+    const indicador = document.getElementById('modo-indicador-presion');
+    if (!indicador) return;
+    
+    if (esTiempoReal) {
+        indicador.innerHTML = `
+            <strong>Modo Tiempo Real:</strong> 
+            <span class="badge bg-success me-2">●</span>
+            ${CONFIG.TEXTOS.MODO_TIEMPO_REAL}
+        `;
+    } else {
+        const fechaInicioFormat = fechaInicio ? new Date(fechaInicio).toLocaleString('es-ES') : 'N/A';
+        const fechaFinFormat = fechaFin ? new Date(fechaFin).toLocaleString('es-ES') : 'N/A';
+        indicador.innerHTML = `
+            <strong>Modo Filtrado:</strong> 
+            <span class="badge bg-warning me-2">⏸</span>
+            Datos estáticos del período: ${fechaInicioFormat} al ${fechaFinFormat}. Use "Volver a Tiempo Real" para reactivar actualizaciones.
+        `;
+    }
+}
+
+// Función para cambiar a modo filtrado de presión
+function cambiarAModoFiltradoPresion() {
+    console.log('⏸️ Cambiando presión a modo filtrado');
+    modoTiempoRealPresion = false;
+    
+    // Detener actualizaciones automáticas
+    if (intervalActualizacionPresion) {
+        clearInterval(intervalActualizacionPresion);
+        intervalActualizacionPresion = null;
+    }
+    
+    // Obtener fechas seleccionadas
+    const fechaInicio = document.getElementById('fechaInicioPresion')?.value || null;
+    const fechaFin = document.getElementById('fechaFinPresion')?.value || null;
+    
+    // Actualizar indicador de modo
+    actualizarIndicadorModoPresion(false, fechaInicio, fechaFin);
+}
+
+// Función para resetear presión a modo tiempo real
+function resetearPresionATiempoReal() {
+    console.log('▶️ Reseteando presión a modo tiempo real');
+    
+    // Resetear fechas a valores por defecto
+    const fechaFin = new Date();
+    const fechaInicio = new Date();
+    fechaInicio.setDate(fechaFin.getDate() - CONFIG.PERIODOS.DIAS_POR_DEFECTO);
+    
+    document.getElementById('fechaInicioPresion').value = fechaInicio.toISOString().slice(0, 16);
+    document.getElementById('fechaFinPresion').value = fechaFin.toISOString().slice(0, 16);
+    
+    // Reiniciar modo tiempo real
+    inicializarModoTiempoRealPresion();
+    
+    // Actualizar indicador de modo
+    actualizarIndicadorModoPresion(true);
+}
+
+// Función para buscar histórico de presión con filtros
+async function buscarHistoricoPresion() {
+    const sistemaId = obtenerSistemaActual();
+    if (!sistemaId) {
+        alert('Error: No se pudo identificar el sistema actual para realizar la búsqueda.');
+        return;
+    }
+    
+    console.log('🔍 Buscando histórico de presión con filtros...');
+    
+    const fechaInicio = document.getElementById('fechaInicioPresion').value;
+    const fechaFin = document.getElementById('fechaFinPresion').value;
+    
+    if (!fechaInicio || !fechaFin) {
+        alert('Por favor selecciona un rango de fecha y hora válido');
+        return;
+    }
+    
+    await cargarDatosHistoricosPresion(sistemaId, fechaInicio, fechaFin);
+}
+
+// Función para configurar eventos del modal de presión
+function configurarEventosModalPresion() {
+    // Evento para botón buscar
+    const btnBuscar = document.getElementById('buscarHistoricoPresion');
+    if (btnBuscar) {
+        btnBuscar.onclick = function() {
+            cambiarAModoFiltradoPresion();
+            buscarHistoricoPresion();
+        };
+    }
+    
+    // Evento para botón volver a tiempo real
+    const btnReset = document.getElementById('volverTiempoRealPresion');
+    if (btnReset) {
+        btnReset.onclick = resetearPresionATiempoReal;
+    }
+    
+    console.log('🔧 Eventos del modal de presión configurados');
+}

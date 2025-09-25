@@ -4,16 +4,50 @@
 
 // Función para abrir modal de flujo (sensor1) con dos gráficos REALES
 async function abrirModal(sensorId) {
-    if (sensorId !== 'sensor1') {
-        // Para sensor2 y sensor3, mostrar mensaje temporal
-        alert(`Funcionalidad para ${sensorId} en desarrollo.\nActualmente solo está disponible el histórico de flujo (sensor1).`);
-        return;
-    }
-    
     const sistemaId = obtenerSistemaActual();
     if (!sistemaId) {
-        // console.error('❌ No se pudo obtener el ID del sistema');
         alert('Error: No se pudo identificar el sistema actual.\n\nVerifique que:\n1. Está accediendo desde un sistema específico\n2. El sistema existe en la base de datos\n3. La URL contiene el ID del sistema');
+        return;
+    }
+
+    if (sensorId === 'sensor1') {
+        // Modal de flujo (volumétrico y másico)
+        // Configurar fechas por defecto usando CONFIG
+        const fechaFin = new Date();
+        const fechaInicio = new Date();
+        fechaInicio.setDate(fechaFin.getDate() - CONFIG.PERIODOS.DIAS_POR_DEFECTO);
+        
+        document.getElementById('fechaInicio').value = fechaInicio.toISOString().slice(0, 16);
+        document.getElementById('fechaFin').value = fechaFin.toISOString().slice(0, 16);
+        
+        // Iniciar en modo tiempo real por defecto
+        inicializarModoTiempoReal();
+        
+        // Mostrar modal de flujo
+        var modal = new bootstrap.Modal(document.getElementById('historicoModal'));
+        modal.show();
+        
+        // Configurar eventos del modal
+        configurarEventosModal();
+        
+        console.log(`✅ Modal de flujo abierto para sistema: ${sistemaId}`);
+        
+    } else if (sensorId === 'sensor3') {
+        // Modal de presión
+        abrirModalPresion();
+        
+    } else {
+        // Sensor de temperatura (sensor2) aún no implementado
+        alert(`Funcionalidad para ${sensorId} en desarrollo.\nActualmente disponibles: Flujo (sensor1) y Presión (sensor3).`);
+        return;
+    }
+}
+
+// Función para abrir modal de presión (sensor3)
+async function abrirModalPresion() {
+    const sistemaId = obtenerSistemaActual();
+    if (!sistemaId) {
+        alert('Error: No se pudo identificar el sistema actual.');
         return;
     }
     
@@ -22,20 +56,20 @@ async function abrirModal(sensorId) {
     const fechaInicio = new Date();
     fechaInicio.setDate(fechaFin.getDate() - CONFIG.PERIODOS.DIAS_POR_DEFECTO);
     
-    document.getElementById('fechaInicio').value = fechaInicio.toISOString().slice(0, 16);
-    document.getElementById('fechaFin').value = fechaFin.toISOString().slice(0, 16);
+    document.getElementById('fechaInicioPresion').value = fechaInicio.toISOString().slice(0, 16);
+    document.getElementById('fechaFinPresion').value = fechaFin.toISOString().slice(0, 16);
     
-    // Iniciar en modo tiempo real por defecto (últimos 3 días que se actualizan)
-    inicializarModoTiempoReal();
+    // Iniciar en modo tiempo real por defecto
+    inicializarModoTiempoRealPresion();
     
-    // Mostrar modal
-    var modal = new bootstrap.Modal(document.getElementById('historicoModal'));
+    // Mostrar modal de presión
+    var modal = new bootstrap.Modal(document.getElementById('presionModal'));
     modal.show();
     
     // Configurar eventos del modal
-    configurarEventosModal();
+    configurarEventosModalPresion();
     
-    // console.log(`✅ Modal de flujo abierto para sistema: ${sistemaId}`);
+    console.log(`✅ Modal de presión abierto para sistema: ${sistemaId}`);
 }
 
 // Función para mostrar la vista de monitoreo

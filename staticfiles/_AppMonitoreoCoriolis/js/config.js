@@ -17,6 +17,28 @@ const CONFIG = {
         DIAS_POR_DEFECTO: 1,                // Días hacia atrás para mostrar por defecto (últimos 3 días)
     },
     
+    // Configuración de gráficos
+    GRAFICOS: {
+        FLUJO_VOLUMETRICO: {
+            color: '#007bff',
+            colorFondo: 'rgba(0, 123, 255, 0.1)',
+            label: 'Flujo Volumétrico',
+            canvasId: 'graficaFlujoVolumetrico'
+        },
+        FLUJO_MASICO: {
+            color: '#28a745', 
+            colorFondo: 'rgba(40, 167, 69, 0.1)',
+            label: 'Flujo Másico',
+            canvasId: 'graficaFlujoMasico'
+        },
+        PRESION: {
+            color: '#dc3545',
+            colorFondo: 'rgba(220, 53, 69, 0.1)',
+            label: 'Presión',
+            canvasId: 'graficaPresion'
+        }
+    },
+    
     // Textos dinámicos que se calculan automáticamente basados en la configuración
     TEXTOS: {
         get MODO_TIEMPO_REAL() {
@@ -36,6 +58,10 @@ const CONFIG = {
             const dias = CONFIG.PERIODOS.DIAS_POR_DEFECTO;
             return `${total} registros (Últimos ${dias} días - Actualizando)`;
         },
+        REGISTROS_TIEMPO_REAL_PRESION: (total) => {
+            const dias = CONFIG.PERIODOS.DIAS_POR_DEFECTO;
+            return `${total} registros (Últimos ${dias} días - Actualizando)`;
+        },
         get CONSOLE_ACTUALIZACION() {
             const segundos = Math.floor(CONFIG.INTERVALOS.ACTUALIZACION_DISPLAYS / 1000);
             return `⏰ Actualización automática configurada cada ${segundos} segundos`;
@@ -51,11 +77,16 @@ const CONFIG = {
 let sistemaActual = null;
 let chartFlujoVolumetrico = null;
 let chartFlujoMasico = null;
+let chartPresion = null;
 let tiempoRealInterval = null;
 
 // Variables para controlar el modo de los gráficos
 let modoTiempoReal = true; // true = últimos N días actualizándose, false = filtrado estático
 let intervalActualizacionGraficos = null;
+
+// Variables para controlar presión
+let modoTiempoRealPresion = true;
+let intervalActualizacionPresion = null;
 
 // Variables del sistema desde Django - Se inicializan desde el HTML template
 // let SISTEMA_ACTUAL; // Ya se define en el HTML template

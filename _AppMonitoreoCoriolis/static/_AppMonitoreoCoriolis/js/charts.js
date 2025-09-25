@@ -116,21 +116,48 @@ function renderGrafico(datos, tipoGrafico, chartInstance, configGrafico) {
 
 // Función para renderizar gráfico de flujo volumétrico CON DATOS REALES
 function renderGraficoFlujoVolumetrico(datosVolumetrico) {
-    chartFlujoVolumetrico = renderGrafico(
+    // Destruir gráfico existente si existe
+    if (window.chartFlujoVolumetrico) {
+        window.chartFlujoVolumetrico.destroy();
+    }
+    
+    window.chartFlujoVolumetrico = renderGrafico(
         datosVolumetrico, 
         'volumetrico', 
-        chartFlujoVolumetrico, 
+        window.chartFlujoVolumetrico, 
         CONFIG.GRAFICOS.FLUJO_VOLUMETRICO
     );
 }
 
 // Función para renderizar gráfico de flujo másico CON DATOS REALES
 function renderGraficoFlujoMasico(datosMasico) {
-    chartFlujoMasico = renderGrafico(
+    // Destruir gráfico existente si existe
+    if (window.chartFlujoMasico) {
+        window.chartFlujoMasico.destroy();
+    }
+    
+    window.chartFlujoMasico = renderGrafico(
         datosMasico, 
         'masico', 
-        chartFlujoMasico, 
+        window.chartFlujoMasico, 
         CONFIG.GRAFICOS.FLUJO_MASICO
+    );
+}
+
+// Función para renderizar gráfico de presión CON DATOS REALES
+function renderGraficoPresion(datosPresion) {
+    // Destruir gráfico existente si existe
+    if (window.chartPresion) {
+        console.log('🗑️ Destruyendo gráfico de presión existente');
+        window.chartPresion.destroy();
+        window.chartPresion = null;
+    }
+    
+    window.chartPresion = renderGrafico(
+        datosPresion, 
+        'presion', 
+        window.chartPresion, 
+        CONFIG.GRAFICOS.PRESION
     );
 }
 
@@ -144,6 +171,16 @@ function renderGraficosVacios(mensaje) {
     // Usar la función genérica para ambos gráficos vacíos
     chartFlujoVolumetrico = renderGraficoVacio(datosVacios, mensaje, CONFIG.GRAFICOS.FLUJO_VOLUMETRICO);
     chartFlujoMasico = renderGraficoVacio(datosVacios, mensaje, CONFIG.GRAFICOS.FLUJO_MASICO);
+}
+
+// Función para renderizar gráfico de presión vacío
+function renderGraficoPresionVacio(mensaje) {
+    const datosVacios = {
+        datos: [{ fecha: 'Sin datos', valor: 0 }],
+        unidad: ''
+    };
+    
+    chartPresion = renderGraficoVacio(datosVacios, mensaje, CONFIG.GRAFICOS.PRESION);
 }
 
 // Función auxiliar para renderizar un gráfico vacío

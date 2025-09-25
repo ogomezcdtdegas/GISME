@@ -204,3 +204,115 @@ function actualizarDisplaysSimulados() {
     const val3 = (40 + Math.random() * 10).toFixed(1);
     document.getElementById('display-sensor3').textContent = val3 + ' PSI';
 }
+
+// ====================================================================
+// FUNCIONES PARA PRESIÓN
+// ====================================================================
+
+// Función para cargar datos de presión de los últimos días (MODO TIEMPO REAL)
+async function cargarUltimosDiasPresion(sistemaId) {
+    try {
+        // Calcular fechas usando CONFIG
+        const fechaFin = new Date();
+        const fechaInicio = new Date();
+        fechaInicio.setDate(fechaFin.getDate() - CONFIG.PERIODOS.DIAS_POR_DEFECTO);
+        
+        const fechaInicioStr = formatearFechaParaAPI(fechaInicio);
+        const fechaFinStr = formatearFechaParaAPI(fechaFin);
+        
+        const url = `/monitoreo/api/datos-presion/${sistemaId}/?fecha_inicio=${fechaInicioStr}&fecha_fin=${fechaFinStr}`;
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        if (data.success) {
+            // Renderizar gráfico en modo tiempo real
+            renderGraficoPresion(data);
+            
+            // Actualizar contadores con indicación de tiempo real usando CONFIG
+            document.getElementById('contador-presion').textContent = 
+                CONFIG.TEXTOS.REGISTROS_TIEMPO_REAL_PRESION(data.total_registros);
+            
+            // Actualizar información del período usando CONFIG
+            const infoPeriodoPresion = document.getElementById('info-periodo-presion');
+            if (infoPeriodoPresion) {
+                infoPeriodoPresion.textContent = CONFIG.TEXTOS.INFO_PERIODO_TIEMPO_REAL;
+            }
+            
+            // Actualizar indicador de modo
+            actualizarIndicadorModoPresion(true);
+            
+            return true;
+        } else {
+            console.error('❌ Error cargando datos de presión:', data.error);
+            renderGraficoPresionVacio('Error: ' + data.error);
+            return false;
+        }
+    } catch (error) {
+        console.error('❌ Error en la petición de datos de presión:', error);
+        renderGraficoPresionVacio('Error de conexión');
+        return false;
+    }
+}
+
+// Función para cargar datos históricos de presión (MODO FILTRADO)
+async function cargarDatosHistoricosPresion(sistemaId, fechaInicio, fechaFin) {
+    try {
+        const fechaInicioISO = formatearFechaParaAPI(fechaInicio);
+        const fechaFinISO = formatearFechaParaAPI(fechaFin);
+        
+        const url = `/monitoreo/api/datos-presion/${sistemaId}/?fecha_inicio=${fechaInicioISO}&fecha_fin=${fechaFinISO}`;
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        if (data.success) {
+            // Renderizar gráfico con datos históricos
+            renderGraficoPresion(data);
+            
+            // Actualizar contadores sin indicación de tiempo real
+            document.getElementById('contador-presion').textContent = 
+                `${data.total_registros} registros`;
+            
+            // Actualizar indicador de modo
+            actualizarIndicadorModoPresion(false, fechaInicio, fechaFin);
+                
+            console.log('✅ Datos históricos de presión cargados:', {
+                presion: data.total_registros
+            });
+        } else {
+            console.error('❌ Error cargando datos históricos de presión:', data.error);
+            renderGraficoPresionVacio('Error: ' + data.error);
+        }
+    } catch (error) {
+        console.error('❌ Error en la petición de datos históricos de presión:', error);
+        renderGraficoPresionVacio('Error de conexión');
+    }
+}
+
+// Función para exportar datos de presión como CSV
+function exportarDatosPresion() {
+    const sistemaId = obtenerSistemaActual();
+    if (!sistemaId) {
+        alert('No se pudo obtener el sistema actual');
+        return;
+    }
+    
+    const fechaInicio = document.getElementById('fechaInicioPresion').value;
+    const fechaFin = document.getElementById('fechaFinPresion').value;
+    
+    if (!fechaInicio || !fechaFin) {
+        alert('Por favor selecciona un rango de fecha y hora válido');
+        return;
+    }
+    
+    // Convertir a formato compatible con Django usando función utilitaria
+    const fechaInicioISO = formatearFechaParaAPI(fechaInicio);
+    const fechaFinISO = formatearFechaParaAPI(fechaFin);
+    
+    // Crear URL para descarga
+    const url = `/monitoreo/api/datos-presion/${sistemaId}/?fecha_inicio=${fechaInicioISO}&fecha_fin=${fechaFinISO}&export=csv`;
+    
+    // Abrir en nueva ventana para descargar
+    window.open(url, '_blank');
+    
+    console.log('📥 Descargando datos de presión para el período:', fechaInicio, 'al', fechaFin);
+}

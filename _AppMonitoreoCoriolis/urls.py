@@ -9,6 +9,7 @@ urlpatterns = [
     
     # APIs para datos históricos (CBVs)
     path('api/datos-flujo/<uuid:sistema_id>/', views.DatosHistoricosFlujoView.as_view(), name='datos_flujo'),
+    path('api/datos-presion/<uuid:sistema_id>/', views.DatosHistoricosPresionView.as_view(), name='datos_presion'),
     path('api/datos-tiempo-real/<uuid:sistema_id>/', views.DatosTiempoRealView.as_view(), name='datos_tiempo_real'),
 ]
 

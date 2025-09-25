@@ -1,0 +1,107 @@
+<!-- ====================================================================
+     COMPONENTE: Modal Histórico de Flujo
+     Descripción: Modal con gráficos de flujo volumétrico y másico
+     Uso: {percent include '_AppMonitoreoCoriolis/componentes/modal_flujo.html' percent}
+====================================================================== -->
+
+<div class="modal fade" id="historicoModal" tabindex="-1" aria-labelledby="historicoModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="historicoModalLabel">
+          <i class="bi bi-graph-up"></i> Histórico de Flujo
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <!-- Controles superiores -->
+        <div class="row mb-3">
+          <div class="col-md-8">
+            <div class="d-flex align-items-center gap-3">
+              <label><strong>Rango de fecha y hora:</strong></label>
+              <input type="datetime-local" id="fechaInicio" class="form-control" style="width: 200px;">
+              <span>→</span>
+              <input type="datetime-local" id="fechaFin" class="form-control" style="width: 200px;">
+              <button id="buscarHistoricoFlujo" class="btn btn-outline-success">
+                <i class="bi bi-search"></i> Buscar
+              </button>
+            </div>
+          </div>
+          <div class="col-md-4 text-end">
+            <button id="volverTiempoReal" type="button" class="btn btn-outline-warning btn-sm me-2" onclick="resetearAModoTiempoReal()">
+              <i class="bi bi-arrow-clockwise"></i> Volver a Tiempo Real
+            </button>
+            <button type="button" class="btn btn-outline-info btn-sm" onclick="exportarDatos()">
+              <i class="bi bi-download"></i> Exportar Datos
+            </button>
+          </div>
+        </div>
+        
+        <!-- Indicador de modo dinámico -->
+        <div class="alert alert-info mb-3 d-flex align-items-center">
+          <i class="bi bi-info-circle me-2"></i>
+          <span id="modo-indicador">
+            <strong>Modo Tiempo Real:</strong> 
+            <span class="badge bg-success me-2">●</span>
+            Los gráficos se actualizan automáticamente cada 10 segundos mostrando los últimos 3 días.
+          </span>
+        </div>
+        
+        <!-- Instrucciones de uso -->
+        <div class="alert alert-secondary">
+          <i class="bi bi-clock-history"></i>
+          <strong>Información:</strong> 
+          Los gráficos muestran los datos de flujo volumétrico (m³/h) y másico (kg/h) para el período seleccionado.
+          <strong>Hover</strong> sobre los puntos para ver detalles. <span id="info-periodo">Últimos 3 días - Se actualiza automáticamente</span>
+        </div>
+        
+        <!-- Dos gráficos lado a lado -->
+        <div class="row">
+          <!-- Flujo Volumétrico -->
+          <div class="col-lg-6">
+            <div class="card mb-3">
+              <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                <h6 class="mb-0"><i class="bi bi-graph-up"></i> Flujo Volumétrico</h6>
+                <span id="contador-volumetrico" class="badge bg-light text-primary">0 registros</span>
+              </div>
+              <div class="card-body">
+                <div style="height: 350px; position: relative;">
+                  <canvas id="graficaFlujoVolumetrico"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Flujo Másico -->
+          <div class="col-lg-6">
+            <div class="card mb-3">
+              <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                <h6 class="mb-0"><i class="bi bi-graph-up"></i> Flujo Másico</h6>
+                <span id="contador-masico" class="badge bg-light text-success">0 registros</span>
+              </div>
+              <div class="card-body">
+                <div style="height: 350px; position: relative;">
+                  <canvas id="graficaFlujoMasico"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Información adicional -->
+        <div class="row mt-3">
+          <div class="col-12">
+            <div class="alert alert-secondary">
+              <i class="bi bi-clock-history"></i>
+              <strong>Información:</strong> Los gráficos muestran los datos de flujo volumétrico (m³/h) y flujo másico (kg/h) para el período seleccionado.
+              <span id="info-periodo"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>

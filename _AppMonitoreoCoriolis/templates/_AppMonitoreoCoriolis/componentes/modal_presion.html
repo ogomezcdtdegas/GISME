@@ -1,0 +1,84 @@
+<!-- ====================================================================
+     COMPONENTE: Modal de Presión
+     Descripción: Modal para mostrar histórico de presión
+     Uso: {percent include '_AppMonitoreoCoriolis/componentes/modal_presion.html' percent}
+     Nota: Este componente está preparado para futuras implementaciones
+====================================================================== -->
+
+<div class="modal fade" id="presionModal" tabindex="-1" aria-labelledby="presionModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="presionModalLabel">
+          <i class="bi bi-speedometer2"></i> Histórico de Presión
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <!-- Controles superiores -->
+        <div class="row mb-3">
+          <div class="col-md-8">
+            <div class="d-flex align-items-center gap-3">
+              <label><strong>Rango de fecha y hora:</strong></label>
+              <input type="datetime-local" id="fechaInicioPresion" class="form-control" style="width: 200px;">
+              <span>→</span>
+              <input type="datetime-local" id="fechaFinPresion" class="form-control" style="width: 200px;">
+              <button id="buscarHistoricoPresion" class="btn btn-outline-success">
+                <i class="bi bi-search"></i> Buscar
+              </button>
+            </div>
+          </div>
+          <div class="col-md-4 text-end">
+            <button id="volverTiempoRealPresion" type="button" class="btn btn-outline-warning btn-sm me-2" onclick="resetearPresionATiempoReal()">
+              <i class="bi bi-arrow-clockwise"></i> Volver a Tiempo Real
+            </button>
+            <button type="button" class="btn btn-outline-info btn-sm" onclick="exportarDatosPresion()">
+              <i class="bi bi-download"></i> Exportar Datos
+            </button>
+          </div>
+        </div>
+        
+        <!-- Indicador de modo dinámico -->
+        <div class="alert alert-info mb-3 d-flex align-items-center">
+          <i class="bi bi-info-circle me-2"></i>
+          <span id="modo-indicador-presion">
+            <strong>Modo Tiempo Real:</strong> 
+            <span class="badge bg-success me-2">●</span>
+            El gráfico se actualiza automáticamente mostrando los últimos datos de presión.
+          </span>
+        </div>
+        
+        <!-- Gráfico de Presión -->
+        <div class="row">
+          <div class="col-12">
+            <div class="card mb-3">
+              <div class="card-header bg-danger text-white d-flex justify-content-between align-items-center">
+                <h6 class="mb-0"><i class="bi bi-speedometer2"></i> Presión</h6>
+                <span id="contador-presion" class="badge bg-light text-danger">0 registros</span>
+              </div>
+              <div class="card-body">
+                <div style="height: 400px; position: relative;">
+                  <canvas id="graficaPresion"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Información adicional -->
+        <div class="row mt-3">
+          <div class="col-12">
+            <div class="alert alert-secondary">
+              <i class="bi bi-info-circle"></i>
+              <strong>Información:</strong> Los datos de presión se muestran en las unidades configuradas del sistema.
+              <span id="info-periodo-presion"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
