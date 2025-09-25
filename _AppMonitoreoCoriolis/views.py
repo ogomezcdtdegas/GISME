@@ -8,8 +8,12 @@ from rest_framework.permissions import IsAuthenticated
 from django.utils import timezone
 from datetime import timedelta, datetime
 import pytz
+import logging
 from .models import NodeRedData
 from _AppComplementos.models import Sistema
+
+# Configurar logging
+logger = logging.getLogger(__name__)
 
 # Configurar zona horaria de Colombia
 COLOMBIA_TZ = pytz.timezone('America/Bogota')
@@ -48,6 +52,10 @@ class DatosHistoricosFlujoView(APIView):
     
     def get(self, request, sistema_id):
         try:
+            # Logging para debug
+            logger.info(f"DatosHistoricosFlujoView - Sistema ID: {sistema_id}")
+            logger.info(f"Query params: {dict(request.GET)}")
+            
             # Verificar que el sistema existe
             sistema = Sistema.objects.get(id=sistema_id)
             
@@ -55,32 +63,48 @@ class DatosHistoricosFlujoView(APIView):
             fecha_inicio = request.GET.get('fecha_inicio')
             fecha_fin = request.GET.get('fecha_fin')
             
+            logger.info(f"Fechas recibidas - Inicio: {fecha_inicio}, Fin: {fecha_fin}")
+            
             # Si no se especifican fechas, usar últimos 7 días
             if not fecha_inicio or not fecha_fin:
                 fecha_fin = timezone.now()
                 fecha_inicio = fecha_fin - timedelta(days=7)
+                logger.info(f"Using default dates - Inicio: {fecha_inicio}, Fin: {fecha_fin}")
             else:
-                # Parsear fechas y establecer timezone de Colombia
-                fecha_inicio = datetime.strptime(fecha_inicio, '%Y-%m-%d')
-                fecha_fin = datetime.strptime(fecha_fin, '%Y-%m-%d')
+                # Parsear fechas con formato datetime y establecer timezone de Colombia
+                try:
+                    # Intentar formato con fecha y hora: "2025-09-17T21:31:00"
+                    fecha_inicio_naive = datetime.strptime(fecha_inicio, '%Y-%m-%dT%H:%M:%S')
+                    fecha_fin_naive = datetime.strptime(fecha_fin, '%Y-%m-%dT%H:%M:%S')
+                except ValueError:
+                    try:
+                        # Fallback a formato solo fecha: "2025-09-17"
+                        fecha_inicio_naive = datetime.strptime(fecha_inicio, '%Y-%m-%d')
+                        fecha_fin_naive = datetime.strptime(fecha_fin, '%Y-%m-%d')
+                        
+                        # Establecer horas para cubrir todo el rango del día
+                        fecha_inicio_naive = fecha_inicio_naive.replace(hour=0, minute=0, second=0, microsecond=0)
+                        fecha_fin_naive = fecha_fin_naive.replace(hour=23, minute=59, second=59, microsecond=999999)
+                    except ValueError:
+                        return Response({
+                            'success': False,
+                            'error': 'Formato de fecha inválido. Use YYYY-MM-DD o YYYY-MM-DDTHH:MM:SS'
+                        })
                 
-                # Establecer horas para cubrir todo el rango del día en hora de Colombia
-                fecha_inicio = fecha_inicio.replace(hour=0, minute=0, second=0, microsecond=0)
-                fecha_fin = fecha_fin.replace(hour=23, minute=59, second=59, microsecond=999999)
+                # Asumir que las fechas del frontend están en hora de Colombia y convertir a UTC
+                fecha_inicio = COLOMBIA_TZ.localize(fecha_inicio_naive).astimezone(pytz.UTC)
+                fecha_fin = COLOMBIA_TZ.localize(fecha_fin_naive).astimezone(pytz.UTC)
                 
-                # Localizar a timezone de Colombia
-                fecha_inicio = COLOMBIA_TZ.localize(fecha_inicio)
-                fecha_fin = COLOMBIA_TZ.localize(fecha_fin)
-                
-                # Convertir a UTC para filtrar en la base de datos
-                fecha_inicio = fecha_inicio.astimezone(pytz.UTC)
-                fecha_fin = fecha_fin.astimezone(pytz.UTC)
+                logger.info(f"Fechas convertidas a UTC - Inicio: {fecha_inicio}, Fin: {fecha_fin}")
             
             # Consultar datos
+            logger.info(f"Consultando datos para sistema: {sistema.tag}")
             datos = NodeRedData.objects.filter(
                 systemId=sistema,
                 created_at__range=[fecha_inicio, fecha_fin]
             ).order_by('created_at')
+            
+            logger.info(f"Datos encontrados: {datos.count()} registros")
             
             # Preparar datos para ambos flujos
             flujo_volumetrico = []
@@ -130,14 +154,18 @@ class DatosHistoricosFlujoView(APIView):
             })
             
         except Sistema.DoesNotExist:
+            logger.error(f"Sistema no encontrado: {sistema_id}")
             return Response({
                 'success': False,
                 'error': 'Sistema no encontrado'
             }, status=404)
         except Exception as e:
+            logger.error(f"Error en DatosHistoricosFlujoView: {str(e)}", exc_info=True)
+            logger.error(f"Tipo de error: {type(e).__name__}")
+            logger.error(f"Args del error: {e.args}")
             return Response({
                 'success': False,
-                'error': str(e)
+                'error': f'Error interno del servidor: {str(e)}'
             }, status=500)
 
 class DatosTiempoRealView(APIView):

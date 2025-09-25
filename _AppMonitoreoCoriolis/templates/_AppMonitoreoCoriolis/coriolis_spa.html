@@ -41,6 +41,34 @@ let SISTEMA_ACTUAL;
 /*{% endif %}*/
 </script>
 
+<script>
+// Función utilitaria para formatear fechas para Django API
+function formatearFechaParaAPI(fechaInput) {
+    if (!fechaInput) return null;
+    
+    // Si es un objeto Date
+    if (fechaInput instanceof Date) {
+        // Obtener componentes de fecha en UTC
+        const year = fechaInput.getFullYear();
+        const month = String(fechaInput.getMonth() + 1).padStart(2, '0');
+        const day = String(fechaInput.getDate()).padStart(2, '0');
+        const hours = String(fechaInput.getHours()).padStart(2, '0');
+        const minutes = String(fechaInput.getMinutes()).padStart(2, '0');
+        const seconds = String(fechaInput.getSeconds()).padStart(2, '0');
+        
+        return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}`;
+    }
+    
+    // Si viene de datetime-local (formato: "2024-09-24T14:30")
+    if (typeof fechaInput === 'string' && fechaInput.includes('T') && fechaInput.length === 16) {
+        return fechaInput + ':00'; // Agregar segundos
+    }
+    
+    // Si ya tiene formato completo, devolverlo tal como está
+    return fechaInput;
+}
+</script>
+
 <div class="container-fluid mt-4">
     <!-- Loading Overlay -->
     <div id="loadingOverlay" class="loading-overlay">
@@ -326,10 +354,10 @@ let SISTEMA_ACTUAL;
         <div class="row mb-3">
           <div class="col-md-8">
             <div class="d-flex align-items-center gap-3">
-              <label><strong>Rango de fechas:</strong></label>
-              <input type="date" id="fechaInicio" class="form-control" style="width: auto;">
+              <label><strong>Rango de fecha y hora:</strong></label>
+              <input type="datetime-local" id="fechaInicio" class="form-control" style="width: 200px;">
               <span>→</span>
-              <input type="date" id="fechaFin" class="form-control" style="width: auto;">
+              <input type="datetime-local" id="fechaFin" class="form-control" style="width: 200px;">
               <button id="buscarHistoricoFlujo" class="btn btn-outline-success">
                 <i class="bi bi-search"></i> Buscar
               </button>
@@ -345,12 +373,22 @@ let SISTEMA_ACTUAL;
           </div>
         </div>
         
+        <!-- Indicador de modo dinámico -->
+        <div class="alert alert-info mb-3 d-flex align-items-center">
+          <i class="bi bi-info-circle me-2"></i>
+          <span id="modo-indicador">
+            <strong>Modo Tiempo Real:</strong> 
+            <span class="badge bg-success me-2">●</span>
+            Los gráficos se actualizan automáticamente cada 30 segundos mostrando los últimos 7 días.
+          </span>
+        </div>
+        
         <!-- Instrucciones de uso -->
-        <div class="alert alert-info mb-3">
-          <i class="bi bi-info-circle"></i>
+        <div class="alert alert-secondary">
+          <i class="bi bi-clock-history"></i>
           <strong>Información:</strong> 
-          Los gráficos muestran los datos de flujo volumétrico y másico para el período seleccionado.
-          <strong>Hover</strong> sobre los puntos para ver detalles de cada medición.
+          Los gráficos muestran los datos de flujo volumétrico (m³/h) y másico (kg/h) para el período seleccionado.
+          <strong>Hover</strong> sobre los puntos para ver detalles. <span id="info-periodo">Últimos 7 días - Se actualiza automáticamente</span>
         </div>
         
         <!-- Dos gráficos lado a lado -->
@@ -512,9 +550,15 @@ let intervalActualizacionGraficos = null;
 
 // Función para obtener el sistema actual (prioridad: contexto Django > URL)
 function obtenerSistemaActual() {
+    // Debug temporal
+    console.log('🔍 Debug obtenerSistemaActual:', {
+        SISTEMA_ACTUAL: SISTEMA_ACTUAL,
+        url: window.location.pathname
+    });
+    
     // 1. Primero intentar obtener del contexto de Django
     if (typeof SISTEMA_ACTUAL !== 'undefined' && SISTEMA_ACTUAL && SISTEMA_ACTUAL.id) {
-        // console.log('✅ Sistema obtenido desde contexto Django:', SISTEMA_ACTUAL.tag);
+        console.log('✅ Sistema obtenido desde contexto Django:', SISTEMA_ACTUAL.id);
         return SISTEMA_ACTUAL.id;
     }
     
@@ -522,11 +566,11 @@ function obtenerSistemaActual() {
     const url = window.location.pathname;
     const match = url.match(/\/sistema\/([a-f0-9-]{36})\//);
     if (match) {
-        // console.log('✅ Sistema obtenido desde URL:', match[1]);
+        console.log('✅ Sistema obtenido desde URL:', match[1]);
         return match[1];
     }
     
-    console.warn('⚠️ No se pudo obtener ID del sistema desde contexto Django ni URL');
+    console.error('❌ No se pudo obtener ID del sistema desde contexto Django ni URL');
     return null;
 }
 
@@ -589,10 +633,20 @@ async function cargarUltimos7DiasDinamico(sistemaId) {
         const fechaInicio = new Date();
         fechaInicio.setDate(fechaFin.getDate() - 7);
         
-        const fechaInicioStr = fechaInicio.toISOString().split('T')[0];
-        const fechaFinStr = fechaFin.toISOString().split('T')[0];
+        const fechaInicioStr = formatearFechaParaAPI(fechaInicio);
+        const fechaFinStr = formatearFechaParaAPI(fechaFin);
+        
+        // Debug temporal - eliminar después
+        console.log('🔍 Debug cargarUltimos7DiasDinamico:', {
+            fechaInicio: fechaInicio,
+            fechaFin: fechaFin,
+            fechaInicioStr: fechaInicioStr,
+            fechaFinStr: fechaFinStr,
+            sistemaId: sistemaId
+        });
         
         const url = `/monitoreo/api/datos-flujo/${sistemaId}/?fecha_inicio=${fechaInicioStr}&fecha_fin=${fechaFinStr}`;
+        console.log('🔍 URL generada:', url);
         const response = await fetch(url);
         const data = await response.json();
         
@@ -618,15 +672,23 @@ async function cargarUltimos7DiasDinamico(sistemaId) {
                 infoPeriodo.textContent = ` Últimos 7 días - Se actualiza automáticamente`;
             }
             
+            // Actualizar indicador de modo
+            actualizarIndicadorModo(true);
+            
             return true;
         } else {
-            // console.error('❌ Error cargando datos de últimos 7 días:', data.error);
+            console.error('❌ Error cargando datos de últimos 7 días:', data.error);
             renderGraficosVacios('Error: ' + data.error);
             return false;
         }
     } catch (error) {
-        // console.error('❌ Error en la petición de últimos 7 días:', error);
-        renderGraficosVacios('Error de conexión');
+        console.error('❌ Error en la petición de últimos 7 días:', error);
+        console.error('❌ Detalles del error:', {
+            message: error.message,
+            stack: error.stack,
+            sistemaId: sistemaId
+        });
+        renderGraficosVacios('Error de conexión: ' + error.message);
         return false;
     }
 }
@@ -655,6 +717,31 @@ function inicializarModoTiempoReal() {
     }, 30000); // Cada 30 segundos
     
     // console.log('✅ Modo tiempo real iniciado - se actualiza cada 30 segundos');
+    
+    // Actualizar indicador de modo
+    actualizarIndicadorModo(true);
+}
+
+// Función para actualizar indicador de modo
+function actualizarIndicadorModo(esTiempoReal, fechaInicio = null, fechaFin = null) {
+    const indicador = document.getElementById('modo-indicador');
+    if (!indicador) return;
+    
+    if (esTiempoReal) {
+        indicador.innerHTML = `
+            <strong>Modo Tiempo Real:</strong> 
+            <span class="badge bg-success me-2">●</span>
+            Los gráficos se actualizan automáticamente cada 30 segundos mostrando los últimos 7 días.
+        `;
+    } else {
+        const fechaInicioFormat = fechaInicio ? new Date(fechaInicio).toLocaleString('es-ES') : 'N/A';
+        const fechaFinFormat = fechaFin ? new Date(fechaFin).toLocaleString('es-ES') : 'N/A';
+        indicador.innerHTML = `
+            <strong>Modo Filtrado:</strong> 
+            <span class="badge bg-warning me-2">⏸</span>
+            Datos estáticos del período: ${fechaInicioFormat} al ${fechaFinFormat}. Use "Volver a Tiempo Real" para reactivar actualizaciones.
+        `;
+    }
 }
 
 // Función para cambiar a modo filtrado (estático)
@@ -667,6 +754,13 @@ function cambiarAModoFiltrado() {
         clearInterval(intervalActualizacionGraficos);
         intervalActualizacionGraficos = null;
     }
+    
+    // Obtener fechas seleccionadas para el indicador
+    const fechaInicio = document.getElementById('fechaInicio')?.value || null;
+    const fechaFin = document.getElementById('fechaFin')?.value || null;
+    
+    // Actualizar indicador de modo
+    actualizarIndicadorModo(false, fechaInicio, fechaFin);
 }
 
 // Función para configurar eventos del modal
@@ -698,11 +792,14 @@ function resetearAModoTiempoReal() {
     const fechaInicio = new Date();
     fechaInicio.setDate(fechaFin.getDate() - 7);
     
-    document.getElementById('fechaInicio').value = fechaInicio.toISOString().split('T')[0];
-    document.getElementById('fechaFin').value = fechaFin.toISOString().split('T')[0];
+    document.getElementById('fechaInicio').value = fechaInicio.toISOString().slice(0, 16);
+    document.getElementById('fechaFin').value = fechaFin.toISOString().slice(0, 16);
     
     // Reiniciar modo tiempo real
     inicializarModoTiempoReal();
+    
+    // Actualizar indicador de modo
+    actualizarIndicadorModo(true);
 }
 
 // Función para abrir modal de flujo (sensor1) con dos gráficos REALES
@@ -725,8 +822,8 @@ async function abrirModal(sensorId) {
     const fechaInicio = new Date();
     fechaInicio.setDate(fechaFin.getDate() - 7);
     
-    document.getElementById('fechaInicio').value = fechaInicio.toISOString().split('T')[0];
-    document.getElementById('fechaFin').value = fechaFin.toISOString().split('T')[0];
+    document.getElementById('fechaInicio').value = fechaInicio.toISOString().slice(0, 16);
+    document.getElementById('fechaFin').value = fechaFin.toISOString().slice(0, 16);
     
     // Iniciar en modo tiempo real por defecto (últimos 7 días que se actualizan)
     inicializarModoTiempoReal();
@@ -1022,12 +1119,16 @@ function exportarDatos() {
     const fechaFin = document.getElementById('fechaFin').value;
     
     if (!fechaInicio || !fechaFin) {
-        alert('Por favor selecciona un rango de fechas válido');
+        alert('Por favor selecciona un rango de fecha y hora válido');
         return;
     }
     
+    // Convertir a formato compatible con Django usando función utilitaria
+    const fechaInicioISO = formatearFechaParaAPI(fechaInicio);
+    const fechaFinISO = formatearFechaParaAPI(fechaFin);
+    
     // Crear URL para descarga
-    const url = `/monitoreo/api/datos-flujo/${sistemaId}/?fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}`;
+    const url = `/monitoreo/api/datos-flujo/${sistemaId}/?fecha_inicio=${fechaInicioISO}&fecha_fin=${fechaFinISO}`;
     
     // Abrir en nueva ventana para descargar
     window.open(url, '_blank');
@@ -1041,7 +1142,16 @@ async function cargarDatosHistoricosFlujo(sistemaId) {
         const fechaInicio = document.getElementById('fechaInicio').value;
         const fechaFin = document.getElementById('fechaFin').value;
         
-        const url = `/monitoreo/api/datos-flujo/${sistemaId}/?fecha_inicio=${fechaInicio}&fecha_fin=${fechaFin}`;
+        if (!fechaInicio || !fechaFin) {
+            alert('Por favor selecciona un rango de fecha y hora válido');
+            return;
+        }
+        
+        // Convertir a formato compatible con Django usando función utilitaria
+        const fechaInicioISO = formatearFechaParaAPI(fechaInicio);
+        const fechaFinISO = formatearFechaParaAPI(fechaFin);
+        
+        const url = `/monitoreo/api/datos-flujo/${sistemaId}/?fecha_inicio=${fechaInicioISO}&fecha_fin=${fechaFinISO}`;
         const response = await fetch(url);
         const data = await response.json();
         
@@ -1059,8 +1169,13 @@ async function cargarDatosHistoricosFlujo(sistemaId) {
             // Actualizar información del período
             const infoPeriodo = document.getElementById('info-periodo');
             if (infoPeriodo) {
-                infoPeriodo.textContent = ` Período: ${fechaInicio} al ${fechaFin}`;
+                const fechaInicioFormat = new Date(fechaInicio).toLocaleString('es-ES');
+                const fechaFinFormat = new Date(fechaFin).toLocaleString('es-ES');
+                infoPeriodo.textContent = ` Período: ${fechaInicioFormat} al ${fechaFinFormat}`;
             }
+            
+            // Actualizar indicador de modo
+            actualizarIndicadorModo(false, fechaInicio, fechaFin);
                 
             // console.log('✅ Datos históricos cargados:', {
             //     volumetrico: data.flujo_volumetrico.total_registros,
