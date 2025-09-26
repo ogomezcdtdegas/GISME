@@ -1,8 +1,8 @@
 <!-- ====================================================================
      COMPONENTE: Modal de Temperatura
-     Descripción: Modal para mostrar histórico de temperatura
-     Uso: {percent include '_AppMonitoreoCoriolis/componentes/modal_temperatura.html' percent}
-     Nota: Este componente está preparado para futuras implementaciones
+     Descripción: Modal para mostrar histórico de temperaturas (Coriolis, Diagnóstico, Redundante)
+     Uso: Se incluye en el template principal coriolis_spa.html
+     Arquitectura: 3 gráficos - Redundante (completo ancho arriba), Coriolis y Diagnóstico (abajo)
 ====================================================================== -->
 
 <div class="modal fade" id="temperaturaModal" tabindex="-1" aria-labelledby="temperaturaModalLabel" aria-hidden="true">
@@ -10,7 +10,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="temperaturaModalLabel">
-          <i class="bi bi-thermometer-half"></i> Histórico de Temperatura
+          <i class="bi bi-thermometer"></i> Histórico de Temperatura
         </h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
@@ -44,21 +44,51 @@
           <span id="modo-indicador-temperatura">
             <strong>Modo Tiempo Real:</strong> 
             <span class="badge bg-success me-2">●</span>
-            El gráfico se actualiza automáticamente mostrando los últimos datos de temperatura.
+            Los gráficos se actualizan automáticamente mostrando los últimos datos de temperatura.
           </span>
         </div>
         
-        <!-- Gráfico de Temperatura -->
-        <div class="row">
+        <!-- Gráfico de Temperatura Redundante (Ancho completo) -->
+        <div class="row mb-4">
           <div class="col-12">
             <div class="card mb-3">
               <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
-                <h6 class="mb-0"><i class="bi bi-thermometer-half"></i> Temperatura</h6>
-                <span id="contador-temperatura" class="badge bg-light text-success">0 registros</span>
+                <h6 class="mb-0"><i class="bi bi-thermometer"></i> Temperatura Redundante</h6>
+                <span id="contador-temperatura-redundant" class="badge bg-light text-success">0 registros</span>
               </div>
               <div class="card-body">
-                <div style="height: 400px; position: relative;">
-                  <canvas id="graficaTemperatura"></canvas>
+                <div style="height: 300px; position: relative;">
+                  <canvas id="graficaTemperaturaRedundant"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Gráficos de Temperatura Coriolis y Diagnóstico (Lado a lado) -->
+        <div class="row">
+          <div class="col-md-6">
+            <div class="card mb-3">
+              <div class="card-header bg-warning text-dark d-flex justify-content-between align-items-center">
+                <h6 class="mb-0"><i class="bi bi-thermometer-half"></i> Temperatura Coriolis</h6>
+                <span id="contador-temperatura-coriolis" class="badge bg-dark">0 registros</span>
+              </div>
+              <div class="card-body">
+                <div style="height: 300px; position: relative;">
+                  <canvas id="graficaTemperaturaCoriolis"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card mb-3">
+              <div class="card-header bg-secondary text-white d-flex justify-content-between align-items-center">
+                <h6 class="mb-0"><i class="bi bi-thermometer-sun"></i> Temperatura Diagnóstico</h6>
+                <span id="contador-temperatura-diagnostic" class="badge bg-light text-dark">0 registros</span>
+              </div>
+              <div class="card-body">
+                <div style="height: 300px; position: relative;">
+                  <canvas id="graficaTemperaturaDiagnostic"></canvas>
                 </div>
               </div>
             </div>

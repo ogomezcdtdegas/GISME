@@ -36,6 +36,24 @@ const CONFIG = {
             colorFondo: 'rgba(220, 53, 69, 0.1)',
             label: 'Presión',
             canvasId: 'graficaPresion'
+        },
+        TEMPERATURA_CORIOLIS: {
+            color: '#fd7e14',
+            colorFondo: 'rgba(253, 126, 20, 0.1)',
+            label: 'Temperatura Coriolis',
+            canvasId: 'graficaTemperaturaCoriolis'
+        },
+        TEMPERATURA_DIAGNOSTIC: {
+            color: '#6f42c1',
+            colorFondo: 'rgba(111, 66, 193, 0.1)',
+            label: 'Temperatura Diagnóstico',
+            canvasId: 'graficaTemperaturaDiagnostic'
+        },
+        TEMPERATURA_REDUNDANT: {
+            color: '#28a745',
+            colorFondo: 'rgba(40, 167, 69, 0.1)',
+            label: 'Temperatura Redundante',
+            canvasId: 'graficaTemperaturaRedundant'
         }
     },
     
@@ -62,6 +80,18 @@ const CONFIG = {
             const dias = CONFIG.PERIODOS.DIAS_POR_DEFECTO;
             return `${total} registros (Últimos ${dias} días - Actualizando)`;
         },
+        REGISTROS_TIEMPO_REAL_TEMPERATURA_CORIOLIS: (total) => {
+            const dias = CONFIG.PERIODOS.DIAS_POR_DEFECTO;
+            return `${total} registros (Últimos ${dias} días - Actualizando)`;
+        },
+        REGISTROS_TIEMPO_REAL_TEMPERATURA_DIAGNOSTIC: (total) => {
+            const dias = CONFIG.PERIODOS.DIAS_POR_DEFECTO;
+            return `${total} registros (Últimos ${dias} días - Actualizando)`;
+        },
+        REGISTROS_TIEMPO_REAL_TEMPERATURA_REDUNDANT: (total) => {
+            const dias = CONFIG.PERIODOS.DIAS_POR_DEFECTO;
+            return `${total} registros (Últimos ${dias} días - Actualizando)`;
+        },
         get CONSOLE_ACTUALIZACION() {
             const segundos = Math.floor(CONFIG.INTERVALOS.ACTUALIZACION_DISPLAYS / 1000);
             return `⏰ Actualización automática configurada cada ${segundos} segundos`;
@@ -78,6 +108,9 @@ let sistemaActual = null;
 let chartFlujoVolumetrico = null;
 let chartFlujoMasico = null;
 let chartPresion = null;
+let chartTemperaturaCoriolis = null;
+let chartTemperatureDiagnostic = null;
+let chartTemperaturaRedundant = null;
 let tiempoRealInterval = null;
 
 // Variables para controlar el modo de los gráficos
@@ -87,6 +120,10 @@ let intervalActualizacionGraficos = null;
 // Variables para controlar presión
 let modoTiempoRealPresion = true;
 let intervalActualizacionPresion = null;
+
+// Variables para controlar temperatura
+let modoTiempoRealTemperatura = true;
+let intervalActualizacionTemperatura = null;
 
 // Variables del sistema desde Django - Se inicializan desde el HTML template
 // let SISTEMA_ACTUAL; // Ya se define en el HTML template

@@ -165,6 +165,7 @@ USE_I18N = True
 USE_TZ = True
 
 STATIC_URL = '/static/'
+#STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),  # Para archivos estáticos globales
     os.path.join(BASE_DIR, 'config/static')  # Para archivos estáticos de configuración

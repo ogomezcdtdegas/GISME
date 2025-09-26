@@ -304,6 +304,174 @@ class DatosHistoricosPresionView(APIView):
         
         return response
 
+class DatosHistoricosTemperaturaView(APIView):
+    """
+    CBV para obtener datos históricos de temperatura para un sistema específico
+    """
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request, sistema_id):
+        try:
+            # Logging para debug
+            logger.info(f"DatosHistoricosTemperaturaView - Sistema ID: {sistema_id}")
+            logger.info(f"Query params: {dict(request.GET)}")
+            
+            # Verificar que el sistema existe
+            sistema = Sistema.objects.get(id=sistema_id)
+            
+            # Obtener parámetros de fecha
+            fecha_inicio = request.GET.get('fecha_inicio')
+            fecha_fin = request.GET.get('fecha_fin')
+            export = request.GET.get('export')
+            
+            logger.info(f"Fechas recibidas - Inicio: {fecha_inicio}, Fin: {fecha_fin}")
+            
+            # Si no se especifican fechas, usar últimos 7 días
+            if not fecha_inicio or not fecha_fin:
+                fecha_fin = timezone.now()
+                fecha_inicio = fecha_fin - timedelta(days=7)
+                logger.info(f"Using default dates - Inicio: {fecha_inicio}, Fin: {fecha_fin}")
+            else:
+                # Parsear fechas con formato datetime y establecer timezone de Colombia
+                try:
+                    # Intentar formato con fecha y hora: "2025-09-17T21:31:00"
+                    fecha_inicio_naive = datetime.strptime(fecha_inicio, '%Y-%m-%dT%H:%M:%S')
+                    fecha_fin_naive = datetime.strptime(fecha_fin, '%Y-%m-%dT%H:%M:%S')
+                except ValueError:
+                    try:
+                        # Fallback a formato solo fecha: "2025-09-17"
+                        fecha_inicio_naive = datetime.strptime(fecha_inicio, '%Y-%m-%d')
+                        fecha_fin_naive = datetime.strptime(fecha_fin, '%Y-%m-%d')
+                        
+                        # Establecer horas para cubrir todo el rango del día
+                        fecha_inicio_naive = fecha_inicio_naive.replace(hour=0, minute=0, second=0, microsecond=0)
+                        fecha_fin_naive = fecha_fin_naive.replace(hour=23, minute=59, second=59, microsecond=999999)
+                    except ValueError:
+                        return Response({
+                            'success': False,
+                            'error': 'Formato de fecha inválido. Use YYYY-MM-DD o YYYY-MM-DDTHH:MM:SS'
+                        })
+                
+                # Asumir que las fechas del frontend están en hora de Colombia y convertir a UTC
+                fecha_inicio = COLOMBIA_TZ.localize(fecha_inicio_naive).astimezone(pytz.UTC)
+                fecha_fin = COLOMBIA_TZ.localize(fecha_fin_naive).astimezone(pytz.UTC)
+            
+            logger.info(f"Fechas UTC para consulta - Inicio: {fecha_inicio}, Fin: {fecha_fin}")
+            
+            # Consultar datos de temperatura del sistema
+            datos_query = NodeRedData.objects.filter(
+                systemId=sistema,
+                created_at__gte=fecha_inicio,
+                created_at__lte=fecha_fin
+            ).order_by('created_at')
+            
+            logger.info(f"Query generada: {datos_query.query}")
+            logger.info(f"Total de registros encontrados: {datos_query.count()}")
+            
+            # Si es exportación CSV, retornar CSV
+            if export == 'csv':
+                return self._exportar_csv_temperatura(datos_query, sistema, fecha_inicio, fecha_fin)
+            
+            # Preparar datos para gráficos separados
+            datos_coriolis = []
+            datos_diagnostic = []
+            datos_redundant = []
+            
+            for dato in datos_query:
+                # Convertir timestamp a hora de Colombia para mostrar
+                fecha_colombia = dato.created_at.astimezone(COLOMBIA_TZ)
+                fecha_str = fecha_colombia.strftime('%d/%m/%Y %H:%M:%S')
+                timestamp = fecha_colombia.isoformat()
+                
+                # Temperatura Coriolis
+                if dato.coriolis_temperature is not None:
+                    datos_coriolis.append({
+                        'fecha': fecha_str,
+                        'valor': float(dato.coriolis_temperature),
+                        'timestamp': timestamp
+                    })
+                
+                # Temperatura Diagnóstico
+                if dato.diagnostic_temperature is not None:
+                    datos_diagnostic.append({
+                        'fecha': fecha_str,
+                        'valor': float(dato.diagnostic_temperature),
+                        'timestamp': timestamp
+                    })
+                
+                # Temperatura Redundante
+                if dato.redundant_temperature is not None:
+                    datos_redundant.append({
+                        'fecha': fecha_str,
+                        'valor': float(dato.redundant_temperature),
+                        'timestamp': timestamp
+                    })
+            
+            return Response({
+                'success': True,
+                'coriolis_temperature': {
+                    'datos': datos_coriolis,
+                    'total_registros': len(datos_coriolis),
+                    'unidad': '°C'
+                },
+                'diagnostic_temperature': {
+                    'datos': datos_diagnostic,
+                    'total_registros': len(datos_diagnostic),
+                    'unidad': '°C'
+                },
+                'redundant_temperature': {
+                    'datos': datos_redundant,
+                    'total_registros': len(datos_redundant),
+                    'unidad': '°C'
+                },
+                'sistema': {
+                    'id': str(sistema.id),
+                    'tag': sistema.tag,
+                    'sistema_id': sistema.sistema_id
+                },
+                'fecha_inicio': fecha_inicio.strftime('%Y-%m-%d'),
+                'fecha_fin': fecha_fin.strftime('%Y-%m-%d')
+            })
+            
+        except Sistema.DoesNotExist:
+            logger.error(f"Sistema no encontrado: {sistema_id}")
+            return Response({
+                'success': False,
+                'error': 'Sistema no encontrado'
+            }, status=404)
+        except Exception as e:
+            logger.error(f"Error en DatosHistoricosTemperaturaView: {str(e)}", exc_info=True)
+            logger.error(f"Tipo de error: {type(e).__name__}")
+            logger.error(f"Args del error: {e.args}")
+            return Response({
+                'success': False,
+                'error': f'Error interno del servidor: {str(e)}'
+            }, status=500)
+    
+    def _exportar_csv_temperatura(self, datos, sistema, fecha_inicio, fecha_fin):
+        """Exportar datos de temperatura como CSV"""
+        from django.http import HttpResponse
+        import csv
+        
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = f'attachment; filename="temperatura_{sistema.tag}_{fecha_inicio.strftime("%Y%m%d")}_{fecha_fin.strftime("%Y%m%d")}.csv"'
+        
+        writer = csv.writer(response)
+        writer.writerow(['Fecha', 'Hora', 'Temp. Coriolis (°C)', 'Temp. Diagnóstico (°C)', 'Temp. Redundante (°C)', 'Sistema'])
+        
+        for dato in datos:
+            fecha_colombia = dato.created_at.astimezone(COLOMBIA_TZ)
+            writer.writerow([
+                fecha_colombia.strftime('%d/%m/%Y'),
+                fecha_colombia.strftime('%H:%M:%S'),
+                float(dato.coriolis_temperature) if dato.coriolis_temperature is not None else '',
+                float(dato.diagnostic_temperature) if dato.diagnostic_temperature is not None else '',
+                float(dato.redundant_temperature) if dato.redundant_temperature is not None else '',
+                sistema.tag
+            ])
+        
+        return response
+
 class DatosTiempoRealView(APIView):
     """
     CBV para obtener los últimos datos para mostrar en los displays en tiempo real
@@ -340,7 +508,7 @@ class DatosTiempoRealView(APIView):
                         'unidad': '°F'
                     },
                     'presion': {
-                        'valor': float(ultimo_dato.pressure_in) if ultimo_dato.pressure_in else 0,
+                        'valor': float(ultimo_dato.pressure_out) if ultimo_dato.pressure_out else 0,
                         'unidad': 'PSI'
                     }
                 },

@@ -256,3 +256,135 @@ function configurarEventosModalPresion() {
     
     console.log('🔧 Eventos del modal de presión configurados');
 }
+
+// ====================================================================
+// FUNCIONES DE CONTROL DE TIEMPO PARA TEMPERATURA
+// ====================================================================
+
+// Función para inicializar modo tiempo real de temperatura
+function inicializarModoTiempoRealTemperatura() {
+    console.log('🌡️ Inicializando modo tiempo real para temperatura');
+    
+    modoTiempoRealTemperatura = true;
+    
+    // Limpiar interval existente de temperatura si existe
+    if (intervalActualizacionTemperatura) {
+        clearInterval(intervalActualizacionTemperatura);
+    }
+    
+    // Cargar datos iniciales de temperatura
+    const sistemaId = obtenerSistemaActual();
+    if (sistemaId) {
+        cargarDatosHistoricosTemperatura(sistemaId);
+        
+        // Configurar actualización automática para temperatura
+        intervalActualizacionTemperatura = setInterval(function() {
+            if (modoTiempoRealTemperatura) {
+                console.log('⚡ Auto-actualizando datos de temperatura...');
+                cargarDatosHistoricosTemperatura(sistemaId);
+            }
+        }, CONFIG.INTERVALOS.ACTUALIZACION_GRAFICOS);
+        
+        console.log(CONFIG.TEXTOS.CONSOLE_MODO_TIEMPO_REAL);
+    }
+    
+    // Actualizar indicador
+    actualizarIndicadorModoTemperatura(true);
+}
+
+// Función para actualizar indicador de modo de temperatura
+function actualizarIndicadorModoTemperatura(esTiempoReal, fechaInicio = null, fechaFin = null) {
+    const indicador = document.getElementById('modo-indicador-temperatura');
+    if (!indicador) return;
+    
+    if (esTiempoReal) {
+        indicador.innerHTML = `
+            <strong>Modo Tiempo Real:</strong> 
+            <span class="badge bg-success me-2">●</span>
+            Los gráficos se actualizan automáticamente mostrando los últimos datos de temperatura.
+        `;
+    } else {
+        const fechaInicioStr = fechaInicio ? new Date(fechaInicio).toLocaleDateString('es-CO') : 'N/A';
+        const fechaFinStr = fechaFin ? new Date(fechaFin).toLocaleDateString('es-CO') : 'N/A';
+        
+        indicador.innerHTML = `
+            <strong>Modo Filtrado:</strong> 
+            <span class="badge bg-warning me-2">●</span>
+            Mostrando datos desde ${fechaInicioStr} hasta ${fechaFinStr}. Los gráficos no se actualizan automáticamente.
+        `;
+    }
+}
+
+// Función para cambiar a modo filtrado de temperatura
+function cambiarAModoFiltradoTemperatura() {
+    console.log('⏸️ Cambiando temperatura a modo filtrado');
+    
+    modoTiempoRealTemperatura = false;
+    
+    // Detener actualización automática de temperatura
+    if (intervalActualizacionTemperatura) {
+        clearInterval(intervalActualizacionTemperatura);
+        intervalActualizacionTemperatura = null;
+        console.log('⏹️ Detenida la actualización automática de temperatura');
+    }
+}
+
+// Función para resetear temperatura a modo tiempo real
+function resetearTemperaturaATiempoReal() {
+    console.log('▶️ Reseteando temperatura a modo tiempo real');
+    
+    // Resetear fechas a valores por defecto
+    const fechaFin = new Date();
+    const fechaInicio = new Date();
+    fechaInicio.setDate(fechaFin.getDate() - CONFIG.PERIODOS.DIAS_POR_DEFECTO);
+    
+    document.getElementById('fechaInicioTemperatura').value = fechaInicio.toISOString().slice(0, 16);
+    document.getElementById('fechaFinTemperatura').value = fechaFin.toISOString().slice(0, 16);
+    
+    // Reiniciar modo tiempo real
+    inicializarModoTiempoRealTemperatura();
+    
+    // Actualizar indicador de modo
+    actualizarIndicadorModoTemperatura(true);
+}
+
+// Función para buscar histórico de temperatura con filtros
+async function buscarHistoricoTemperatura() {
+    const sistemaId = obtenerSistemaActual();
+    if (!sistemaId) {
+        alert('Error: No se pudo identificar el sistema actual para realizar la búsqueda.');
+        return;
+    }
+    
+    console.log('🔍 Buscando histórico de temperatura con filtros...');
+    
+    const fechaInicio = document.getElementById('fechaInicioTemperatura').value;
+    const fechaFin = document.getElementById('fechaFinTemperatura').value;
+    
+    if (!fechaInicio || !fechaFin) {
+        alert('Por favor selecciona un rango de fecha y hora válido');
+        return;
+    }
+    
+    await cargarDatosHistoricosTemperatura(sistemaId, fechaInicio, fechaFin);
+}
+
+// Función para configurar eventos del modal de temperatura
+function configurarEventosModalTemperatura() {
+    // Evento para botón buscar
+    const btnBuscar = document.getElementById('buscarHistoricoTemperatura');
+    if (btnBuscar) {
+        btnBuscar.onclick = function() {
+            cambiarAModoFiltradoTemperatura();
+            buscarHistoricoTemperatura();
+        };
+    }
+    
+    // Evento para botón volver a tiempo real
+    const btnReset = document.getElementById('volverTiempoRealTemperatura');
+    if (btnReset) {
+        btnReset.onclick = resetearTemperaturaATiempoReal;
+    }
+    
+    console.log('🔧 Eventos del modal de temperatura configurados');
+}

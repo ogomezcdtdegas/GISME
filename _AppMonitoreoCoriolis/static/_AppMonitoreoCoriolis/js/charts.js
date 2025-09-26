@@ -207,3 +207,134 @@ function renderGraficoVacio(datosVacios, mensaje, configGrafico) {
         }
     });
 }
+
+// ====================================================================
+// FUNCIONES PARA TEMPERATURA
+// ====================================================================
+
+// Función para renderizar gráficos de temperatura CON DATOS REALES
+function renderGraficosTemperatura(data) {
+    // Renderizar gráfico de temperatura Coriolis
+    if (data.coriolis_temperature && data.coriolis_temperature.datos.length > 0) {
+        renderGraficoTemperaturaCoriolis(data.coriolis_temperature);
+    } else {
+        renderGraficoTemperaturaCoriolisVacio('Sin datos de temperatura Coriolis');
+    }
+    
+    // Renderizar gráfico de temperatura Diagnóstico
+    if (data.diagnostic_temperature && data.diagnostic_temperature.datos.length > 0) {
+        renderGraficoTemperaturaDiagnostic(data.diagnostic_temperature);
+    } else {
+        renderGraficoTemperaturaDiagnosticVacio('Sin datos de temperatura diagnóstico');
+    }
+    
+    // Renderizar gráfico de temperatura Redundante
+    if (data.redundant_temperature && data.redundant_temperature.datos.length > 0) {
+        renderGraficoTemperaturaRedundant(data.redundant_temperature);
+    } else {
+        renderGraficoTemperaturaRedundantVacio('Sin datos de temperatura redundante');
+    }
+}
+
+// Función para renderizar gráfico de temperatura Coriolis
+function renderGraficoTemperaturaCoriolis(datosCoriolis) {
+    // Destruir gráfico existente si existe
+    if (window.chartTemperaturaCoriolis) {
+        console.log('🗑️ Destruyendo gráfico de temperatura Coriolis existente');
+        window.chartTemperaturaCoriolis.destroy();
+        window.chartTemperaturaCoriolis = null;
+    }
+    
+    window.chartTemperaturaCoriolis = renderGrafico(
+        datosCoriolis, 
+        'temperatura_coriolis', 
+        window.chartTemperaturaCoriolis, 
+        CONFIG.GRAFICOS.TEMPERATURA_CORIOLIS
+    );
+}
+
+// Función para renderizar gráfico de temperatura Diagnóstico
+function renderGraficoTemperaturaDiagnostic(datosDiagnostic) {
+    // Destruir gráfico existente si existe
+    if (window.chartTemperatureDiagnostic) {
+        console.log('🗑️ Destruyendo gráfico de temperatura diagnóstico existente');
+        window.chartTemperatureDiagnostic.destroy();
+        window.chartTemperatureDiagnostic = null;
+    }
+    
+    window.chartTemperatureDiagnostic = renderGrafico(
+        datosDiagnostic, 
+        'temperatura_diagnostic', 
+        window.chartTemperatureDiagnostic, 
+        CONFIG.GRAFICOS.TEMPERATURA_DIAGNOSTIC
+    );
+}
+
+// Función para renderizar gráfico de temperatura Redundante
+function renderGraficoTemperaturaRedundant(datosRedundant) {
+    // Destruir gráfico existente si existe
+    if (window.chartTemperaturaRedundant) {
+        console.log('🗑️ Destruyendo gráfico de temperatura redundante existente');
+        window.chartTemperaturaRedundant.destroy();
+        window.chartTemperaturaRedundant = null;
+    }
+    
+    window.chartTemperaturaRedundant = renderGrafico(
+        datosRedundant, 
+        'temperatura_redundant', 
+        window.chartTemperaturaRedundant, 
+        CONFIG.GRAFICOS.TEMPERATURA_REDUNDANT
+    );
+}
+
+// Funciones para renderizar gráficos vacíos de temperatura
+function renderGraficosTemperaturaVacios(mensaje) {
+    renderGraficoTemperaturaCoriolisVacio(mensaje);
+    renderGraficoTemperaturaDiagnosticVacio(mensaje);
+    renderGraficoTemperaturaRedundantVacio(mensaje);
+}
+
+function renderGraficoTemperaturaCoriolisVacio(mensaje) {
+    // Destruir gráfico existente si existe
+    if (window.chartTemperaturaCoriolis) {
+        window.chartTemperaturaCoriolis.destroy();
+        window.chartTemperaturaCoriolis = null;
+    }
+    
+    const datosVacios = {
+        datos: [{ fecha: 'Sin datos', valor: 0 }],
+        unidad: ''
+    };
+    
+    window.chartTemperaturaCoriolis = renderGraficoVacio(datosVacios, mensaje, CONFIG.GRAFICOS.TEMPERATURA_CORIOLIS);
+}
+
+function renderGraficoTemperaturaDiagnosticVacio(mensaje) {
+    // Destruir gráfico existente si existe
+    if (window.chartTemperatureDiagnostic) {
+        window.chartTemperatureDiagnostic.destroy();
+        window.chartTemperatureDiagnostic = null;
+    }
+    
+    const datosVacios = {
+        datos: [{ fecha: 'Sin datos', valor: 0 }],
+        unidad: ''
+    };
+    
+    window.chartTemperatureDiagnostic = renderGraficoVacio(datosVacios, mensaje, CONFIG.GRAFICOS.TEMPERATURA_DIAGNOSTIC);
+}
+
+function renderGraficoTemperaturaRedundantVacio(mensaje) {
+    // Destruir gráfico existente si existe
+    if (window.chartTemperaturaRedundant) {
+        window.chartTemperaturaRedundant.destroy();
+        window.chartTemperaturaRedundant = null;
+    }
+    
+    const datosVacios = {
+        datos: [{ fecha: 'Sin datos', valor: 0 }],
+        unidad: ''
+    };
+    
+    window.chartTemperaturaRedundant = renderGraficoVacio(datosVacios, mensaje, CONFIG.GRAFICOS.TEMPERATURA_REDUNDANT);
+}

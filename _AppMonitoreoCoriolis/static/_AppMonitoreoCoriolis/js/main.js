@@ -36,9 +36,13 @@ async function abrirModal(sensorId) {
         // Modal de presión
         abrirModalPresion();
         
+    } else if (sensorId === 'sensor2') {
+        // Modal de temperatura
+        abrirModalTemperatura();
+        
     } else {
-        // Sensor de temperatura (sensor2) aún no implementado
-        alert(`Funcionalidad para ${sensorId} en desarrollo.\nActualmente disponibles: Flujo (sensor1) y Presión (sensor3).`);
+        // Sensor no implementado
+        alert(`Funcionalidad para ${sensorId} en desarrollo.\nActualmente disponibles: Flujo (sensor1), Temperatura (sensor2) y Presión (sensor3).`);
         return;
     }
 }
@@ -70,6 +74,35 @@ async function abrirModalPresion() {
     configurarEventosModalPresion();
     
     console.log(`✅ Modal de presión abierto para sistema: ${sistemaId}`);
+}
+
+// Función para abrir modal de temperatura (sensor2)
+async function abrirModalTemperatura() {
+    const sistemaId = obtenerSistemaActual();
+    if (!sistemaId) {
+        alert('Error: No se pudo identificar el sistema actual.');
+        return;
+    }
+    
+    // Configurar fechas por defecto usando CONFIG
+    const fechaFin = new Date();
+    const fechaInicio = new Date();
+    fechaInicio.setDate(fechaFin.getDate() - CONFIG.PERIODOS.DIAS_POR_DEFECTO);
+    
+    document.getElementById('fechaInicioTemperatura').value = fechaInicio.toISOString().slice(0, 16);
+    document.getElementById('fechaFinTemperatura').value = fechaFin.toISOString().slice(0, 16);
+    
+    // Iniciar en modo tiempo real por defecto
+    inicializarModoTiempoRealTemperatura();
+    
+    // Mostrar modal de temperatura
+    var modal = new bootstrap.Modal(document.getElementById('temperaturaModal'));
+    modal.show();
+    
+    // Configurar eventos del modal
+    configurarEventosModalTemperatura();
+    
+    console.log(`✅ Modal de temperatura abierto para sistema: ${sistemaId}`);
 }
 
 // Función para mostrar la vista de monitoreo

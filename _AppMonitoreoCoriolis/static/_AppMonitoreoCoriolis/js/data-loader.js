@@ -316,3 +316,108 @@ function exportarDatosPresion() {
     
     console.log('📥 Descargando datos de presión para el período:', fechaInicio, 'al', fechaFin);
 }
+
+// ====================================================================
+// FUNCIONES PARA TEMPERATURA
+// ====================================================================
+
+// Función para cargar datos históricos de temperatura (MODO FILTRADO o MODO TIEMPO REAL)
+async function cargarDatosHistoricosTemperatura(sistemaId, fechaInicio = null, fechaFin = null) {
+    try {
+        let url;
+        
+        if (fechaInicio && fechaFin) {
+            // Modo filtrado - usar fechas específicas
+            const fechaInicioISO = formatearFechaParaAPI(fechaInicio);
+            const fechaFinISO = formatearFechaParaAPI(fechaFin);
+            url = `/monitoreo/api/datos-temperatura/${sistemaId}/?fecha_inicio=${fechaInicioISO}&fecha_fin=${fechaFinISO}`;
+        } else {
+            // Modo tiempo real - usar fechas calculadas automáticamente
+            const fechaFinCalc = new Date();
+            const fechaInicioCalc = new Date();
+            fechaInicioCalc.setDate(fechaFinCalc.getDate() - CONFIG.PERIODOS.DIAS_POR_DEFECTO);
+            
+            const fechaInicioStr = formatearFechaParaAPI(fechaInicioCalc);
+            const fechaFinStr = formatearFechaParaAPI(fechaFinCalc);
+            
+            url = `/monitoreo/api/datos-temperatura/${sistemaId}/?fecha_inicio=${fechaInicioStr}&fecha_fin=${fechaFinStr}`;
+        }
+        
+        const response = await fetch(url);
+        const data = await response.json();
+        
+        if (data.success) {
+            // Renderizar gráficos con datos históricos
+            renderGraficosTemperatura(data);
+            
+            if (fechaInicio && fechaFin) {
+                // Modo filtrado - contadores sin indicación de tiempo real
+                document.getElementById('contador-temperatura-coriolis').textContent = 
+                    `${data.coriolis_temperature.total_registros} registros`;
+                document.getElementById('contador-temperatura-diagnostic').textContent = 
+                    `${data.diagnostic_temperature.total_registros} registros`;
+                document.getElementById('contador-temperatura-redundant').textContent = 
+                    `${data.redundant_temperature.total_registros} registros`;
+                
+                // Actualizar indicador de modo
+                actualizarIndicadorModoTemperatura(false, fechaInicio, fechaFin);
+            } else {
+                // Modo tiempo real - contadores con indicación de tiempo real usando CONFIG
+                document.getElementById('contador-temperatura-coriolis').textContent = 
+                    CONFIG.TEXTOS.REGISTROS_TIEMPO_REAL_TEMPERATURA_CORIOLIS(data.coriolis_temperature.total_registros);
+                document.getElementById('contador-temperatura-diagnostic').textContent = 
+                    CONFIG.TEXTOS.REGISTROS_TIEMPO_REAL_TEMPERATURA_DIAGNOSTIC(data.diagnostic_temperature.total_registros);
+                document.getElementById('contador-temperatura-redundant').textContent = 
+                    CONFIG.TEXTOS.REGISTROS_TIEMPO_REAL_TEMPERATURA_REDUNDANT(data.redundant_temperature.total_registros);
+                
+                // Actualizar período mostrado con CONFIG
+                document.getElementById('info-periodo-temperatura').textContent = 
+                    CONFIG.TEXTOS.INFO_PERIODO_TIEMPO_REAL;
+                
+                // Actualizar indicador de modo
+                actualizarIndicadorModoTemperatura(true);
+            }
+                
+            console.log('✅ Datos históricos de temperatura cargados:', {
+                coriolis: data.coriolis_temperature.total_registros,
+                diagnostic: data.diagnostic_temperature.total_registros,
+                redundant: data.redundant_temperature.total_registros
+            });
+        } else {
+            console.error('❌ Error cargando datos históricos de temperatura:', data.error);
+            renderGraficosTemperaturaVacios('Error: ' + data.error);
+        }
+    } catch (error) {
+        console.error('❌ Error en la petición de datos históricos de temperatura:', error);
+        renderGraficosTemperaturaVacios('Error de conexión');
+    }
+}
+
+// Función para exportar datos de temperatura como CSV
+function exportarDatosTemperatura() {
+    const sistemaId = obtenerSistemaActual();
+    if (!sistemaId) {
+        alert('No se pudo obtener el sistema actual');
+        return;
+    }
+    
+    const fechaInicio = document.getElementById('fechaInicioTemperatura').value;
+    const fechaFin = document.getElementById('fechaFinTemperatura').value;
+    
+    if (!fechaInicio || !fechaFin) {
+        alert('Por favor selecciona un rango de fecha y hora válido');
+        return;
+    }
+    
+    // Convertir a formato compatible con Django usando función utilitaria
+    const fechaInicioISO = formatearFechaParaAPI(fechaInicio);
+    const fechaFinISO = formatearFechaParaAPI(fechaFin);
+    
+    // Crear URL para descarga
+    const url = `/monitoreo/api/datos-temperatura/${sistemaId}/?fecha_inicio=${fechaInicioISO}&fecha_fin=${fechaFinISO}&export=csv`;
+    
+    // Abrir en nueva ventana para descargar
+    window.open(url, '_blank');
+    
+    console.log('📥 Descargando datos de temperatura para el período:', fechaInicio, 'al', fechaFin);
+}
