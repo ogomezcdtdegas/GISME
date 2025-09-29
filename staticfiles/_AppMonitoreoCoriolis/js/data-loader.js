@@ -470,3 +470,182 @@ function exportarDatosTemperatura() {
     
     console.log('📥 Descargando datos de temperatura para el período:', fechaInicio, 'al', fechaFin);
 }
+
+// ====================================================================
+// FUNCIONES PARA GRÁFICO DE TENDENCIAS
+// ====================================================================
+
+// Variable global para el gráfico de tendencias
+let trendChart = null;
+
+// Función para cargar datos de tendencias (últimas 4 horas)
+async function cargarDatosTendencias() {
+    const sistemaId = obtenerSistemaActual();
+    if (!sistemaId) {
+        console.warn('No se detectó un sistema específico para cargar tendencias');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/monitoreo/api/datos-tendencias/${sistemaId}/`);
+        const data = await response.json();
+        
+        if (data.success) {
+            renderGraficoTendencias(data);
+            console.log('✅ Datos de tendencias cargados:', data.total_registros, 'registros');
+        } else {
+            console.error('❌ Error obteniendo datos de tendencias:', data.error);
+            mostrarErrorTendencias(data.error);
+        }
+    } catch (error) {
+        console.error('❌ Error en la petición de tendencias:', error);
+        mostrarErrorTendencias('Error de conexión');
+    }
+}
+
+// Función para renderizar el gráfico de tendencias
+function renderGraficoTendencias(data) {
+    const ctx = document.getElementById('trendChart');
+    if (!ctx) {
+        console.warn('❌ Canvas trendChart no encontrado');
+        return;
+    }
+    
+    // 🔄 PRESERVAR el estado de visibilidad de los datasets existentes
+    let estadoVisibilidad = {};
+    if (trendChart && trendChart.data && trendChart.data.datasets) {
+        trendChart.data.datasets.forEach((dataset, index) => {
+            // Verificar si el dataset está visible u oculto
+            const meta = trendChart.getDatasetMeta(index);
+            const isVisible = meta && meta.visible !== false; // Por defecto visible
+            estadoVisibilidad[dataset.label] = isVisible;
+            console.log(`📊 Estado preservado: ${dataset.label} = ${isVisible ? 'visible' : 'oculto'}`);
+        });
+    }
+    
+    // Preparar datasets para Chart.js - SOLO los que tienen datos
+    const datasets = [];
+    
+    // Agregar cada variable como dataset SOLO si tiene datos
+    Object.keys(data.datasets).forEach(key => {
+        const dataset = data.datasets[key];
+        
+        // 🔥 FILTRAR: Solo agregar si el dataset tiene datos
+        if (dataset.data && dataset.data.length > 0) {
+            const label = `${dataset.label} (${dataset.unidad})`;
+            
+            // 🎯 PRESERVAR: Determinar si debe estar oculto basado en el estado anterior
+            const shouldBeHidden = estadoVisibilidad.hasOwnProperty(label) ? !estadoVisibilidad[label] : false;
+            
+            datasets.push({
+                label: label,
+                data: dataset.data,
+                borderColor: dataset.color,
+                backgroundColor: dataset.color + '20', // Agregar transparencia
+                fill: false,
+                tension: 0.4,
+                pointRadius: 2,
+                pointHoverRadius: 4,
+                hidden: shouldBeHidden // Aplicar el estado preservado
+            });
+            
+            console.log(`➕ Dataset agregado: ${label}, oculto: ${shouldBeHidden}`);
+        }
+    });
+    
+    // Si no hay datasets con datos, mostrar mensaje
+    if (datasets.length === 0) {
+        mostrarErrorTendencias('No hay datos disponibles para mostrar');
+        return;
+    }
+    
+    // Si el gráfico ya existe, solo actualizar los datos sin destruirlo
+    if (trendChart) {
+        // 🔄 ACTUALIZAR datos sin recrear el gráfico
+        trendChart.data.datasets = datasets;
+        trendChart.update('none'); // 'none' = sin animación para mejor rendimiento
+        
+        console.log('🔄 Gráfico de tendencias actualizado con', datasets.length, 'variables (preservando selecciones)');
+        return;
+    }
+    
+    // Crear el gráfico solo la primera vez
+    trendChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            datasets: datasets
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            scales: {
+                x: {
+                    type: 'time',
+                    time: {
+                        unit: 'minute',
+                        displayFormats: {
+                            minute: 'HH:mm'
+                        }
+                    },
+                    title: {
+                        display: true,
+                        text: 'Hora'
+                    }
+                },
+                y: {
+                    beginAtZero: false,
+                    title: {
+                        display: true,
+                        text: 'Valores'
+                    }
+                }
+            },
+            plugins: {
+                title: {
+                    display: true,
+                    text: 'Tendencias de Medición - Últimos 30 Minutos'
+                },
+                legend: {
+                    display: true,
+                    position: 'top'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            const label = context.dataset.label || '';
+                            const value = context.parsed.y;
+                            return `${label}: ${value.toFixed(2)}`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+    
+    console.log('✅ Gráfico de tendencias creado inicialmente con', datasets.length, 'variables');
+}
+
+// Función para mostrar error en el gráfico de tendencias
+function mostrarErrorTendencias(mensaje) {
+    const ctx = document.getElementById('trendChart');
+    if (!ctx) return;
+    
+    // Destruir gráfico anterior si existe
+    if (trendChart) {
+        trendChart.destroy();
+    }
+    
+    // Mostrar mensaje de error
+    const container = ctx.parentElement;
+    container.innerHTML = `
+        <div class="alert alert-warning text-center" role="alert">
+            <i class="bi bi-exclamation-triangle"></i>
+            <strong>Sin datos de tendencias</strong><br>
+            ${mensaje}
+        </div>
+    `;
+}

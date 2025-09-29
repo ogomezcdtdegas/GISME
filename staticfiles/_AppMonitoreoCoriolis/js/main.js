@@ -230,11 +230,18 @@ document.addEventListener('DOMContentLoaded', function() {
         // Actualizar displays inmediatamente
         actualizarDisplaysConDatosReales();
         
+        // Cargar gráfico de tendencias inmediatamente
+        cargarDatosTendencias();
+        
         // Configurar actualización automática usando CONFIG
         if (tiempoRealInterval) clearInterval(tiempoRealInterval);
-        tiempoRealInterval = setInterval(actualizarDisplaysConDatosReales, CONFIG.INTERVALOS.ACTUALIZACION_DISPLAYS);
+        tiempoRealInterval = setInterval(() => {
+            actualizarDisplaysConDatosReales();
+            cargarDatosTendencias(); // También actualizar tendencias cada 10 segundos
+        }, CONFIG.INTERVALOS.ACTUALIZACION_DISPLAYS);
         
         console.log(CONFIG.TEXTOS.CONSOLE_ACTUALIZACION);
+        console.log('📊 Gráfico de tendencias configurado para actualización automática cada 10 segundos');
     } else {
         console.warn('⚠️ No se detectó un sistema específico - mostrar tabla de selección');
         // Mostrar la vista de selección de sistemas

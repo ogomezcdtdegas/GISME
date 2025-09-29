@@ -570,3 +570,138 @@ class DatosTiempoRealView(APIView):
                 'success': False,
                 'error': str(e)
             }, status=500)
+
+class DatosTendenciasView(APIView):
+    """
+    CBV para obtener datos de tendencias de las últimas 4 horas para el gráfico
+    Incluye: Flujo Másico, Flujo Volumétrico, Temperatura Coriolis, Temperatura de Salida y Presión
+    """
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request, sistema_id):
+        try:
+            sistema = Sistema.objects.get(id=sistema_id)
+            
+            # Obtener datos de las últimas 4 horas
+            fecha_fin = timezone.now()
+            fecha_inicio = fecha_fin - timedelta(minutes=30)
+            
+            # Consultar datos
+            datos = NodeRedData.objects.filter(
+                systemId=sistema,
+                created_at__range=[fecha_inicio, fecha_fin]
+            ).order_by('created_at')
+            
+            # Preparar datos para cada variable
+            flujo_masico = []
+            flujo_volumetrico = []
+            temperatura_coriolis = []
+            temperatura_salida = []
+            presion = []
+            
+            for dato in datos:
+                # Convertir UTC a hora de Colombia
+                fecha_colombia = dato.created_at.astimezone(COLOMBIA_TZ)
+                timestamp = int(fecha_colombia.timestamp() * 1000)
+                fecha_str = fecha_colombia.strftime('%H:%M')
+                
+                # Flujo Másico
+                if dato.mass_rate is not None:
+                    flujo_masico.append({
+                        'x': timestamp,
+                        'y': float(dato.mass_rate),
+                        'fecha': fecha_str
+                    })
+                
+                # Flujo Volumétrico
+                if dato.flow_rate is not None:
+                    flujo_volumetrico.append({
+                        'x': timestamp,
+                        'y': float(dato.flow_rate),
+                        'fecha': fecha_str
+                    })
+                
+                # Temperatura Coriolis
+                if dato.coriolis_temperature is not None:
+                    temperatura_coriolis.append({
+                        'x': timestamp,
+                        'y': float(dato.coriolis_temperature),
+                        'fecha': fecha_str
+                    })
+                
+                # Temperatura de Salida (redundant_temperature)
+                if dato.redundant_temperature is not None:
+                    temperatura_salida.append({
+                        'x': timestamp,
+                        'y': float(dato.redundant_temperature),
+                        'fecha': fecha_str
+                    })
+                
+                # Presión
+                if dato.pressure_out is not None:
+                    presion.append({
+                        'x': timestamp,
+                        'y': float(dato.pressure_out),
+                        'fecha': fecha_str
+                    })
+            
+            return Response({
+                'success': True,
+                'datasets': {
+                    'flujo_masico': {
+                        'label': 'Flujo Másico',
+                        'data': flujo_masico,
+                        'unidad': 'lb/s',
+                        'color': '#28a745',  # Verde
+                        'total_registros': len(flujo_masico)
+                    },
+                    'flujo_volumetrico': {
+                        'label': 'Flujo Volumétrico',
+                        'data': flujo_volumetrico,
+                        'unidad': 'cm³/s',
+                        'color': '#007bff',  # Azul
+                        'total_registros': len(flujo_volumetrico)
+                    },
+                    'temperatura_coriolis': {
+                        'label': 'Temperatura Coriolis',
+                        'data': temperatura_coriolis,
+                        'unidad': '°C',
+                        'color': '#f59416',  # Naranja
+                        'total_registros': len(temperatura_coriolis)
+                    },
+                    'temperatura_salida': {
+                        'label': 'Temperatura de Salida',
+                        'data': temperatura_salida,
+                        'unidad': '°C',
+                        'color': '#6f42c1',  # Púrpura
+                        'total_registros': len(temperatura_salida)
+                    },
+                    'presion': {
+                        'label': 'Presión',
+                        'data': presion,
+                        'unidad': 'PSI',
+                        'color': '#dc3545',  # Rojo
+                        'total_registros': len(presion)
+                    }
+                },
+                'sistema': {
+                    'id': str(sistema.id),
+                    'tag': sistema.tag,
+                    'sistema_id': sistema.sistema_id
+                },
+                'periodo': '4 horas',
+                'timestamp': fecha_fin.isoformat(),
+                'total_registros': datos.count()
+            })
+            
+        except Sistema.DoesNotExist:
+            return Response({
+                'success': False,
+                'error': 'Sistema no encontrado'
+            }, status=404)
+        except Exception as e:
+            logger.error(f"Error en DatosTendenciasView: {str(e)}", exc_info=True)
+            return Response({
+                'success': False,
+                'error': f'Error interno del servidor: {str(e)}'
+            }, status=500)
