@@ -22,6 +22,59 @@
 .hidden {
     display: none !important;
 }
+
+/* Estilos para imagen fija del sistema Coriolis */
+.img-container {
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    white-space: nowrap !important;
+    padding-bottom: 15px !important; /* Espacio para la barra de scroll horizontal */
+}
+
+.img-fixed {
+    width: 1050px !important;
+    height: auto !important;
+    min-width: 1050px !important;
+    max-width: none !important;
+    display: block !important;
+}
+
+/* Elementos de UI fijos que no se mueven con el scroll */
+.sistema-ui-overlay {
+    position: relative !important;
+    pointer-events: none !important; /* Permitir clics a través del overlay */
+    z-index: 10 !important;
+}
+
+.sistema-ui-element {
+    position: absolute !important;
+    pointer-events: auto !important; /* Restaurar clics en los elementos específicos */
+    z-index: 21 !important;
+}
+
+/* Mejorar las barras de scroll */
+.img-container::-webkit-scrollbar {
+    height: 12px;
+}
+
+.img-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 6px;
+}
+
+.img-container::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 6px;
+}
+
+.img-container::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Asegurar que el contenedor del card también tenga scroll horizontal si es necesario */
+.coriolis-card-body {
+    overflow-x: auto !important;
+}
 </style>
 
 <script>
@@ -187,52 +240,58 @@ let SISTEMA_ACTUAL;
                                         <div class="card-header">
                                             <h5><i class="bi bi-pipe"></i> Esquema del Sistema Coriolis</h5>
                                         </div>
-                                        <div class="card-body coriolis-card-body text-center" style="overflow: auto; max-height: 700px;">
-                                            <div class="img-container" style="position:relative; max-width:1050px; margin:auto;">
-                                                <img src="{% static 'img/coriolis_render2.png' %}" class="img-fluid" id="sistema-img" style="max-width:100%; height:auto;">
-                                                <!-- Displays de sensores -->
-                                                <div style="position:absolute; top:33%; left:28%; min-width:180px; z-index:2;">
-                                                <div class="shadow-sm" style="background:rgba(255,255,255,0.4); border-radius:10px; padding:6px 12px; text-align:center; font-size:13px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
-                                                    <div style="font-weight:600; color:#888;">Flujo Volumétrico <sub>@ flujo</sub></div>
-                                                    <div id="display-sensor1" style="font-size:15px; color:#007bff; font-weight:700;">---</div>
-                                                </div>
-                                                </div>
-                                                <div style="position:absolute; top:23%; left:28%; min-width:180px; z-index:2;">
+                                        <div class="card-body coriolis-card-body text-center" style="overflow: visible; max-height: 700px; position: relative;">
+                                            <!-- Contenedor de imagen centrado -->
+                                            <div style="position: relative; width: 100%; display: flex; justify-content: center;">
+                                                <!-- Contenedor con scroll que mantiene proporción -->
+                                                <div class="img-container" style="position: relative; width: 1050px; min-width: 1050px; overflow-x: auto; height: 500px;">
+                                                    <!-- Imagen base -->
+                                                    <img src="{% static 'img/coriolis_render2.png' %}" class="img-fixed" id="sistema-img" style="width: 1050px; height: auto; display: block;">
+                                                    
+                                                    
+                                                    <!-- Displays de sensores -->
+                                                    <div style="position: absolute; top: 33%; left: 28%; min-width: 180px; z-index: 50;">
+                                                        <div class="shadow-sm" style="background:rgba(255,255,255,0.9); border-radius:10px; padding:6px 12px; text-align:center; font-size:13px; box-shadow:0 2px 8px rgba(0,0,0,0.2);">
+                                                            <div style="font-weight:600; color:#888;">Flujo Volumétrico <sub>@ flujo</sub></div>
+                                                            <div id="display-sensor1" style="font-size:15px; color:#007bff; font-weight:700;">---</div>
+                                                        </div>
+                                                    </div>
+                                                <div class="sistema-ui-element" style="top:46%; left:28%; min-width:180px;">
                                                 <div class="shadow-sm" style="background:rgba(255,255,255,0.4); border-radius:10px; padding:6px 12px; text-align:center; font-size:13px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
                                                     <div style="font-weight:600; color:#888;">Flujo Másico</div>
                                                     <div id="display-sensor4" style="font-size:15px; color:#418b2a; font-weight:700;">---</div>
                                                 </div>
                                                 </div>
-                                                <div style="position:absolute; top:68%; left:28%; min-width:180px; z-index:2;">
+                                                <div class="sistema-ui-element" style="top:70%; left:28%; min-width:180px;">
                                                 <div class="shadow-sm" style="background:rgba(255,255,255,0.4); border-radius:10px; padding:6px 12px; text-align:center; font-size:13px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
                                                     <div style="font-weight:600; color:#888;">Temperatura Coriolis</div>
                                                     <div id="display-sensor2" style="font-size:15px; color:#f59416; font-weight:700;">---</div>
                                                 </div>
                                                 </div>
-                                                <div style="position:absolute; top:78%; left:28%; min-width:180px; z-index:2;">
+                                                <div class="sistema-ui-element" style="top:83%; left:28%; min-width:180px;">
                                                 <div class="shadow-sm" style="background:rgba(255,255,255,0.4); border-radius:10px; padding:6px 12px; text-align:center; font-size:13px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
                                                     <div style="font-weight:600; color:#888;">Temperatura Diagnóstico</div>
                                                     <div id="display-sensor6" style="font-size:15px; color:#a328c2; font-weight:700;">---</div>
                                                 </div>
                                                 </div>
-                                                <div style="position:absolute; top:73%; left:58%; min-width:90px; z-index:2;">
+                                                <div class="sistema-ui-element" style="top:83%; left:54%; min-width:90px;">
                                                 <div class="shadow-sm" style="background:rgba(255,255,255,0.4); border-radius:10px; padding:6px 12px; text-align:center; font-size:13px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
                                                     <div style="font-weight:600; color:#888;">Temperatura de Sálida</div>
                                                     <div id="display-sensor5" style="font-size:15px; color:#28a745; font-weight:700;">---</div>
                                                 </div>
                                                 </div>
-                                                <div style="position:absolute; top:7%; left:56%; min-width:90px; z-index:2;">
+                                                <div class="sistema-ui-element" style="top:13%; left:56%; min-width:90px;">
                                                 <div class="shadow-sm" style="background:rgba(255,255,255,0.4); border-radius:10px; padding:6px 12px; text-align:center; font-size:13px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
                                                     <div style="font-weight:600; color:#888;">Presión</div>
                                                     <div id="display-sensor3" style="font-size:15px; color:#dc3545; font-weight:700;">---</div>
                                                 </div>
                                                 </div>
                                                 <!-- Marcadores transparentes clickeables -->
-                                                <button class="marker" style="position:absolute; top:45%; left:35%; width:32px; height:32px; border-radius:50%; background:rgba(0,123,255,0); border:none; cursor:pointer;" onclick="abrirModal('sensor1')" title="Ver histórico Sensor 1"></button>
-                                                <button class="marker" style="position:absolute; top:58%; left:61.5%; width:32px; height:32px; border-radius:50%; background:rgba(40,167,69,0); border:none; cursor:pointer;" onclick="abrirModal('sensor2')" title="Ver histórico Sensor 2"></button>
-                                                <button class="marker" style="position:absolute; top:23%; left:58%; width:32px; height:32px; border-radius:50%; background:rgba(220,53,69,0); border:none; cursor:pointer;" onclick="abrirModal('sensor3')" title="Ver histórico Sensor 3"></button>
+                                                <button class="marker sistema-ui-element" style="top:58%; left:35%; width:32px; height:32px; border-radius:50%; background:rgba(0,123,255,0); border:none; cursor:pointer;" onclick="abrirModal('sensor1')" title="Ver histórico Sensor 1"></button>
+                                                <button class="marker sistema-ui-element" style="top:70%; left:61.5%; width:32px; height:32px; border-radius:50%; background:rgba(40,167,69,0); border:none; cursor:pointer;" onclick="abrirModal('sensor2')" title="Ver histórico Sensor 2"></button>
+                                                <button class="marker sistema-ui-element" style="top:26%; left:58%; width:32px; height:32px; border-radius:50%; background:rgba(220,53,69,0); border:none; cursor:pointer;" onclick="abrirModal('sensor3')" title="Ver histórico Sensor 3"></button>
                                             
-                                                <div class="sistema-variables-container">
+                                                <div class="sistema-ui-element sistema-variables-container" style="top: 5%; right: 2%; width: 380px;">
                                                     <!-- Título de la tabla con estilo CSS -->
                                                     <div class="sistema-variables-header shadow-sm">
                                                         <div class="sistema-variables-title">Otras variables del sistema:</div>
@@ -291,8 +350,8 @@ let SISTEMA_ACTUAL;
                                                         </tbody>
                                                         </table>
                                                     </div>
-                                                    </div>
-
+                                                </div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
