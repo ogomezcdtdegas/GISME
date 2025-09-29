@@ -126,6 +126,89 @@
     background: rgba(255,255,255,0.4) !important;
 }
 
+/* === TABLA DE VARIABLES DEL SISTEMA === */
+.sistema-variables-container {
+    position: absolute;
+    top: 15%;
+    left: 80%;
+    width: 350px;
+    z-index: 3;
+}
+
+.sistema-variables-header {
+    background: rgba(255,255,255,0.9);
+    border-radius: 10px 10px 0 0;
+    padding: 8px 15px;
+    text-align: center;
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.sistema-variables-title {
+    font-weight: 600;
+    color: #6c757d;
+    font-size: 14px;
+    margin: 0;
+}
+
+.sistema-variables-body {
+    background: rgba(255,255,255,0.85);
+    border-radius: 0 0 10px 10px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.sistema-variables-table {
+    font-size: 12px;
+    margin-bottom: 0;
+}
+
+.sistema-variables-table thead {
+    background: rgba(108,117,125,0.1);
+    border-bottom: 1px solid rgba(0,0,0,0.1);
+}
+
+.sistema-variables-table th {
+    color: #6c757d;
+    font-weight: 600;
+    padding: 8px 12px;
+    border: none;
+}
+
+.sistema-variables-table th.text-center {
+    text-align: center;
+}
+
+.sistema-variables-table tbody tr {
+    border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+.sistema-variables-table tbody tr:last-child {
+    border-bottom: none;
+}
+
+.sistema-variables-table td {
+    padding: 6px 12px;
+    border: none;
+}
+
+.sistema-variables-variable {
+    color: #495057;
+    font-weight: 500;
+}
+
+.sistema-variables-valor {
+    text-align: center;
+    color: #17a2b8;
+    font-weight: 600;
+}
+
+.sistema-variables-unidad {
+    text-align: center;
+    color: #6c757d;
+    font-size: 11px;
+}
+
 /* === RESPONSIVE ADJUSTMENTS === */
 @media (max-width: 768px) {
     .card-body .row > div {

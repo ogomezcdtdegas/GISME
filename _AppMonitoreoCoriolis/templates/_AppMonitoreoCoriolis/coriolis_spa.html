@@ -232,56 +232,61 @@ let SISTEMA_ACTUAL;
                                                 <button class="marker" style="position:absolute; top:58%; left:61.5%; width:32px; height:32px; border-radius:50%; background:rgba(40,167,69,0); border:none; cursor:pointer;" onclick="abrirModal('sensor2')" title="Ver histórico Sensor 2"></button>
                                                 <button class="marker" style="position:absolute; top:23%; left:58%; width:32px; height:32px; border-radius:50%; background:rgba(220,53,69,0); border:none; cursor:pointer;" onclick="abrirModal('sensor3')" title="Ver histórico Sensor 3"></button>
                                             
-                                                <div class="table-responsive" style="position:absolute; top:15%; left:80%; width:320px; z-index:3;">
-                                                    <div class="border rounded overflow-hidden" style="background:rgba(180, 34, 34, 1);">
-                                                        <table class="table table-striped table-bordered table-sm mb-0">
-                                                        <thead class="table-dark">
+                                                <div class="sistema-variables-container">
+                                                    <!-- Título de la tabla con estilo CSS -->
+                                                    <div class="sistema-variables-header shadow-sm">
+                                                        <div class="sistema-variables-title">Otras variables del sistema:</div>
+                                                    </div>
+                                                    <!-- Contenedor de la tabla con efecto transparente -->
+                                                    <div class="sistema-variables-body shadow-sm">
+                                                        <table class="table table-sm sistema-variables-table">
+                                                        <thead>
                                                             <tr>
                                                             <th>Variable</th>
-                                                            <th>Valor</th>
-                                                            <th>Magnitud</th>
+                                                            <th class="text-center">Valor</th>
+                                                            <th class="text-center">Unidad</th>
                                                             </tr>
                                                         </thead>
                                                         <tbody id="tabla-variables-sistema">
                                                             <tr>
-                                                            <td>Volumen Total</td>
-                                                            <td id="tabla-volTotal">---</td>
-                                                            <td>cm³</td>
+                                                            <td class="sistema-variables-variable">Volumen Total</td>
+                                                            <td id="tabla-volTotal" class="sistema-variables-valor">---</td>
+                                                            <td class="sistema-variables-unidad">cm³</td>
                                                             </tr>
                                                             <tr>
-                                                            <td>Masa Total</td>
-                                                            <td id="tabla-masTotal">---</td>
-                                                            <td>lb</td>
+                                                            <td class="sistema-variables-variable">Masa Total</td>
+                                                            <td id="tabla-masTotal" class="sistema-variables-valor">---</td>
+                                                            <td class="sistema-variables-unidad">lb</td>
                                                             </tr>
                                                             <tr>
-                                                            <td>Densidad</td>
-                                                            <td id="tabla-densidad">---</td>
-                                                            <td>g/cc</td>
+                                                            <td class="sistema-variables-variable">Densidad</td>
+                                                            <td id="tabla-densidad" class="sistema-variables-valor">---</td>
+                                                            <td class="sistema-variables-unidad">g/cc</td>
                                                             </tr>
                                                             <tr>
-                                                            <td>Frecuencia</td>
-                                                            <td id="tabla-frecuencia">---</td>
-                                                            <td>Hz</td>
+                                                            <td class="sistema-variables-variable">Frecuencia</td>
+                                                            <td id="tabla-frecuencia" class="sistema-variables-valor">---</td>
+                                                            <td class="sistema-variables-unidad">Hz</td>
                                                             </tr>
                                                             <tr>
-                                                            <td>% Concentración Sólidos</td>
-                                                            <td id="tabla-concSolido">---</td>
-                                                            <td>%</td>
+                                                            <td class="sistema-variables-variable">% Concentración Sólidos</td>
+                                                            <td id="tabla-concSolido" class="sistema-variables-valor">---</td>
+                                                            <td class="sistema-variables-unidad">%</td>
                                                             </tr>
                                                             <tr>
-                                                            <td>% Corte Agua</td>
-                                                            <td id="tabla-corteAgua">---</td>
-                                                            <td>%</td>
+                                                            <td class="sistema-variables-variable">% Corte Agua</td>
+                                                            <td id="tabla-corteAgua" class="sistema-variables-valor">---</td>
+                                                            <td class="sistema-variables-unidad">%</td>
                                                             </tr>
                                                             <tr>
-                                                            <td>Intensidad Señal Gateway</td>
-                                                            <td id="tabla-signalGateway">---</td>
-                                                            <td>dB</td>
+                                                            <td class="sistema-variables-variable">Intensidad Señal Gateway</td>
+                                                            <td id="tabla-signalGateway" class="sistema-variables-valor">---</td>
+                                                            <td class="sistema-variables-unidad">dB</td>
                                                             </tr>
                                                             <tr>
-                                                            <td>Temperatura Gateway</td>
-                                                            <td id="tabla-tempGateway">---</td>
-                                                            <td>°C</td>
+                                                            <td class="sistema-variables-variable">Temperatura Gateway</td>
+                                                            <td id="tabla-tempGateway" class="sistema-variables-valor">---</td>
+                                                            <td class="sistema-variables-unidad">°C</td>
                                                             </tr>
                                                         </tbody>
                                                         </table>
@@ -293,41 +298,7 @@ let SISTEMA_ACTUAL;
                                     </div>
                                 </div>
                             </div>
-
-
-                            <!-- Panel de Estado -->
-                            <div class="col-lg-8 mb-4">
-                                <div class="card">
-                                    <div class="card-header">
-                                        <h5><i class="bi bi-activity"></i> Estado del Sistema</h5>
-                                    </div>
-                                    <div class="card-body">
-                                        <div id="sistemaInfo" class="metrics-container">
-                                            <div class="text-center">
-                                                <div class="spinner-border" role="status">
-                                                    <span class="visually-hidden">Cargando...</span>
-                                                </div>
-                                                <p class="mt-2">Cargando información del sistema...</p>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Panel de Ubicación -->
-                            <div class="col-lg-4 mb-4">
-                                <div class="card">
-                                    <div class="card-header">
-                                        <h5><i class="bi bi-geo-alt"></i> Ubicación</h5>
-                                    </div>
-                                    <div class="card-body">
-                                        <div id="sistemaMap" style="height: 300px;"></div>
-                                    </div>
-                                </div>
-                            </div>
                         </div>
-
-                        
 
                         <!-- Gráficos de Tendencias -->
                         <div class="row">

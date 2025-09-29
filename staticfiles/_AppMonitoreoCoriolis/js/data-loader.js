@@ -35,28 +35,28 @@ async function actualizarDisplaysConDatosReales() {
                 `${data.datos.temperaturaDiagnostico.valor.toFixed(2)} ${data.datos.temperaturaDiagnostico.unidad}`;
 
             document.getElementById('tabla-volTotal').textContent = 
-                `${data.datos.volTotal.valor.toFixed(2)}`;
+                `${data.datos.volTotal.valor.toFixed(3)}`;
 
             document.getElementById('tabla-masTotal').textContent = 
-                `${data.datos.masTotal.valor.toFixed(2)}`;
+                `${data.datos.masTotal.valor.toFixed(3)}`;
 
             document.getElementById('tabla-densidad').textContent = 
-                `${data.datos.densidad.valor.toFixed(2)}`;
+                `${data.datos.densidad.valor.toFixed(3)}`;
 
             document.getElementById('tabla-frecuencia').textContent = 
-                `${data.datos.frecuencia.valor.toFixed(2)}`;
+                `${data.datos.frecuencia.valor.toFixed(3)}`;
 
             document.getElementById('tabla-concSolido').textContent = 
-                `${data.datos.concSolido.valor.toFixed(2)}`;
+                `${data.datos.concSolido.valor.toFixed(3)}`;
 
             document.getElementById('tabla-corteAgua').textContent = 
-                `${data.datos.corteAgua.valor.toFixed(2)}`;
+                `${data.datos.corteAgua.valor.toFixed(3)}`;
 
             document.getElementById('tabla-signalGateway').textContent = 
-                `${data.datos.signalGateway.valor.toFixed(2)}`;
+                `${data.datos.signalGateway.valor.toFixed(3)}`;
 
             document.getElementById('tabla-tempGateway').textContent = 
-                `${data.datos.tempGateway.valor.toFixed(2)}`;
+                `${data.datos.tempGateway.valor.toFixed(3)}`;
             
             // Actualizar fecha de última actualización
             const ultimaActualizacion = document.getElementById('ultima-actualizacion');
