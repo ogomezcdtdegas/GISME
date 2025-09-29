@@ -191,20 +191,38 @@ let SISTEMA_ACTUAL;
                                             <div class="img-container" style="position:relative; max-width:1050px; margin:auto;">
                                                 <img src="{% static 'img/coriolis_render2.png' %}" class="img-fluid" id="sistema-img" style="max-width:100%; height:auto;">
                                                 <!-- Displays de sensores -->
-                                                <div style="position:absolute; top:33%; left:32%; min-width:90px; z-index:2;">
-                                                <div class="shadow-sm" style="background:#fff; border-radius:10px; padding:6px 12px; text-align:center; font-size:13px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
-                                                    <div style="font-weight:600; color:#888;">Flujo</div>
+                                                <div style="position:absolute; top:33%; left:28%; min-width:180px; z-index:2;">
+                                                <div class="shadow-sm" style="background:rgba(255,255,255,0.4); border-radius:10px; padding:6px 12px; text-align:center; font-size:13px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+                                                    <div style="font-weight:600; color:#888;">Flujo Volumétrico <sub>@ flujo</sub></div>
                                                     <div id="display-sensor1" style="font-size:15px; color:#007bff; font-weight:700;">---</div>
                                                 </div>
                                                 </div>
+                                                <div style="position:absolute; top:23%; left:28%; min-width:180px; z-index:2;">
+                                                <div class="shadow-sm" style="background:rgba(255,255,255,0.4); border-radius:10px; padding:6px 12px; text-align:center; font-size:13px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+                                                    <div style="font-weight:600; color:#888;">Flujo Másico</div>
+                                                    <div id="display-sensor4" style="font-size:15px; color:#418b2a; font-weight:700;">---</div>
+                                                </div>
+                                                </div>
+                                                <div style="position:absolute; top:68%; left:28%; min-width:180px; z-index:2;">
+                                                <div class="shadow-sm" style="background:rgba(255,255,255,0.4); border-radius:10px; padding:6px 12px; text-align:center; font-size:13px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+                                                    <div style="font-weight:600; color:#888;">Temperatura Coriolis</div>
+                                                    <div id="display-sensor2" style="font-size:15px; color:#f59416; font-weight:700;">---</div>
+                                                </div>
+                                                </div>
+                                                <div style="position:absolute; top:78%; left:28%; min-width:180px; z-index:2;">
+                                                <div class="shadow-sm" style="background:rgba(255,255,255,0.4); border-radius:10px; padding:6px 12px; text-align:center; font-size:13px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+                                                    <div style="font-weight:600; color:#888;">Temperatura Diagnóstico</div>
+                                                    <div id="display-sensor6" style="font-size:15px; color:#a328c2; font-weight:700;">---</div>
+                                                </div>
+                                                </div>
                                                 <div style="position:absolute; top:73%; left:58%; min-width:90px; z-index:2;">
-                                                <div class="shadow-sm" style="background:#fff; border-radius:10px; padding:6px 12px; text-align:center; font-size:13px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
-                                                    <div style="font-weight:600; color:#888;">Temperatura</div>
-                                                    <div id="display-sensor2" style="font-size:15px; color:#28a745; font-weight:700;">---</div>
+                                                <div class="shadow-sm" style="background:rgba(255,255,255,0.4); border-radius:10px; padding:6px 12px; text-align:center; font-size:13px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+                                                    <div style="font-weight:600; color:#888;">Temperatura de Sálida</div>
+                                                    <div id="display-sensor5" style="font-size:15px; color:#28a745; font-weight:700;">---</div>
                                                 </div>
                                                 </div>
                                                 <div style="position:absolute; top:7%; left:56%; min-width:90px; z-index:2;">
-                                                <div class="shadow-sm" style="background:#fff; border-radius:10px; padding:6px 12px; text-align:center; font-size:13px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
+                                                <div class="shadow-sm" style="background:rgba(255,255,255,0.4); border-radius:10px; padding:6px 12px; text-align:center; font-size:13px; box-shadow:0 2px 8px rgba(0,0,0,0.08);">
                                                     <div style="font-weight:600; color:#888;">Presión</div>
                                                     <div id="display-sensor3" style="font-size:15px; color:#dc3545; font-weight:700;">---</div>
                                                 </div>
@@ -213,6 +231,63 @@ let SISTEMA_ACTUAL;
                                                 <button class="marker" style="position:absolute; top:45%; left:35%; width:32px; height:32px; border-radius:50%; background:rgba(0,123,255,0); border:none; cursor:pointer;" onclick="abrirModal('sensor1')" title="Ver histórico Sensor 1"></button>
                                                 <button class="marker" style="position:absolute; top:58%; left:61.5%; width:32px; height:32px; border-radius:50%; background:rgba(40,167,69,0); border:none; cursor:pointer;" onclick="abrirModal('sensor2')" title="Ver histórico Sensor 2"></button>
                                                 <button class="marker" style="position:absolute; top:23%; left:58%; width:32px; height:32px; border-radius:50%; background:rgba(220,53,69,0); border:none; cursor:pointer;" onclick="abrirModal('sensor3')" title="Ver histórico Sensor 3"></button>
+                                            
+                                                <div class="table-responsive" style="position:absolute; top:15%; left:80%; width:320px; z-index:3;">
+                                                    <div class="border rounded overflow-hidden" style="background:rgba(180, 34, 34, 1);">
+                                                        <table class="table table-striped table-bordered table-sm mb-0">
+                                                        <thead class="table-dark">
+                                                            <tr>
+                                                            <th>Variable</th>
+                                                            <th>Valor</th>
+                                                            <th>Magnitud</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody id="tabla-variables-sistema">
+                                                            <tr>
+                                                            <td>Volumen Total</td>
+                                                            <td id="tabla-volTotal">---</td>
+                                                            <td>cm³</td>
+                                                            </tr>
+                                                            <tr>
+                                                            <td>Masa Total</td>
+                                                            <td id="tabla-masTotal">---</td>
+                                                            <td>lb</td>
+                                                            </tr>
+                                                            <tr>
+                                                            <td>Densidad</td>
+                                                            <td id="tabla-densidad">---</td>
+                                                            <td>g/cc</td>
+                                                            </tr>
+                                                            <tr>
+                                                            <td>Frecuencia</td>
+                                                            <td id="tabla-frecuencia">---</td>
+                                                            <td>Hz</td>
+                                                            </tr>
+                                                            <tr>
+                                                            <td>% Concentración Sólidos</td>
+                                                            <td id="tabla-concSolido">---</td>
+                                                            <td>%</td>
+                                                            </tr>
+                                                            <tr>
+                                                            <td>% Corte Agua</td>
+                                                            <td id="tabla-corteAgua">---</td>
+                                                            <td>%</td>
+                                                            </tr>
+                                                            <tr>
+                                                            <td>Intensidad Señal Gateway</td>
+                                                            <td id="tabla-signalGateway">---</td>
+                                                            <td>dB</td>
+                                                            </tr>
+                                                            <tr>
+                                                            <td>Temperatura Gateway</td>
+                                                            <td id="tabla-tempGateway">---</td>
+                                                            <td>°C</td>
+                                                            </tr>
+                                                        </tbody>
+                                                        </table>
+                                                    </div>
+                                                    </div>
+
                                             </div>
                                         </div>
                                     </div>

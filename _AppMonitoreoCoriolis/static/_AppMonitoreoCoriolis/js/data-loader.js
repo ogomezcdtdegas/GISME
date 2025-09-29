@@ -17,11 +17,46 @@ async function actualizarDisplaysConDatosReales() {
         if (data.success) {
             // Actualizar displays con datos reales
             document.getElementById('display-sensor1').textContent = 
-                `${data.datos.flujo.valor.toFixed(1)} ${data.datos.flujo.unidad}`;
+                `${data.datos.flujo.valor.toFixed(2)} ${data.datos.flujo.unidad}`;
+
+            document.getElementById('display-sensor4').textContent = 
+                `${data.datos.flujoMasico.valor.toFixed(2)} ${data.datos.flujoMasico.unidad}`;
+
             document.getElementById('display-sensor2').textContent = 
-                `${data.datos.temperatura.valor.toFixed(1)} ${data.datos.temperatura.unidad}`;
+                `${data.datos.temperatura.valor.toFixed(2)} ${data.datos.temperatura.unidad}`;
+
             document.getElementById('display-sensor3').textContent = 
-                `${data.datos.presion.valor.toFixed(1)} ${data.datos.presion.unidad}`;
+                `${data.datos.presion.valor.toFixed(2)} ${data.datos.presion.unidad}`;
+
+            document.getElementById('display-sensor5').textContent = 
+                `${data.datos.temperaturaRedundante.valor.toFixed(2)} ${data.datos.temperaturaRedundante.unidad}`;
+
+            document.getElementById('display-sensor6').textContent = 
+                `${data.datos.temperaturaDiagnostico.valor.toFixed(2)} ${data.datos.temperaturaDiagnostico.unidad}`;
+
+            document.getElementById('tabla-volTotal').textContent = 
+                `${data.datos.volTotal.valor.toFixed(2)}`;
+
+            document.getElementById('tabla-masTotal').textContent = 
+                `${data.datos.masTotal.valor.toFixed(2)}`;
+
+            document.getElementById('tabla-densidad').textContent = 
+                `${data.datos.densidad.valor.toFixed(2)}`;
+
+            document.getElementById('tabla-frecuencia').textContent = 
+                `${data.datos.frecuencia.valor.toFixed(2)}`;
+
+            document.getElementById('tabla-concSolido').textContent = 
+                `${data.datos.concSolido.valor.toFixed(2)}`;
+
+            document.getElementById('tabla-corteAgua').textContent = 
+                `${data.datos.corteAgua.valor.toFixed(2)}`;
+
+            document.getElementById('tabla-signalGateway').textContent = 
+                `${data.datos.signalGateway.valor.toFixed(2)}`;
+
+            document.getElementById('tabla-tempGateway').textContent = 
+                `${data.datos.tempGateway.valor.toFixed(2)}`;
             
             // Actualizar fecha de última actualización
             const ultimaActualizacion = document.getElementById('ultima-actualizacion');
@@ -43,9 +78,23 @@ async function actualizarDisplaysConDatosReales() {
 
 // Función fallback para mostrar mensaje cuando no hay datos
 function mostrarDatosNoDisponibles() {
+    // Displays principales
     document.getElementById('display-sensor1').textContent = 'Sin datos';
     document.getElementById('display-sensor2').textContent = 'Sin datos';
     document.getElementById('display-sensor3').textContent = 'Sin datos';
+    document.getElementById('display-sensor4').textContent = 'Sin datos';
+    document.getElementById('display-sensor5').textContent = 'Sin datos';
+    document.getElementById('display-sensor6').textContent = 'Sin datos';
+    
+    // Elementos de la tabla
+    document.getElementById('tabla-volTotal').textContent = 'Sin datos';
+    document.getElementById('tabla-masTotal').textContent = 'Sin datos';
+    document.getElementById('tabla-densidad').textContent = 'Sin datos';
+    document.getElementById('tabla-frecuencia').textContent = 'Sin datos';
+    document.getElementById('tabla-concSolido').textContent = 'Sin datos';
+    document.getElementById('tabla-corteAgua').textContent = 'Sin datos';
+    document.getElementById('tabla-signalGateway').textContent = 'Sin datos';
+    document.getElementById('tabla-tempGateway').textContent = 'Sin datos';
     
     const ultimaActualizacion = document.getElementById('ultima-actualizacion');
     if (ultimaActualizacion) {

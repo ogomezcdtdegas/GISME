@@ -501,15 +501,59 @@ class DatosTiempoRealView(APIView):
                 'datos': {
                     'flujo': {
                         'valor': float(ultimo_dato.flow_rate) if ultimo_dato.flow_rate else 0,
-                        'unidad': 'm³/h'
+                        'unidad': 'cm³/s'
+                    },
+                    'flujoMasico': {
+                        'valor': float(ultimo_dato.mass_rate) if ultimo_dato.mass_rate else 0,
+                        'unidad': 'lb/s'
+                    },
+                    'temperaturaRedundante': {
+                        'valor': float(ultimo_dato.redundant_temperature) if ultimo_dato.redundant_temperature else 0,
+                        'unidad': '°C'
+                    },
+                    'temperaturaDiagnostico': {
+                        'valor': float(ultimo_dato.diagnostic_temperature) if ultimo_dato.diagnostic_temperature else 0,
+                        'unidad': '°C'
                     },
                     'temperatura': {
                         'valor': float(ultimo_dato.coriolis_temperature) if ultimo_dato.coriolis_temperature else 0,
-                        'unidad': '°F'
+                        'unidad': '°C'
                     },
                     'presion': {
                         'valor': float(ultimo_dato.pressure_out) if ultimo_dato.pressure_out else 0,
                         'unidad': 'PSI'
+                    },
+                    'volTotal': {
+                        'valor': float(ultimo_dato.total_volume) if ultimo_dato.total_volume else 0,
+                        'unidad': 'cm³'
+                    },
+                    'masTotal': {
+                        'valor': float(ultimo_dato.total_mass) if ultimo_dato.total_mass else 0,
+                        'unidad': 'lb'
+                    },
+                    'densidad': {
+                        'valor': float(ultimo_dato.density) if ultimo_dato.density else 0,
+                        'unidad': 'g/cc'
+                    },
+                    'frecuencia': {
+                        'valor': float(ultimo_dato.coriolis_frecuency) if ultimo_dato.coriolis_frecuency else 0,
+                        'unidad': 'Hz'
+                    },
+                    'concSolido': {
+                        'valor': float(ultimo_dato.pconc) if ultimo_dato.pconc else 0,
+                        'unidad': '%'
+                    },
+                    'corteAgua': {
+                        'valor': float(ultimo_dato.percent_cutWater64b) if ultimo_dato.percent_cutWater64b else 0,
+                        'unidad': '%'
+                    },
+                    'signalGateway': {
+                        'valor': float(ultimo_dato.signal_strength_rxCoriolis) if ultimo_dato.signal_strength_rxCoriolis else 0,
+                        'unidad': 'dB'
+                    },
+                    'tempGateway': {
+                        'valor': float(ultimo_dato.temperature_gateway) if ultimo_dato.temperature_gateway else 0,
+                        'unidad': '°C'
                     }
                 },
                 'timestamp': fecha_colombia.isoformat(),
