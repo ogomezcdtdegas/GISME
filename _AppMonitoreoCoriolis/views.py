@@ -11,6 +11,14 @@ import pytz
 import logging
 from .models import NodeRedData
 from _AppComplementos.models import Sistema
+from UTIL_LIB.conversiones import (
+    celsius_a_fahrenheit, 
+    lb_s_a_kg_min, 
+    cm3_s_a_m3_min, 
+    cm3_a_m3, 
+    lb_a_kg,
+    formatear_numero
+)
 
 # Configurar logging
 logger = logging.getLogger(__name__)
@@ -116,19 +124,21 @@ class DatosHistoricosFlujoView(APIView):
                 timestamp = int(fecha_colombia.timestamp() * 1000)
                 fecha_str = fecha_colombia.strftime('%d/%m %H:%M')
                 
-                # Flujo volumétrico
+                # Flujo volumétrico - convertir a m³/min
                 if dato.flow_rate is not None:
+                    valor_convertido = cm3_s_a_m3_min(float(dato.flow_rate))
                     flujo_volumetrico.append({
                         'fecha': fecha_str,
-                        'valor': float(dato.flow_rate),
+                        'valor': valor_convertido,
                         'timestamp': timestamp
                     })
                 
-                # Flujo másico
+                # Flujo másico - convertir a kg/min
                 if dato.mass_rate is not None:
+                    valor_convertido = lb_s_a_kg_min(float(dato.mass_rate))
                     flujo_masico.append({
                         'fecha': fecha_str,
-                        'valor': float(dato.mass_rate),
+                        'valor': valor_convertido,
                         'timestamp': timestamp
                     })
             
@@ -136,12 +146,12 @@ class DatosHistoricosFlujoView(APIView):
                 'success': True,
                 'flujo_volumetrico': {
                     'datos': flujo_volumetrico,
-                    'unidad': 'm³/h',
+                    'unidad': 'm³/min',
                     'total_registros': len(flujo_volumetrico)
                 },
                 'flujo_masico': {
                     'datos': flujo_masico,
-                    'unidad': 'kg/h',
+                    'unidad': 'kg/min',
                     'total_registros': len(flujo_masico)
                 },
                 'sistema': {
@@ -383,27 +393,30 @@ class DatosHistoricosTemperaturaView(APIView):
                 fecha_str = fecha_colombia.strftime('%d/%m/%Y %H:%M:%S')
                 timestamp = fecha_colombia.isoformat()
                 
-                # Temperatura Coriolis
+                # Temperatura Coriolis - convertir a °F
                 if dato.coriolis_temperature is not None:
+                    valor_convertido = celsius_a_fahrenheit(float(dato.coriolis_temperature))
                     datos_coriolis.append({
                         'fecha': fecha_str,
-                        'valor': float(dato.coriolis_temperature),
+                        'valor': valor_convertido,
                         'timestamp': timestamp
                     })
                 
-                # Temperatura Diagnóstico
+                # Temperatura Diagnóstico - convertir a °F
                 if dato.diagnostic_temperature is not None:
+                    valor_convertido = celsius_a_fahrenheit(float(dato.diagnostic_temperature))
                     datos_diagnostic.append({
                         'fecha': fecha_str,
-                        'valor': float(dato.diagnostic_temperature),
+                        'valor': valor_convertido,
                         'timestamp': timestamp
                     })
                 
-                # Temperatura Redundante
+                # Temperatura Redundante - convertir a °F
                 if dato.redundant_temperature is not None:
+                    valor_convertido = celsius_a_fahrenheit(float(dato.redundant_temperature))
                     datos_redundant.append({
                         'fecha': fecha_str,
-                        'valor': float(dato.redundant_temperature),
+                        'valor': valor_convertido,
                         'timestamp': timestamp
                     })
             
@@ -412,17 +425,17 @@ class DatosHistoricosTemperaturaView(APIView):
                 'coriolis_temperature': {
                     'datos': datos_coriolis,
                     'total_registros': len(datos_coriolis),
-                    'unidad': '°C'
+                    'unidad': '°F'
                 },
                 'diagnostic_temperature': {
                     'datos': datos_diagnostic,
                     'total_registros': len(datos_diagnostic),
-                    'unidad': '°C'
+                    'unidad': '°F'
                 },
                 'redundant_temperature': {
                     'datos': datos_redundant,
                     'total_registros': len(datos_redundant),
-                    'unidad': '°C'
+                    'unidad': '°F'
                 },
                 'sistema': {
                     'id': str(sistema.id),
@@ -500,36 +513,36 @@ class DatosTiempoRealView(APIView):
                 'success': True,
                 'datos': {
                     'flujo': {
-                        'valor': float(ultimo_dato.flow_rate) if ultimo_dato.flow_rate else 0,
-                        'unidad': 'cm³/s'
+                        'valor': cm3_s_a_m3_min(ultimo_dato.flow_rate),
+                        'unidad': 'm³/min'
                     },
                     'flujoMasico': {
-                        'valor': float(ultimo_dato.mass_rate) if ultimo_dato.mass_rate else 0,
-                        'unidad': 'lb/s'
+                        'valor': lb_s_a_kg_min(ultimo_dato.mass_rate),
+                        'unidad': 'kg/min'
                     },
                     'temperaturaRedundante': {
-                        'valor': float(ultimo_dato.redundant_temperature) if ultimo_dato.redundant_temperature else 0,
-                        'unidad': '°C'
+                        'valor': celsius_a_fahrenheit(ultimo_dato.redundant_temperature),
+                        'unidad': '°F'
                     },
                     'temperaturaDiagnostico': {
-                        'valor': float(ultimo_dato.diagnostic_temperature) if ultimo_dato.diagnostic_temperature else 0,
-                        'unidad': '°C'
+                        'valor': celsius_a_fahrenheit(ultimo_dato.diagnostic_temperature),
+                        'unidad': '°F'
                     },
                     'temperatura': {
-                        'valor': float(ultimo_dato.coriolis_temperature) if ultimo_dato.coriolis_temperature else 0,
-                        'unidad': '°C'
+                        'valor': celsius_a_fahrenheit(ultimo_dato.coriolis_temperature),
+                        'unidad': '°F'
                     },
                     'presion': {
                         'valor': float(ultimo_dato.pressure_out) if ultimo_dato.pressure_out else 0,
                         'unidad': 'PSI'
                     },
                     'volTotal': {
-                        'valor': float(ultimo_dato.total_volume) if ultimo_dato.total_volume else 0,
-                        'unidad': 'cm³'
+                        'valor': cm3_a_m3(ultimo_dato.total_volume),
+                        'unidad': 'm³'
                     },
                     'masTotal': {
-                        'valor': float(ultimo_dato.total_mass) if ultimo_dato.total_mass else 0,
-                        'unidad': 'lb'
+                        'valor': lb_a_kg(ultimo_dato.total_mass),
+                        'unidad': 'kg'
                     },
                     'densidad': {
                         'valor': float(ultimo_dato.density) if ultimo_dato.density else 0,
@@ -553,7 +566,7 @@ class DatosTiempoRealView(APIView):
                     },
                     'tempGateway': {
                         'valor': float(ultimo_dato.temperature_gateway) if ultimo_dato.temperature_gateway else 0,
-                        'unidad': '°C'
+                        'unidad': '°C'  # Esta se mantiene en °C según lo solicitado
                     }
                 },
                 'timestamp': fecha_colombia.isoformat(),
@@ -605,39 +618,43 @@ class DatosTendenciasView(APIView):
                 timestamp = int(fecha_colombia.timestamp() * 1000)
                 fecha_str = fecha_colombia.strftime('%H:%M')
                 
-                # Flujo Másico
+                # Flujo Másico - convertir a kg/min
                 if dato.mass_rate is not None:
+                    valor_convertido = lb_s_a_kg_min(float(dato.mass_rate))
                     flujo_masico.append({
                         'x': timestamp,
-                        'y': float(dato.mass_rate),
+                        'y': valor_convertido,
                         'fecha': fecha_str
                     })
                 
-                # Flujo Volumétrico
+                # Flujo Volumétrico - convertir a m³/min
                 if dato.flow_rate is not None:
+                    valor_convertido = cm3_s_a_m3_min(float(dato.flow_rate))
                     flujo_volumetrico.append({
                         'x': timestamp,
-                        'y': float(dato.flow_rate),
+                        'y': valor_convertido,
                         'fecha': fecha_str
                     })
                 
-                # Temperatura Coriolis
+                # Temperatura Coriolis - convertir a °F
                 if dato.coriolis_temperature is not None:
+                    valor_convertido = celsius_a_fahrenheit(float(dato.coriolis_temperature))
                     temperatura_coriolis.append({
                         'x': timestamp,
-                        'y': float(dato.coriolis_temperature),
+                        'y': valor_convertido,
                         'fecha': fecha_str
                     })
                 
-                # Temperatura de Salida (redundant_temperature)
+                # Temperatura de Salida (redundant_temperature) - convertir a °F
                 if dato.redundant_temperature is not None:
+                    valor_convertido = celsius_a_fahrenheit(float(dato.redundant_temperature))
                     temperatura_salida.append({
                         'x': timestamp,
-                        'y': float(dato.redundant_temperature),
+                        'y': valor_convertido,
                         'fecha': fecha_str
                     })
                 
-                # Presión
+                # Presión - mantener en PSI
                 if dato.pressure_out is not None:
                     presion.append({
                         'x': timestamp,
@@ -651,28 +668,28 @@ class DatosTendenciasView(APIView):
                     'flujo_masico': {
                         'label': 'Flujo Másico',
                         'data': flujo_masico,
-                        'unidad': 'lb/s',
+                        'unidad': 'kg/min',
                         'color': '#28a745',  # Verde
                         'total_registros': len(flujo_masico)
                     },
                     'flujo_volumetrico': {
                         'label': 'Flujo Volumétrico',
                         'data': flujo_volumetrico,
-                        'unidad': 'cm³/s',
+                        'unidad': 'm³/min',
                         'color': '#007bff',  # Azul
                         'total_registros': len(flujo_volumetrico)
                     },
                     'temperatura_coriolis': {
                         'label': 'Temperatura Coriolis',
                         'data': temperatura_coriolis,
-                        'unidad': '°C',
+                        'unidad': '°F',
                         'color': '#f59416',  # Naranja
                         'total_registros': len(temperatura_coriolis)
                     },
                     'temperatura_salida': {
                         'label': 'Temperatura de Salida',
                         'data': temperatura_salida,
-                        'unidad': '°C',
+                        'unidad': '°F',
                         'color': '#6f42c1',  # Púrpura
                         'total_registros': len(temperatura_salida)
                     },
