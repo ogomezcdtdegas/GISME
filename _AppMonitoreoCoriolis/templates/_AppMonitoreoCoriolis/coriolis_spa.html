@@ -241,34 +241,35 @@ let SISTEMA_ACTUAL;
                                     </div>
                                     <div class="card-body coriolis-card-body text-center" style="overflow: visible; max-height: 700px; position: relative;">
                                         <div style="position: relative; width: 100%; display: flex; justify-content: center;">
-                                            <div class="img-container" style="position: relative; width: 1050px; min-width: 1050px; overflow-x: auto; height: 500px;">
-                                                <img src="{% static 'img/coriolis_render2.png' %}" class="img-fixed" id="sistema-img" style="width: 1050px; height: auto; display: block;">
-                                                <!-- Displays de sensores -->
-                                                <div style="position: absolute; top: 30%; left: 28%; min-width: 180px; z-index: 50;">
+                                            <div class="img-container" style="position: relative; overflow-x: auto; height: 500px; width: 100%;">
+                                                <div style="position: relative; width: 1050px; min-width: 1050px;">
+                                                    <img src="{% static 'img/coriolis_render2.png' %}" class="img-fixed" id="sistema-img" style="width: 1050px; height: auto; display: block;">
+                                                    <!-- Displays de sensores -->
+                                                    <div style="position: absolute; top: 25%; left: 28%; min-width: 180px; z-index: 50;">
                                                     <div class="shadow-sm" style="background:rgba(255,255,255,0.9); border-radius:10px; padding:6px 12px; text-align:center; font-size:13px; box-shadow:0 2px 8px rgba(0,0,0,0.2);">
                                                         <div style="font-weight:600; color:#888;">Flujo Volumétrico <sub>@ flujo</sub></div>
                                                         <div id="display-sensor1" style="font-size:15px; color:#007bff; font-weight:700;">---</div>
                                                     </div>
                                                 </div>
-                                                <div style="position: absolute; top: 43%; left: 28%; min-width: 180px; z-index: 50;">
+                                                <div style="position: absolute; top: 35%; left: 28%; min-width: 180px; z-index: 50;">
                                                     <div class="shadow-sm" style="background:rgba(255,255,255,0.9); border-radius:10px; padding:6px 12px; text-align:center; font-size:13px; box-shadow:0 2px 8px rgba(0,0,0,0.2);">
                                                         <div style="font-weight:600; color:#888;">Flujo Másico</div>
                                                         <div id="display-sensor4" style="font-size:15px; color:#418b2a; font-weight:700;">---</div>
                                                     </div>
                                                 </div>
-                                                <div style="position: absolute; top: 70%; left: 28%; min-width: 180px; z-index: 50;">
+                                                <div style="position: absolute; top: 63%; left: 28%; min-width: 180px; z-index: 50;">
                                                     <div class="shadow-sm" style="background:rgba(255,255,255,0.9); border-radius:10px; padding:6px 12px; text-align:center; font-size:13px; box-shadow:0 2px 8px rgba(0,0,0,0.2);">
                                                         <div style="font-weight:600; color:#888;">Temperatura Coriolis</div>
                                                         <div id="display-sensor2" style="font-size:15px; color:#f59416; font-weight:700;">---</div>
                                                     </div>
                                                 </div>
-                                                <div style="position: absolute; top: 83%; left: 28%; min-width: 180px; z-index: 50;">
+                                                <div style="position: absolute; top: 73%; left: 28%; min-width: 180px; z-index: 50;">
                                                     <div class="shadow-sm" style="background:rgba(255,255,255,0.9); border-radius:10px; padding:6px 12px; text-align:center; font-size:13px; box-shadow:0 2px 8px rgba(0,0,0,0.2);">
                                                         <div style="font-weight:600; color:#888;">Temperatura Diagnóstico</div>
                                                         <div id="display-sensor6" style="font-size:15px; color:#a328c2; font-weight:700;">---</div>
                                                     </div>
                                                 </div>
-                                                <div style="position: absolute; top: 83%; left: 54%; min-width: 90px; z-index: 50;">
+                                                <div style="position: absolute; top: 70%; left: 54%; min-width: 90px; z-index: 50;">
                                                     <div class="shadow-sm" style="background:rgba(255,255,255,0.9); border-radius:10px; padding:6px 12px; text-align:center; font-size:13px; box-shadow:0 2px 8px rgba(0,0,0,0.2);">
                                                         <div style="font-weight:600; color:#888;">Temperatura de Sálida</div>
                                                         <div id="display-sensor5" style="font-size:15px; color:#28a745; font-weight:700;">---</div>
@@ -280,10 +281,11 @@ let SISTEMA_ACTUAL;
                                                         <div id="display-sensor3" style="font-size:15px; color:#dc3545; font-weight:700;">---</div>
                                                     </div>
                                                 </div>
-                                                <!-- Marcadores transparentes clickeables -->
-                                                <button class="marker" style="position:absolute; top:58%; left:35%; width:32px; height:32px; border-radius:50%; background:rgba(0,123,255,0); border:none; cursor:pointer; z-index:60;" onclick="abrirModal('sensor1')" title="Ver histórico Sensor 1"></button>
-                                                <button class="marker" style="position:absolute; top:70%; left:61.5%; width:32px; height:32px; border-radius:50%; background:rgba(40,167,69,0); border:none; cursor:pointer; z-index:60;" onclick="abrirModal('sensor2')" title="Ver histórico Sensor 2"></button>
-                                                <button class="marker" style="position:absolute; top:26%; left:58%; width:32px; height:32px; border-radius:50%; background:rgba(220,53,69,0); border:none; cursor:pointer; z-index:60;" onclick="abrirModal('sensor3')" title="Ver histórico Sensor 3"></button>
+                                                    <!-- Marcadores transparentes clickeables -->
+                                                    <button class="marker" style="position:absolute; top:47%; left:34%; width:32px; height:32px; border-radius:50%; background:rgba(0,123,255,0); border:none; cursor:pointer; z-index:60;" onclick="abrirModal('sensor1')" title="Ver histórico Sensor 1"></button>
+                                                    <button class="marker" style="position:absolute; top:60%; left:61.5%; width:32px; height:32px; border-radius:50%; background:rgba(40,167,69,0); border:none; cursor:pointer; z-index:60;" onclick="abrirModal('sensor2')" title="Ver histórico Sensor 2"></button>
+                                                    <button class="marker" style="position:absolute; top:23%; left:58%; width:32px; height:32px; border-radius:50%; background:rgba(220,53,69,0); border:none; cursor:pointer; z-index:60;" onclick="abrirModal('sensor3')" title="Ver histórico Sensor 3"></button>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
