@@ -70,6 +70,12 @@ class NodeRedData(BaseModel):
     signal_strength_rxCoriolis = models.FloatField(null=True, blank=True)
     temperature_gateway = models.FloatField(null=True, blank=True)
 
+    # Coeficientes de corrección vigentes al momento del registro
+    mt = models.FloatField(null=True, blank=True, verbose_name="M Temperatura", help_text="Coeficiente M para temperatura de salida vigente al momento del registro")
+    bt = models.FloatField(null=True, blank=True, verbose_name="B Temperatura", help_text="Coeficiente B para temperatura de salida vigente al momento del registro")
+    mp = models.FloatField(null=True, blank=True, verbose_name="M Presión", help_text="Coeficiente M para presión vigente al momento del registro")
+    bp = models.FloatField(null=True, blank=True, verbose_name="B Presión", help_text="Coeficiente B para presión vigente al momento del registro")
+
     def __str__(self):
         return f"{self.systemId}"
 

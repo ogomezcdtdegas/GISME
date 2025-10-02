@@ -270,9 +270,12 @@ class DatosHistoricosPresionView(APIView):
                 timestamp = int(fecha_colombia.timestamp() * 1000)
                 fecha_str = fecha_colombia.strftime('%d/%m %H:%M')
                 
-                # Usar pressure_out con corrección aplicada
+                # Usar pressure_out con corrección del momento aplicada
                 if dato.pressure_out is not None:
-                    presion_corregida = mp * float(dato.pressure_out) + bp
+                    # Usar coeficientes del momento (mp, bp) si están disponibles, sino usar los actuales
+                    mp_momento = dato.mp if dato.mp is not None else mp
+                    bp_momento = dato.bp if dato.bp is not None else bp
+                    presion_corregida = mp_momento * float(dato.pressure_out) + bp_momento
                     datos_presion.append({
                         'fecha': fecha_str,
                         'valor': presion_corregida,
@@ -325,7 +328,10 @@ class DatosHistoricosPresionView(APIView):
         for dato in datos:
             if dato.pressure_out is not None:
                 fecha_colombia = dato.created_at.astimezone(COLOMBIA_TZ)
-                presion_corregida = mp * float(dato.pressure_out) + bp
+                # Usar coeficientes del momento si están disponibles, sino usar los actuales
+                mp_momento = dato.mp if dato.mp is not None else mp
+                bp_momento = dato.bp if dato.bp is not None else bp
+                presion_corregida = mp_momento * float(dato.pressure_out) + bp_momento
                 writer.writerow([
                     fecha_colombia.strftime('%d/%m/%Y'),
                     fecha_colombia.strftime('%H:%M:%S'),
@@ -435,9 +441,12 @@ class DatosHistoricosTemperaturaView(APIView):
                         'timestamp': timestamp
                     })
                 
-                # Temperatura Redundante (Temperatura de Salida) - APLICAR CORRECCIÓN y convertir a °F
+                # Temperatura Redundante (Temperatura de Salida) - APLICAR CORRECCIÓN DEL MOMENTO y convertir a °F
                 if dato.redundant_temperature is not None:
-                    temp_corregida = mt * float(dato.redundant_temperature) + bt
+                    # Usar coeficientes del momento (mt, bt) si están disponibles, sino usar los actuales
+                    mt_momento = dato.mt if dato.mt is not None else mt
+                    bt_momento = dato.bt if dato.bt is not None else bt
+                    temp_corregida = mt_momento * float(dato.redundant_temperature) + bt_momento
                     valor_convertido = celsius_a_fahrenheit(temp_corregida)
                     datos_redundant.append({
                         'fecha': fecha_str,
@@ -503,10 +512,13 @@ class DatosHistoricosTemperaturaView(APIView):
         for dato in datos:
             fecha_colombia = dato.created_at.astimezone(COLOMBIA_TZ)
             
-            # Aplicar corrección a temperatura redundante (temperatura de salida)
+            # Aplicar corrección del momento a temperatura redundante (temperatura de salida)
             temp_redundante_corregida = None
             if dato.redundant_temperature is not None:
-                temp_redundante_corregida = mt * float(dato.redundant_temperature) + bt
+                # Usar coeficientes del momento si están disponibles, sino usar los actuales
+                mt_momento = dato.mt if dato.mt is not None else mt
+                bt_momento = dato.bt if dato.bt is not None else bt
+                temp_redundante_corregida = mt_momento * float(dato.redundant_temperature) + bt_momento
             
             writer.writerow([
                 fecha_colombia.strftime('%d/%m/%Y'),
@@ -693,9 +705,12 @@ class DatosTendenciasView(APIView):
                         'fecha': fecha_str
                     })
                 
-                # Temperatura de Salida (redundant_temperature) - APLICAR CORRECCIÓN y convertir a °F
+                # Temperatura de Salida (redundant_temperature) - APLICAR CORRECCIÓN DEL MOMENTO y convertir a °F
                 if dato.redundant_temperature is not None:
-                    temp_corregida = mt * float(dato.redundant_temperature) + bt
+                    # Usar coeficientes del momento si están disponibles, sino usar los actuales
+                    mt_momento = dato.mt if dato.mt is not None else mt
+                    bt_momento = dato.bt if dato.bt is not None else bt
+                    temp_corregida = mt_momento * float(dato.redundant_temperature) + bt_momento
                     valor_convertido = celsius_a_fahrenheit(temp_corregida)
                     temperatura_salida.append({
                         'x': timestamp,
@@ -703,9 +718,12 @@ class DatosTendenciasView(APIView):
                         'fecha': fecha_str
                     })
                 
-                # Presión - APLICAR CORRECCIÓN y mantener en PSI
+                # Presión - APLICAR CORRECCIÓN DEL MOMENTO y mantener en PSI
                 if dato.pressure_out is not None:
-                    presion_corregida = mp * float(dato.pressure_out) + bp
+                    # Usar coeficientes del momento si están disponibles, sino usar los actuales
+                    mp_momento = dato.mp if dato.mp is not None else mp
+                    bp_momento = dato.bp if dato.bp is not None else bp
+                    presion_corregida = mp_momento * float(dato.pressure_out) + bp_momento
                     presion.append({
                         'x': timestamp,
                         'y': presion_corregida,
