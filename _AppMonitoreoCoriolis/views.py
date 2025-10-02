@@ -10,7 +10,7 @@ from datetime import timedelta, datetime
 import pytz
 import logging
 from .models import NodeRedData
-from _AppComplementos.models import Sistema
+from _AppComplementos.models import Sistema, ConfiguracionCoeficientes
 from UTIL_LIB.conversiones import (
     celsius_a_fahrenheit, 
     lb_s_a_kg_min, 
@@ -25,6 +25,19 @@ logger = logging.getLogger(__name__)
 
 # Configurar zona horaria de Colombia
 COLOMBIA_TZ = pytz.timezone('America/Bogota')
+
+# Función utilitaria para obtener coeficientes de corrección
+def get_coeficientes_correccion(sistema):
+    """
+    Obtiene los coeficientes de corrección para un sistema.
+    Retorna valores por defecto (m=1, b=0) si no existen configuraciones.
+    """
+    try:
+        coef = ConfiguracionCoeficientes.objects.get(systemId=sistema)
+        return coef.mt, coef.bt, coef.mp, coef.bp
+    except ConfiguracionCoeficientes.DoesNotExist:
+        # Valores por defecto: m=1, b=0 (no corrige)
+        return 1.0, 0.0, 1.0, 0.0
 
 # Vista base para SPA - Solo renderiza el template principal
 class MonitoreoCoriolisBaseView(LoginRequiredMixin, TemplateView):
@@ -193,6 +206,9 @@ class DatosHistoricosPresionView(APIView):
             # Verificar que el sistema existe
             sistema = Sistema.objects.get(id=sistema_id)
             
+            # Obtener coeficientes de corrección
+            mt, bt, mp, bp = get_coeficientes_correccion(sistema)
+            
             # Obtener parámetros de fecha
             fecha_inicio = request.GET.get('fecha_inicio')
             fecha_fin = request.GET.get('fecha_fin')
@@ -254,11 +270,12 @@ class DatosHistoricosPresionView(APIView):
                 timestamp = int(fecha_colombia.timestamp() * 1000)
                 fecha_str = fecha_colombia.strftime('%d/%m %H:%M')
                 
-                # Usar pressure_out como solicitado
+                # Usar pressure_out con corrección aplicada
                 if dato.pressure_out is not None:
+                    presion_corregida = mp * float(dato.pressure_out) + bp
                     datos_presion.append({
                         'fecha': fecha_str,
-                        'valor': float(dato.pressure_out),
+                        'valor': presion_corregida,
                         'timestamp': timestamp
                     })
             
@@ -296,6 +313,9 @@ class DatosHistoricosPresionView(APIView):
         from django.http import HttpResponse
         import csv
         
+        # Obtener coeficientes de corrección
+        mt, bt, mp, bp = get_coeficientes_correccion(sistema)
+        
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = f'attachment; filename="presion_{sistema.tag}_{fecha_inicio.strftime("%Y%m%d")}_{fecha_fin.strftime("%Y%m%d")}.csv"'
         
@@ -305,10 +325,11 @@ class DatosHistoricosPresionView(APIView):
         for dato in datos:
             if dato.pressure_out is not None:
                 fecha_colombia = dato.created_at.astimezone(COLOMBIA_TZ)
+                presion_corregida = mp * float(dato.pressure_out) + bp
                 writer.writerow([
                     fecha_colombia.strftime('%d/%m/%Y'),
                     fecha_colombia.strftime('%H:%M:%S'),
-                    float(dato.pressure_out),
+                    presion_corregida,
                     sistema.tag
                 ])
         
@@ -328,6 +349,9 @@ class DatosHistoricosTemperaturaView(APIView):
             
             # Verificar que el sistema existe
             sistema = Sistema.objects.get(id=sistema_id)
+            
+            # Obtener coeficientes de corrección
+            mt, bt, mp, bp = get_coeficientes_correccion(sistema)
             
             # Obtener parámetros de fecha
             fecha_inicio = request.GET.get('fecha_inicio')
@@ -411,9 +435,10 @@ class DatosHistoricosTemperaturaView(APIView):
                         'timestamp': timestamp
                     })
                 
-                # Temperatura Redundante - convertir a °F
+                # Temperatura Redundante (Temperatura de Salida) - APLICAR CORRECCIÓN y convertir a °F
                 if dato.redundant_temperature is not None:
-                    valor_convertido = celsius_a_fahrenheit(float(dato.redundant_temperature))
+                    temp_corregida = mt * float(dato.redundant_temperature) + bt
+                    valor_convertido = celsius_a_fahrenheit(temp_corregida)
                     datos_redundant.append({
                         'fecha': fecha_str,
                         'valor': valor_convertido,
@@ -466,6 +491,9 @@ class DatosHistoricosTemperaturaView(APIView):
         from django.http import HttpResponse
         import csv
         
+        # Obtener coeficientes de corrección
+        mt, bt, mp, bp = get_coeficientes_correccion(sistema)
+        
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = f'attachment; filename="temperatura_{sistema.tag}_{fecha_inicio.strftime("%Y%m%d")}_{fecha_fin.strftime("%Y%m%d")}.csv"'
         
@@ -474,12 +502,18 @@ class DatosHistoricosTemperaturaView(APIView):
         
         for dato in datos:
             fecha_colombia = dato.created_at.astimezone(COLOMBIA_TZ)
+            
+            # Aplicar corrección a temperatura redundante (temperatura de salida)
+            temp_redundante_corregida = None
+            if dato.redundant_temperature is not None:
+                temp_redundante_corregida = mt * float(dato.redundant_temperature) + bt
+            
             writer.writerow([
                 fecha_colombia.strftime('%d/%m/%Y'),
                 fecha_colombia.strftime('%H:%M:%S'),
                 float(dato.coriolis_temperature) if dato.coriolis_temperature is not None else '',
                 float(dato.diagnostic_temperature) if dato.diagnostic_temperature is not None else '',
-                float(dato.redundant_temperature) if dato.redundant_temperature is not None else '',
+                temp_redundante_corregida if temp_redundante_corregida is not None else '',
                 sistema.tag
             ])
         
@@ -495,6 +529,9 @@ class DatosTiempoRealView(APIView):
         try:
             sistema = Sistema.objects.get(id=sistema_id)
             
+            # Obtener coeficientes de corrección
+            mt, bt, mp, bp = get_coeficientes_correccion(sistema)
+            
             # Obtener el último registro
             ultimo_dato = NodeRedData.objects.filter(
                 systemId=sistema
@@ -509,6 +546,14 @@ class DatosTiempoRealView(APIView):
             # Convertir UTC a hora de Colombia
             fecha_colombia = ultimo_dato.created_at.astimezone(COLOMBIA_TZ)
             
+            # Aplicar corrección a Temperatura de Salida (redundant_temperature)
+            temp_salida = ultimo_dato.redundant_temperature
+            temp_salida_corr = mt * float(temp_salida) + bt if temp_salida is not None else None
+            
+            # Aplicar corrección a Presión (pressure_out)
+            presion = ultimo_dato.pressure_out
+            presion_corr = mp * float(presion) + bp if presion is not None else None
+            
             return Response({
                 'success': True,
                 'datos': {
@@ -521,7 +566,7 @@ class DatosTiempoRealView(APIView):
                         'unidad': 'kg/min'
                     },
                     'temperaturaRedundante': {
-                        'valor': celsius_a_fahrenheit(ultimo_dato.redundant_temperature),
+                        'valor': celsius_a_fahrenheit(temp_salida_corr) if temp_salida_corr is not None else None,
                         'unidad': '°F'
                     },
                     'temperaturaDiagnostico': {
@@ -533,7 +578,7 @@ class DatosTiempoRealView(APIView):
                         'unidad': '°F'
                     },
                     'presion': {
-                        'valor': float(ultimo_dato.pressure_out) if ultimo_dato.pressure_out else 0,
+                        'valor': float(presion_corr) if presion_corr is not None else 0,
                         'unidad': 'PSI'
                     },
                     'volTotal': {
@@ -595,6 +640,9 @@ class DatosTendenciasView(APIView):
         try:
             sistema = Sistema.objects.get(id=sistema_id)
             
+            # Obtener coeficientes de corrección
+            mt, bt, mp, bp = get_coeficientes_correccion(sistema)
+            
             # Obtener datos de las últimas 4 horas
             fecha_fin = timezone.now()
             fecha_inicio = fecha_fin - timedelta(minutes=30)
@@ -645,20 +693,22 @@ class DatosTendenciasView(APIView):
                         'fecha': fecha_str
                     })
                 
-                # Temperatura de Salida (redundant_temperature) - convertir a °F
+                # Temperatura de Salida (redundant_temperature) - APLICAR CORRECCIÓN y convertir a °F
                 if dato.redundant_temperature is not None:
-                    valor_convertido = celsius_a_fahrenheit(float(dato.redundant_temperature))
+                    temp_corregida = mt * float(dato.redundant_temperature) + bt
+                    valor_convertido = celsius_a_fahrenheit(temp_corregida)
                     temperatura_salida.append({
                         'x': timestamp,
                         'y': valor_convertido,
                         'fecha': fecha_str
                     })
                 
-                # Presión - mantener en PSI
+                # Presión - APLICAR CORRECCIÓN y mantener en PSI
                 if dato.pressure_out is not None:
+                    presion_corregida = mp * float(dato.pressure_out) + bp
                     presion.append({
                         'x': timestamp,
-                        'y': float(dato.pressure_out),
+                        'y': presion_corregida,
                         'fecha': fecha_str
                     })
             
