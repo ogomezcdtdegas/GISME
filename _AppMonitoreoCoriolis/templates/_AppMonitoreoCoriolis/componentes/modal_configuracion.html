@@ -85,10 +85,66 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     function cargarCoeficientesActuales() {
-        // TODO: Implementar carga de valores desde el backend
         console.log('Cargando coeficientes actuales...');
         
-        // Ejemplo de valores por defecto (deberías cargarlos desde tu API)
+        // Obtener el ID del sistema desde la URL
+        const sistemaId = obtenerSistemaIdDesdeURL();
+        
+        if (!sistemaId) {
+            console.warn('No se encontró ID del sistema actual. Usando valores por defecto.');
+            cargarValoresPorDefecto();
+            return;
+        }
+
+        // Guardar el ID del sistema para uso posterior
+        window.SISTEMA_ACTUAL = { id: sistemaId };
+
+        // Cargar coeficientes desde el backend
+        fetch(`/complementos/api/coeficientes/${sistemaId}/`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken()
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.data) {
+                document.getElementById('tempSalidaM').value = data.data.mt || '1.0';
+                document.getElementById('tempSalidaB').value = data.data.bt || '0.0';
+                document.getElementById('presionSalidaM').value = data.data.mp || '1.0';
+                document.getElementById('presionSalidaB').value = data.data.bp || '0.0';
+                
+                if (!data.exists) {
+                    console.info('Coeficientes no configurados. Mostrando valores por defecto.');
+                }
+            } else {
+                console.warn('Error al cargar coeficientes:', data.error);
+                cargarValoresPorDefecto();
+            }
+        })
+        .catch(error => {
+            console.error('Error de conexión al cargar coeficientes:', error);
+            cargarValoresPorDefecto();
+        });
+    }
+
+    function obtenerSistemaIdDesdeURL() {
+        // Obtener el ID del sistema desde la URL actual
+        // Patrón: /monitoreo/sistema/ID_DEL_SISTEMA/
+        const urlPath = window.location.pathname;
+        const sistemaMatch = urlPath.match(/\/sistema\/([a-f0-9-]{36})\//);
+        
+        if (sistemaMatch && sistemaMatch[1]) {
+            console.log('ID del sistema obtenido desde URL:', sistemaMatch[1]);
+            return sistemaMatch[1];
+        }
+        
+        console.warn('No se pudo extraer el ID del sistema desde la URL:', urlPath);
+        return null;
+    }
+
+    function cargarValoresPorDefecto() {
         document.getElementById('tempSalidaM').value = '1.0';
         document.getElementById('tempSalidaB').value = '0.0';
         document.getElementById('presionSalidaM').value = '1.0';
@@ -96,28 +152,46 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function actualizarCoeficientes() {
+        // Obtener el ID del sistema actual
+        const sistemaId = window.SISTEMA_ACTUAL ? window.SISTEMA_ACTUAL.id : null;
+        
+        if (!sistemaId) {
+            alert('Error: No se encontró el ID del sistema actual');
+            return;
+        }
+
         // Obtener valores del formulario
+        const mt = parseFloat(document.getElementById('tempSalidaM').value);
+        const bt = parseFloat(document.getElementById('tempSalidaB').value);
+        const mp = parseFloat(document.getElementById('presionSalidaM').value);
+        const bp = parseFloat(document.getElementById('presionSalidaB').value);
+
+        // Validar que todos los valores son números válidos
+        if (isNaN(mt) || isNaN(bt) || isNaN(mp) || isNaN(bp)) {
+            alert('Error: Todos los coeficientes deben ser números válidos');
+            return;
+        }
+
         const coeficientes = {
-            temperatura_salida: {
-                m: parseFloat(document.getElementById('tempSalidaM').value) || 0,
-                b: parseFloat(document.getElementById('tempSalidaB').value) || 0
-            },
-            presion_salida: {
-                m: parseFloat(document.getElementById('presionSalidaM').value) || 0,
-                b: parseFloat(document.getElementById('presionSalidaB').value) || 0
-            }
+            systemId: sistemaId,
+            mt: mt,
+            bt: bt,
+            mp: mp,
+            bp: bp
         };
 
         console.log('Actualizando coeficientes:', coeficientes);
 
-        // TODO: Implementar llamada al backend para guardar los coeficientes
-        // Ejemplo de estructura para la llamada AJAX:
-        /*
-        fetch(`/monitoreo/api/sistemas/${SISTEMA_ACTUAL.id}/coeficientes/`, {
+        // Mostrar indicador de carga
+        btnActualizar.disabled = true;
+        btnActualizar.innerHTML = '<i class="bi bi-hourglass-split"></i> Guardando...';
+
+        // Llamada al backend para guardar los coeficientes
+        fetch('/complementos/api/coeficientes/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                'X-CSRFToken': getCSRFToken()
             },
             body: JSON.stringify(coeficientes)
         })
@@ -125,26 +199,27 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             if (data.success) {
                 // Mostrar mensaje de éxito
-                alert('Coeficientes actualizados correctamente');
+                alert(data.message || 'Coeficientes actualizados correctamente');
                 // Cerrar modal
                 bootstrap.Modal.getInstance(modal).hide();
             } else {
-                alert('Error al actualizar coeficientes: ' + data.error);
+                alert('Error al actualizar coeficientes: ' + (data.error || 'Error desconocido'));
             }
         })
         .catch(error => {
             console.error('Error:', error);
             alert('Error de conexión al actualizar coeficientes');
+        })
+        .finally(() => {
+            // Restaurar botón
+            btnActualizar.disabled = false;
+            btnActualizar.innerHTML = '<i class="bi bi-check-circle"></i> Actualizar';
         });
-        */
+    }
 
-        // Por ahora, solo mostrar mensaje de confirmación
-        alert('Coeficientes configurados (funcionalidad en desarrollo):\n' + 
-              'Temperatura Salida - M: ' + coeficientes.temperatura_salida.m + ', B: ' + coeficientes.temperatura_salida.b + '\n' +
-              'Presión Salida - M: ' + coeficientes.presion_salida.m + ', B: ' + coeficientes.presion_salida.b);
-        
-        // Cerrar modal
-        bootstrap.Modal.getInstance(modal).hide();
+    // Función para obtener el token CSRF (siguiendo la filosofía de BaseAPI en _AppComplementos)
+    function getCSRFToken() {
+        return document.querySelector('[name=csrfmiddlewaretoken]')?.value;
     }
 });
 </script>

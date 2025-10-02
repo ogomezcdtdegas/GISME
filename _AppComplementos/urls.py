@@ -14,6 +14,12 @@ from .views.views_Ubicacion.views_template import UbicacionListPagHTML
 # Sistema  
 from .views.views_Sistema.views_logging_universal import CreateSistemaWithLogging, UpdateSistemaWithLogging, DeleteSistemaWithLogging
 from .views.views_Sistema import ListarSistemasQueryView, ListarTodosSistemasQueryView, SistemaBaseView, SistemasIndexView, ObtenerSistemaQueryView
+#---------------------------------------------------------------------------------------
+
+'''.....................................................................................................................................'''
+# ConfiguracionCoeficientes
+from .views.views_ConfiguracionCoeficientes.Commands.CreateOrUpdateCoeficientesCommand.CreateOrUpdateCoeficientesCommand import CreateOrUpdateCoeficientesCommandView
+from .views.views_ConfiguracionCoeficientes.Queries.GetCoeficientesBySistemaQuery.GetCoeficientesBySistemaQuery import GetCoeficientesBySistemaQueryView
 #---------------------------------------------------------------------------------------# Grouped URL patterns by resource
 
 
@@ -39,8 +45,14 @@ sistema_urls = [
     path('debug-sistema/<uuid:pk>/', SistemaBaseView.as_view(), name='debugSistema'),
 ]
 
+coeficientes_urls = [
+    path('api/coeficientes/', CreateOrUpdateCoeficientesCommandView.as_view(), name='crear_actualizar_coeficientes'),
+    path('api/coeficientes/<uuid:sistema_id>/', GetCoeficientesBySistemaQueryView.as_view(), name='obtener_coeficientes_sistema'),
+]
+
 # Combine all URL patterns
 urlpatterns = (
     ubicacion_urls +
-    sistema_urls
+    sistema_urls +
+    coeficientes_urls
 )
