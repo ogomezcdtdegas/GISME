@@ -25,3 +25,24 @@ class Sistema(BaseModel):
 
     def __str__(self):
         return f"{self.tag} - {self.sistema_id} ({self.ubicacion.nombre})"
+
+
+class ConfiguracionCoeficientes(BaseModel):
+    systemId = models.ForeignKey(
+        Sistema,
+        on_delete=models.CASCADE,
+        related_name='coeficientes',
+        verbose_name="Sistema"
+    )
+    mt = models.FloatField(verbose_name="M Temperatura")
+    bt = models.FloatField(verbose_name="B Temperatura")
+    mp = models.FloatField(verbose_name="M Presión")
+    bp = models.FloatField(verbose_name="B Presión")
+
+    class Meta:
+        verbose_name = "Configuración de Coeficientes"
+        verbose_name_plural = "Configuraciones de Coeficientes"
+        unique_together = ['systemId']  # Un sistema solo puede tener una configuración de coeficientes
+
+    def __str__(self):
+        return f"Coeficientes de {self.systemId.tag} (T: y={self.mt}x+{self.bt}, P: y={self.mp}x+{self.bp})"

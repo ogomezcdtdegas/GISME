@@ -1,0 +1,150 @@
+<!-- ====================================================================
+     COMPONENTE: Modal de Configuración de Coeficientes
+     Descripción: Modal para configurar coeficientes de corrección y variables del sistema
+     Uso: Se incluye en el template principal coriolis_spa.html
+====================================================================== -->
+
+<div class="modal fade" id="modalConfiguracionSistema" tabindex="-1" aria-labelledby="modalConfiguracionSistemaLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="modalConfiguracionSistemaLabel">
+          <i class="bi bi-gear-fill"></i> COEFICIENTES DE CORRECCIÓN Y VARIABLES DE CONFIGURACIÓN
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+      </div>
+      <div class="modal-body">
+        <form id="formConfiguracionSistema">
+          <!-- Temperatura de Salida -->
+          <div class="row mb-4">
+            <div class="col-12">
+              <h6 class="fw-bold text-primary mb-3">Temperatura de Salida:</h6>
+            </div>
+            <div class="col-md-6">
+              <label for="tempSalidaM" class="form-label">M:</label>
+              <input type="number" class="form-control" id="tempSalidaM" name="tempSalidaM" step="any" placeholder="Ingrese valor M">
+            </div>
+            <div class="col-md-6">
+              <label for="tempSalidaB" class="form-label">B:</label>
+              <input type="number" class="form-control" id="tempSalidaB" name="tempSalidaB" step="any" placeholder="Ingrese valor B">
+            </div>
+          </div>
+
+          <!-- Presión de Salida -->
+          <div class="row mb-4">
+            <div class="col-12">
+              <h6 class="fw-bold text-success mb-3">Presión de Salida:</h6>
+            </div>
+            <div class="col-md-6">
+              <label for="presionSalidaM" class="form-label">M:</label>
+              <input type="number" class="form-control" id="presionSalidaM" name="presionSalidaM" step="any" placeholder="Ingrese valor M">
+            </div>
+            <div class="col-md-6">
+              <label for="presionSalidaB" class="form-label">B:</label>
+              <input type="number" class="form-control" id="presionSalidaB" name="presionSalidaB" step="any" placeholder="Ingrese valor B">
+            </div>
+          </div>
+
+          <!-- Información adicional -->
+          <div class="alert alert-info d-flex align-items-center mt-3">
+            <i class="bi bi-info-circle me-2"></i>
+            <small>
+              <strong>Información:</strong> Los coeficientes M y B se utilizan para la corrección lineal de las variables del sistema.
+              Fórmula: <code>Valor_Corregido = M × Valor_Original + B</code>
+            </small>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+          <i class="bi bi-x-circle"></i> Cancelar
+        </button>
+        <button type="button" class="btn btn-primary" id="btnActualizarCoeficientes">
+          <i class="bi bi-check-circle"></i> Actualizar
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// Script para manejar la funcionalidad del modal de configuración
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('modalConfiguracionSistema');
+    const btnActualizar = document.getElementById('btnActualizarCoeficientes');
+    const form = document.getElementById('formConfiguracionSistema');
+
+    // Cargar valores actuales al abrir el modal
+    modal.addEventListener('show.bs.modal', function () {
+        cargarCoeficientesActuales();
+    });
+
+    // Manejar click del botón Actualizar
+    btnActualizar.addEventListener('click', function() {
+        actualizarCoeficientes();
+    });
+
+    function cargarCoeficientesActuales() {
+        // TODO: Implementar carga de valores desde el backend
+        console.log('Cargando coeficientes actuales...');
+        
+        // Ejemplo de valores por defecto (deberías cargarlos desde tu API)
+        document.getElementById('tempSalidaM').value = '1.0';
+        document.getElementById('tempSalidaB').value = '0.0';
+        document.getElementById('presionSalidaM').value = '1.0';
+        document.getElementById('presionSalidaB').value = '0.0';
+    }
+
+    function actualizarCoeficientes() {
+        // Obtener valores del formulario
+        const coeficientes = {
+            temperatura_salida: {
+                m: parseFloat(document.getElementById('tempSalidaM').value) || 0,
+                b: parseFloat(document.getElementById('tempSalidaB').value) || 0
+            },
+            presion_salida: {
+                m: parseFloat(document.getElementById('presionSalidaM').value) || 0,
+                b: parseFloat(document.getElementById('presionSalidaB').value) || 0
+            }
+        };
+
+        console.log('Actualizando coeficientes:', coeficientes);
+
+        // TODO: Implementar llamada al backend para guardar los coeficientes
+        // Ejemplo de estructura para la llamada AJAX:
+        /*
+        fetch(`/monitoreo/api/sistemas/${SISTEMA_ACTUAL.id}/coeficientes/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+            },
+            body: JSON.stringify(coeficientes)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Mostrar mensaje de éxito
+                alert('Coeficientes actualizados correctamente');
+                // Cerrar modal
+                bootstrap.Modal.getInstance(modal).hide();
+            } else {
+                alert('Error al actualizar coeficientes: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error de conexión al actualizar coeficientes');
+        });
+        */
+
+        // Por ahora, solo mostrar mensaje de confirmación
+        alert('Coeficientes configurados (funcionalidad en desarrollo):\n' + 
+              'Temperatura Salida - M: ' + coeficientes.temperatura_salida.m + ', B: ' + coeficientes.temperatura_salida.b + '\n' +
+              'Presión Salida - M: ' + coeficientes.presion_salida.m + ', B: ' + coeficientes.presion_salida.b);
+        
+        // Cerrar modal
+        bootstrap.Modal.getInstance(modal).hide();
+    }
+});
+</script>
