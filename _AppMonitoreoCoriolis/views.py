@@ -655,11 +655,30 @@ class DatosTendenciasView(APIView):
             # Obtener coeficientes de corrección
             mt, bt, mp, bp = get_coeficientes_correccion(sistema)
             
-            # Obtener datos de las últimas 4 horas
-            fecha_fin = timezone.now()
+            # Obtener el último dato disponible para establecer el punto de referencia
+            ultimo_dato = NodeRedData.objects.filter(
+                systemId=sistema
+            ).order_by('-created_at').first()
+            
+            if not ultimo_dato:
+                return Response({
+                    'success': True,
+                    'datasets': {
+                        'flujo_masico': {'label': 'Flujo Másico', 'data': [], 'unidad': 'kg/min', 'color': '#28a745', 'total_registros': 0},
+                        'flujo_volumetrico': {'label': 'Flujo Volumétrico', 'data': [], 'unidad': 'm³/min', 'color': '#007bff', 'total_registros': 0},
+                        'temperatura_coriolis': {'label': 'Temperatura Coriolis', 'data': [], 'unidad': '°F', 'color': '#f59416', 'total_registros': 0},
+                        'temperatura_salida': {'label': 'Temperatura de Salida', 'data': [], 'unidad': '°F', 'color': '#6f42c1', 'total_registros': 0},
+                        'presion': {'label': 'Presión', 'data': [], 'unidad': 'PSI', 'color': '#dc3545', 'total_registros': 0}
+                    },
+                    'total_registros': 0,
+                    'info': 'No hay datos disponibles para este sistema'
+                })
+            
+            # Calcular ventana de 30 minutos desde el último dato hacia atrás
+            fecha_fin = ultimo_dato.created_at
             fecha_inicio = fecha_fin - timedelta(minutes=30)
             
-            # Consultar datos
+            # Consultar datos en esa ventana de tiempo
             datos = NodeRedData.objects.filter(
                 systemId=sistema,
                 created_at__range=[fecha_inicio, fecha_fin]
@@ -774,7 +793,12 @@ class DatosTendenciasView(APIView):
                     'tag': sistema.tag,
                     'sistema_id': sistema.sistema_id
                 },
-                'periodo': '4 horas',
+                'periodo': '30 minutos desde último dato',
+                'ventana_tiempo': {
+                    'inicio': fecha_inicio.astimezone(COLOMBIA_TZ).strftime('%H:%M'),
+                    'fin': fecha_fin.astimezone(COLOMBIA_TZ).strftime('%H:%M'),
+                    'ultimo_dato': ultimo_dato.created_at.astimezone(COLOMBIA_TZ).strftime('%d/%m/%Y %H:%M:%S')
+                },
                 'timestamp': fecha_fin.isoformat(),
                 'total_registros': datos.count()
             })

@@ -230,8 +230,10 @@ document.addEventListener('DOMContentLoaded', function() {
         // Actualizar displays inmediatamente
         actualizarDisplaysConDatosReales();
         
-        // Cargar gráfico de tendencias inmediatamente
-        cargarDatosTendencias();
+        // Cargar gráfico de tendencias con un pequeño retraso para asegurar que el DOM esté listo
+        setTimeout(() => {
+            cargarDatosTendencias();
+        }, 100);
         
         // Configurar actualización automática usando CONFIG
         if (tiempoRealInterval) clearInterval(tiempoRealInterval);

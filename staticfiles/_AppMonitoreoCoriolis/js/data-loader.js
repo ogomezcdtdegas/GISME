@@ -504,10 +504,16 @@ async function cargarDatosTendencias() {
 }
 
 // Función para renderizar el gráfico de tendencias
-function renderGraficoTendencias(data) {
+function renderGraficoTendencias(data, intentos = 0) {
     const ctx = document.getElementById('trendChart');
     if (!ctx) {
-        console.warn('❌ Canvas trendChart no encontrado');
+        if (intentos < 3) {
+            console.warn(`❌ Canvas trendChart no encontrado - reintentando (${intentos + 1}/3) en 500ms...`);
+            // Reintentar después de 500ms para dar tiempo a que el DOM se cargue
+            setTimeout(() => renderGraficoTendencias(data, intentos + 1), 500);
+        } else {
+            console.error('❌ Canvas trendChart no encontrado después de 3 intentos. Verificar que el elemento existe en el DOM.');
+        }
         return;
     }
     
