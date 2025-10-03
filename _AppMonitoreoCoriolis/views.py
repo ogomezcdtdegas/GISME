@@ -14,8 +14,10 @@ from _AppComplementos.models import Sistema, ConfiguracionCoeficientes
 from UTIL_LIB.conversiones import (
     celsius_a_fahrenheit, 
     lb_s_a_kg_min, 
-    cm3_s_a_m3_min, 
-    cm3_a_m3, 
+    cm3_s_a_m3_min,  # Mantenida aunque no se use
+    cm3_s_a_gal_min,  # Nueva para flujo volumétrico
+    cm3_a_m3,  # Mantenida aunque no se use
+    cm3_a_gal,  # Nueva para volumen total
     lb_a_kg,
     formatear_numero
 )
@@ -137,9 +139,9 @@ class DatosHistoricosFlujoView(APIView):
                 timestamp = int(fecha_colombia.timestamp() * 1000)
                 fecha_str = fecha_colombia.strftime('%d/%m %H:%M')
                 
-                # Flujo volumétrico - convertir a m³/min
+                # Flujo volumétrico - convertir a gal/min
                 if dato.flow_rate is not None:
-                    valor_convertido = cm3_s_a_m3_min(float(dato.flow_rate))
+                    valor_convertido = cm3_s_a_gal_min(float(dato.flow_rate))
                     flujo_volumetrico.append({
                         'fecha': fecha_str,
                         'valor': valor_convertido,
@@ -159,7 +161,7 @@ class DatosHistoricosFlujoView(APIView):
                 'success': True,
                 'flujo_volumetrico': {
                     'datos': flujo_volumetrico,
-                    'unidad': 'm³/min',
+                    'unidad': 'gal/min',
                     'total_registros': len(flujo_volumetrico)
                 },
                 'flujo_masico': {
@@ -570,8 +572,8 @@ class DatosTiempoRealView(APIView):
                 'success': True,
                 'datos': {
                     'flujo': {
-                        'valor': cm3_s_a_m3_min(ultimo_dato.flow_rate),
-                        'unidad': 'm³/min'
+                        'valor': cm3_s_a_gal_min(ultimo_dato.flow_rate),
+                        'unidad': 'gal/min'
                     },
                     'flujoMasico': {
                         'valor': lb_s_a_kg_min(ultimo_dato.mass_rate),
@@ -594,8 +596,8 @@ class DatosTiempoRealView(APIView):
                         'unidad': 'PSI'
                     },
                     'volTotal': {
-                        'valor': cm3_a_m3(ultimo_dato.total_volume),
-                        'unidad': 'm³'
+                        'valor': cm3_a_gal(ultimo_dato.total_volume),
+                        'unidad': 'gal'
                     },
                     'masTotal': {
                         'valor': lb_a_kg(ultimo_dato.total_mass),
@@ -706,9 +708,9 @@ class DatosTendenciasView(APIView):
                         'fecha': fecha_str
                     })
                 
-                # Flujo Volumétrico - convertir a m³/min
+                # Flujo Volumétrico - convertir a gal/min
                 if dato.flow_rate is not None:
-                    valor_convertido = cm3_s_a_m3_min(float(dato.flow_rate))
+                    valor_convertido = cm3_s_a_gal_min(float(dato.flow_rate))
                     flujo_volumetrico.append({
                         'x': timestamp,
                         'y': valor_convertido,
@@ -762,7 +764,7 @@ class DatosTendenciasView(APIView):
                     'flujo_volumetrico': {
                         'label': 'Flujo Volumétrico',
                         'data': flujo_volumetrico,
-                        'unidad': 'm³/min',
+                        'unidad': 'gal/min',
                         'color': '#007bff',  # Azul
                         'total_registros': len(flujo_volumetrico)
                     },

@@ -78,6 +78,38 @@ def lb_a_kg(lb):
     except (ValueError, TypeError):
         return 0
 
+def cm3_s_a_gal_min(cm3_s):
+    """
+    Convierte flujo volumétrico de cm³/s a gal/min (galón estadounidense)
+    1 galón estadounidense = 3,785.41 cm³
+    Args:
+        cm3_s (float): Flujo volumétrico en cm³/s
+    Returns:
+        float: Flujo volumétrico en gal/min
+    """
+    if cm3_s is None:
+        return 0
+    try:
+        return float(cm3_s) * 60 / 3785.41
+    except (ValueError, TypeError):
+        return 0
+
+def cm3_a_gal(cm3):
+    """
+    Convierte volumen de cm³ a gal (galón estadounidense)
+    1 galón estadounidense = 3,785.41 cm³
+    Args:
+        cm3 (float): Volumen en cm³
+    Returns:
+        float: Volumen en gal
+    """
+    if cm3 is None:
+        return 0
+    try:
+        return float(cm3) / 3785.41
+    except (ValueError, TypeError):
+        return 0
+
 def formatear_numero(valor, decimales=2):
     """
     Formatea un número con la cantidad especificada de decimales
