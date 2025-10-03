@@ -2,6 +2,9 @@
 // MAIN.JS - Inicialización principal y control de vistas
 // ====================================================================
 
+// Variables globales adicionales para tendencias
+let tendenciasInterval = null;
+
 // Función para abrir modal de flujo (sensor1) con dos gráficos REALES
 async function abrirModal(sensorId) {
     const sistemaId = obtenerSistemaActual();
@@ -125,6 +128,14 @@ function mostrarVistaMonitoreo() {
         monitoringView.classList.remove('hidden');
         monitoringView.style.display = 'block';
         console.log('✅ Vista monitoreo mostrada');
+        
+        // Inicializar tendencias después de mostrar la vista
+        setTimeout(() => {
+            console.log('🔄 Inicializando gráfico de tendencias...');
+            if (typeof cargarDatosTendencias === 'function') {
+                cargarDatosTendencias();
+            }
+        }, 200);
     } else {
         // console.error('❌ No se encontró elemento sistema-monitoring-view');
     }
@@ -161,6 +172,19 @@ function mostrarVistaMonitoreo() {
 // Función para mostrar la vista de selector
 function mostrarVistaSelector() {
     console.log('📋 Mostrando vista de selección de sistemas');
+    
+    // Limpiar intervalos activos
+    if (tiempoRealInterval) {
+        clearInterval(tiempoRealInterval);
+        tiempoRealInterval = null;
+        console.log('🛑 Intervalo de tiempo real detenido');
+    }
+    
+    if (tendenciasInterval) {
+        clearInterval(tendenciasInterval);
+        tendenciasInterval = null;
+        console.log('🛑 Intervalo de tendencias detenido');
+    }
     
     // Mostrar vista de selector
     const selectorView = document.getElementById('sistema-selector-view');
@@ -230,17 +254,23 @@ document.addEventListener('DOMContentLoaded', function() {
         // Actualizar displays inmediatamente
         actualizarDisplaysConDatosReales();
         
-        // Cargar gráfico de tendencias con un pequeño retraso para asegurar que el DOM esté listo
+        // Cargar gráfico de tendencias con retraso para asegurar que la vista esté visible
         setTimeout(() => {
             cargarDatosTendencias();
-        }, 100);
+        }, 500); // Incrementado a 500ms para asegurar visibilidad
         
-        // Configurar actualización automática usando CONFIG
+        // Configurar actualización automática de displays
         if (tiempoRealInterval) clearInterval(tiempoRealInterval);
         tiempoRealInterval = setInterval(() => {
             actualizarDisplaysConDatosReales();
-            cargarDatosTendencias(); // También actualizar tendencias cada 10 segundos
         }, CONFIG.INTERVALOS.ACTUALIZACION_DISPLAYS);
+        
+        // Configurar actualización automática de tendencias cada 10 segundos
+        if (tendenciasInterval) clearInterval(tendenciasInterval);
+        tendenciasInterval = setInterval(() => {
+            cargarDatosTendencias();
+            console.log('🔄 Tendencias actualizadas automáticamente');
+        }, 10000); // 10 segundos
         
         console.log(CONFIG.TEXTOS.CONSOLE_ACTUALIZACION);
         console.log('📊 Gráfico de tendencias configurado para actualización automática cada 10 segundos');

@@ -492,7 +492,16 @@ async function cargarDatosTendencias() {
         
         if (data.success) {
             renderGraficoTendencias(data);
-            console.log('✅ Datos de tendencias cargados:', data.total_registros, 'registros');
+            const info = data.ventana_tiempo ? 
+                `${data.total_registros} registros (${data.ventana_tiempo.inicio} - ${data.ventana_tiempo.fin})` : 
+                `${data.total_registros} registros`;
+            console.log('✅ Datos de tendencias cargados:', info);
+            
+            // Mostrar info de ventana de tiempo si está disponible
+            if (data.ventana_tiempo) {
+                console.log(`📅 Ventana de tiempo: ${data.ventana_tiempo.inicio} - ${data.ventana_tiempo.fin}`);
+                console.log(`⏰ Último dato: ${data.ventana_tiempo.ultimo_dato}`);
+            }
         } else {
             console.error('❌ Error obteniendo datos de tendencias:', data.error);
             mostrarErrorTendencias(data.error);
@@ -505,17 +514,71 @@ async function cargarDatosTendencias() {
 
 // Función para renderizar el gráfico de tendencias
 function renderGraficoTendencias(data, intentos = 0) {
-    const ctx = document.getElementById('trendChart');
-    if (!ctx) {
-        if (intentos < 3) {
-            console.warn(`❌ Canvas trendChart no encontrado - reintentando (${intentos + 1}/3) en 500ms...`);
-            // Reintentar después de 500ms para dar tiempo a que el DOM se cargue
+    // Debug: información detallada del estado del DOM
+    console.log(`🔍 Debug renderGraficoTendencias - Intento ${intentos + 1}/5:`);
+    
+    // Verificar que la vista de monitoreo esté visible
+    const monitoringView = document.getElementById('sistema-monitoring-view');
+    console.log(`   - Vista monitoreo encontrada: ${!!monitoringView}`);
+    if (monitoringView) {
+        console.log(`   - Vista monitoreo hidden class: ${monitoringView.classList.contains('hidden')}`);
+        console.log(`   - Vista monitoreo display style: ${monitoringView.style.display}`);
+        console.log(`   - Vista monitoreo computed display: ${window.getComputedStyle(monitoringView).display}`);
+    }
+    
+    if (!monitoringView || monitoringView.classList.contains('hidden') || monitoringView.style.display === 'none') {
+        if (intentos < 5) {
+            console.warn(`⏳ Vista de monitoreo no visible aún - reintentando (${intentos + 1}/5) en 500ms...`);
             setTimeout(() => renderGraficoTendencias(data, intentos + 1), 500);
         } else {
-            console.error('❌ Canvas trendChart no encontrado después de 3 intentos. Verificar que el elemento existe en el DOM.');
+            console.error('❌ Vista de monitoreo no está visible después de 5 intentos. No se puede crear el gráfico.');
         }
         return;
     }
+    
+    // Debug: información del canvas
+    const ctx = document.getElementById('trendChart');
+    console.log(`   - Canvas encontrado: ${!!ctx}`);
+    
+    // Debug adicional: buscar en todo el DOM
+    const allCanvas = document.querySelectorAll('canvas');
+    console.log(`   - Total canvas en DOM: ${allCanvas.length}`);
+    allCanvas.forEach((canvas, index) => {
+        console.log(`     Canvas ${index}: id="${canvas.id}" display="${window.getComputedStyle(canvas).display}"`);
+    });
+    
+    // Debug: verificar contenedor del canvas
+    const chartContainer = document.querySelector('.chart-container');
+    console.log(`   - Contenedor .chart-container encontrado: ${!!chartContainer}`);
+    if (chartContainer) {
+        console.log(`     - Contenedor display: ${window.getComputedStyle(chartContainer).display}`);
+        console.log(`     - Contenedor innerHTML: ${chartContainer.innerHTML.substring(0, 100)}...`);
+    }
+    
+    if (!ctx) {
+        if (intentos < 5) {
+            console.warn(`❌ Canvas trendChart no encontrado - reintentando (${intentos + 1}/5) en 500ms...`);
+            // Reintentar después de 500ms para dar tiempo a que el DOM se cargue
+            setTimeout(() => renderGraficoTendencias(data, intentos + 1), 500);
+        } else {
+            console.error('❌ Canvas trendChart no encontrado después de 5 intentos. Verificar que el elemento existe en el DOM.');
+        }
+        return;
+    }
+    
+    // Verificar que el canvas tenga dimensiones válidas
+    const canvasRect = ctx.getBoundingClientRect();
+    if (canvasRect.width === 0 || canvasRect.height === 0) {
+        if (intentos < 5) {
+            console.warn(`⏳ Canvas sin dimensiones válidas (${canvasRect.width}x${canvasRect.height}) - reintentando (${intentos + 1}/5) en 500ms...`);
+            setTimeout(() => renderGraficoTendencias(data, intentos + 1), 500);
+        } else {
+            console.error('❌ Canvas sin dimensiones válidas después de 5 intentos.');
+        }
+        return;
+    }
+    
+    console.log(`✅ Canvas trendChart encontrado y listo (${canvasRect.width}x${canvasRect.height})`);
     
     // 🔄 PRESERVAR el estado de visibilidad de los datasets existentes
     let estadoVisibilidad = {};
