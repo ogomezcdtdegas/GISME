@@ -21,11 +21,24 @@ async function makeAPIRequest(url, options = {}) {
             headers: { ...defaultHeaders, ...options.headers }
         });
 
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        // Intentar leer el contenido JSON independientemente del status
+        let data;
+        try {
+            data = await response.json();
+        } catch (jsonError) {
+            console.error('❌ Error parsing JSON:', jsonError);
+            data = { success: false, error: `HTTP ${response.status}: ${response.statusText}` };
         }
 
-        const data = await response.json();
+        // Si la respuesta HTTP no es OK pero tenemos datos JSON, retornar los datos
+        // (esto permite que los errores 400 con mensajes específicos lleguen al código)
+        if (!response.ok) {
+            // Si el JSON no tiene estructura de error, crear una
+            if (!data.hasOwnProperty('success')) {
+                data = { success: false, error: `HTTP ${response.status}: ${response.statusText}`, details: data };
+            }
+        }
+
         console.log('📦 API Response:', data);
         return data;
         
