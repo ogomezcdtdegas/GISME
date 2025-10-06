@@ -6,6 +6,32 @@ let isLoading = false;
 // AdminEvents - Manejo de eventos
 window.AdminEvents = {
     
+    // Función helper para extraer mensajes de error de la respuesta
+    extractErrorMessage(errorResponse, defaultMessage = 'Error desconocido') {
+        if (!errorResponse) return defaultMessage;
+        
+        if (typeof errorResponse === 'string') {
+            return errorResponse;
+        }
+        
+        if (typeof errorResponse === 'object') {
+            // Buscar errores de email primero (más común)
+            if (errorResponse.email) {
+                const emailError = errorResponse.email;
+                return Array.isArray(emailError) ? emailError[0] : emailError;
+            }
+            
+            // Si no hay error de email, buscar el primer error disponible
+            const firstErrorKey = Object.keys(errorResponse)[0];
+            if (firstErrorKey && errorResponse[firstErrorKey]) {
+                const firstError = errorResponse[firstErrorKey];
+                return Array.isArray(firstError) ? firstError[0] : firstError;
+            }
+        }
+        
+        return defaultMessage;
+    },
+    
     // Función principal para cargar usuarios
     async loadUsers(page = 1, search = '', perPage = 10) {
         // Protección contra cargas múltiples
@@ -225,10 +251,14 @@ window.AdminEvents = {
                 return response;
             } else {
                 console.error('❌ Error en respuesta de creación:', response);
-                // Mostrar alerta de error
+                
+                // Extraer mensaje específico del error usando helper
+                const errorMessage = this.extractErrorMessage(response.error);
+                
+                // Mostrar alerta de error con mensaje específico
                 Swal.fire({
-                    title: 'Error',
-                    text: 'Error al crear usuario: ' + (response.error || 'Error desconocido'),
+                    title: 'Error al crear usuario',
+                    text: errorMessage,
                     icon: 'error',
                     confirmButtonText: 'OK',
                     confirmButtonColor: '#dc3545'
@@ -283,10 +313,14 @@ window.AdminEvents = {
                 return response;
             } else {
                 console.error('❌ Error en respuesta de actualización:', response);
-                // Mostrar alerta de error
+                
+                // Extraer mensaje específico del error usando helper
+                const errorMessage = this.extractErrorMessage(response.error);
+                
+                // Mostrar alerta de error con mensaje específico
                 Swal.fire({
-                    title: 'Error',
-                    text: 'Error al actualizar usuario: ' + (response.error || 'Error desconocido'),
+                    title: 'Error al actualizar usuario',
+                    text: errorMessage,
                     icon: 'error',
                     confirmButtonText: 'OK',
                     confirmButtonColor: '#dc3545'
