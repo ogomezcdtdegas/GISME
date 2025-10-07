@@ -38,6 +38,9 @@ class ConfiguracionCoeficientes(BaseModel):
     bt = models.FloatField(verbose_name="B Temperatura")
     mp = models.FloatField(verbose_name="M Presión")
     bp = models.FloatField(verbose_name="B Presión")
+    lim_inf_caudal_masico = models.FloatField(verbose_name="Límite Inferior Caudal Másico", default=0.0)
+    lim_sup_caudal_masico = models.FloatField(verbose_name="Límite Superior Caudal Másico", default=1000000.0)
+    vol_masico_ini_batch = models.FloatField(verbose_name="Volumen Másico Total para confirmación de bath", default=0.0)
 
     class Meta:
         verbose_name = "Configuración de Coeficientes"

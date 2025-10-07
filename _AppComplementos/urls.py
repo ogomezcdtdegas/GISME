@@ -20,6 +20,7 @@ from .views.views_Sistema import ListarSistemasQueryView, ListarTodosSistemasQue
 # ConfiguracionCoeficientes
 from .views.views_ConfiguracionCoeficientes.Commands.CreateOrUpdateCoeficientesCommand.CreateOrUpdateCoeficientesCommand import CreateOrUpdateCoeficientesCommandView
 from .views.views_ConfiguracionCoeficientes.Queries.GetCoeficientesBySistemaQuery.GetCoeficientesBySistemaQuery import GetCoeficientesBySistemaQueryView
+from .views.views_ConfiguracionCoeficientes.Queries.GetCoeficientesByIdQuery.GetCoeficientesByIdQuery import ObtenerCoeficientesQueryView
 #---------------------------------------------------------------------------------------# Grouped URL patterns by resource
 
 
@@ -48,6 +49,7 @@ sistema_urls = [
 coeficientes_urls = [
     path('api/coeficientes/', CreateOrUpdateCoeficientesCommandView.as_view(), name='crear_actualizar_coeficientes'),
     path('api/coeficientes/<uuid:sistema_id>/', GetCoeficientesBySistemaQueryView.as_view(), name='obtener_coeficientes_sistema'),
+    path('api/coeficientes-by-id/<uuid:pk>/', ObtenerCoeficientesQueryView.as_view(), name='obtener_coeficientes_por_id'),
 ]
 
 # Combine all URL patterns

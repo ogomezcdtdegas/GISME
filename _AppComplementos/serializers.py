@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Ubicacion, Ubicacion, Sistema
+from .models import Ubicacion, Ubicacion, Sistema, ConfiguracionCoeficientes, ConfiguracionCoeficientes
 
 '''xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'''
 '''                                                   Serializer de Ubicacion                                                       '''
@@ -107,4 +107,24 @@ class SistemaSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Ya existe un sistema con este MAC Gateway.")
         
         return value
+'''xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'''
+
+'''xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'''
+'''                                           Serializer de ConfiguracionCoeficientes                                              '''
+'''xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'''
+class ConfiguracionCoeficientesSerializer(serializers.ModelSerializer):
+    created_at = serializers.DateTimeField(format="%d-%m-%Y %H:%M", required=False, read_only=True)
+    sistema_tag = serializers.CharField(source="systemId.tag", read_only=True)
+    sistema_nombre = serializers.SerializerMethodField()
+    
+    class Meta:
+        model = ConfiguracionCoeficientes
+        fields = ["id", "systemId", "sistema_tag", "sistema_nombre", "mt", "bt", "mp", "bp", 
+                 "lim_inf_caudal_masico", "lim_sup_caudal_masico", "vol_masico_ini_batch", "created_at"]
+    
+    def get_sistema_nombre(self, obj):
+        """Retorna el nombre completo del sistema"""
+        if obj.systemId:
+            return f"{obj.systemId.tag} - {obj.systemId.sistema_id}"
+        return "Sin sistema"
 '''xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'''

@@ -5,13 +5,13 @@ from rest_framework import status
 from django.shortcuts import get_object_or_404
 
 from .....models import ConfiguracionCoeficientes, Sistema
+from .....serializers import ConfiguracionCoeficientesSerializer
 
 from drf_spectacular.utils import extend_schema, extend_schema_view
 
 @extend_schema_view(
     get=extend_schema(tags=['ConfiguracionCoeficientes']),
 )
-
 class GetCoeficientesBySistemaQueryView(APIView):
     """CBV Query para obtener los coeficientes de corrección de un sistema específico"""
     permission_classes = [IsAuthenticated]
@@ -23,32 +23,19 @@ class GetCoeficientesBySistemaQueryView(APIView):
         """
         try:
             # Verificar que el sistema existe
-            try:
-                sistema = Sistema.objects.get(id=sistema_id)
-            except Sistema.DoesNotExist:
-                return Response({
-                    "success": False,
-                    "error": "El sistema especificado no existe"
-                }, status=status.HTTP_404_NOT_FOUND)
+            sistema = get_object_or_404(Sistema, id=sistema_id)
 
             # Buscar coeficientes existentes
             try:
-                coeficientes = ConfiguracionCoeficientes.objects.get(systemId=sistema)
+                coeficientes = ConfiguracionCoeficientes.objects.select_related('systemId').get(systemId=sistema)
+                
+                # Usar el serializer para la respuesta
+                serializer = ConfiguracionCoeficientesSerializer(coeficientes)
                 
                 return Response({
                     "success": True,
                     "exists": True,
-                    "data": {
-                        "id": coeficientes.id,
-                        "systemId": str(sistema.id),
-                        "sistema_tag": sistema.tag,
-                        "sistema_nombre": f"{sistema.tag} - {sistema.sistema_id}",
-                        "mt": coeficientes.mt,
-                        "bt": coeficientes.bt,
-                        "mp": coeficientes.mp,
-                        "bp": coeficientes.bp,
-                        "created_at": coeficientes.created_at
-                    }
+                    "data": serializer.data
                 }, status=status.HTTP_200_OK)
 
             except ConfiguracionCoeficientes.DoesNotExist:
