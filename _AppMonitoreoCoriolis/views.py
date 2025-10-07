@@ -1,6 +1,8 @@
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 from django.views.generic import TemplateView
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -9,7 +11,7 @@ from django.utils import timezone
 from datetime import timedelta, datetime
 import pytz
 import logging
-from .models import NodeRedData
+from .models import NodeRedData, BatchDetectado
 from _AppComplementos.models import Sistema, ConfiguracionCoeficientes
 from UTIL_LIB.conversiones import (
     celsius_a_fahrenheit, 
@@ -846,3 +848,231 @@ class DatosTendenciasView(APIView):
                 'success': False,
                 'error': f'Error interno del servidor: {str(e)}'
             }, status=500)
+
+
+class DetectarBatchesView(APIView):
+    """
+    CBV para detectar batches en un rango de fechas específico
+    """
+    permission_classes = [IsAuthenticated]
+    
+    def post(self, request, sistema_id):
+        try:
+            # Obtener parámetros
+            fecha_inicio_str = request.data.get('fecha_inicio')
+            fecha_fin_str = request.data.get('fecha_fin')
+            
+            if not fecha_inicio_str or not fecha_fin_str:
+                return Response({
+                    'success': False,
+                    'error': 'Las fechas de inicio y fin son obligatorias'
+                }, status=400)
+            
+            # Verificar que el sistema existe
+            sistema = Sistema.objects.get(id=sistema_id)
+            
+            # Obtener límites de configuración
+            try:
+                config = ConfiguracionCoeficientes.objects.get(systemId=sistema)
+                lim_inf = config.lim_inf_caudal_masico
+                lim_sup = config.lim_sup_caudal_masico
+                vol_minimo = config.vol_masico_ini_batch  # Cambio: usar vol_masico_ini_batch en lugar de 300
+            except ConfiguracionCoeficientes.DoesNotExist:
+                return Response({
+                    'success': False,
+                    'error': 'No se encontró configuración de límites para este sistema'
+                }, status=400)
+            
+            # Convertir fechas a datetime
+            from datetime import datetime
+            fecha_inicio = datetime.strptime(fecha_inicio_str, '%Y-%m-%d').replace(hour=0, minute=0, second=0, microsecond=0)
+            fecha_fin = datetime.strptime(fecha_fin_str, '%Y-%m-%d').replace(hour=23, minute=59, second=59, microsecond=999999)
+            
+            # Convertir a timezone aware
+            from django.utils import timezone as django_timezone
+            fecha_inicio = django_timezone.make_aware(fecha_inicio)
+            fecha_fin = django_timezone.make_aware(fecha_fin)
+            
+            # Obtener datos del rango de fechas, ordenados por fecha
+            datos = NodeRedData.objects.filter(
+                systemId=sistema,
+                created_at__gte=fecha_inicio,
+                created_at__lte=fecha_fin
+            ).order_by('created_at')
+            
+            if not datos.exists():
+                return Response({
+                    'success': False,
+                    'error': 'No se encontraron datos en el rango de fechas especificado'
+                }, status=404)
+            
+            # Ejecutar algoritmo de detección de batches
+            batches_detectados = self._detectar_batches(datos, lim_inf, lim_sup, vol_minimo, sistema)
+            
+            # Guardar batches en la base de datos
+            batches_guardados = []
+            for batch_data in batches_detectados:
+                batch = BatchDetectado.objects.create(
+                    systemId=sistema,
+                    fecha_inicio=batch_data['fecha_inicio'],
+                    fecha_fin=batch_data['fecha_fin'],
+                    vol_total=batch_data['vol_total'],
+                    temperatura_coriolis_prom=batch_data['temperatura_coriolis_prom'],
+                    densidad_prom=batch_data['densidad_prom'],
+                    duracion_minutos=batch_data['duracion_minutos'],
+                    total_registros=batch_data['total_registros']
+                )
+                batches_guardados.append({
+                    'id': batch.id,
+                    'fecha_inicio': batch.fecha_inicio.astimezone(COLOMBIA_TZ).strftime('%d/%m/%Y %H:%M:%S'),
+                    'fecha_fin': batch.fecha_fin.astimezone(COLOMBIA_TZ).strftime('%d/%m/%Y %H:%M:%S'),
+                    'vol_total': round(batch.vol_total, 2),
+                    'temperatura_coriolis_prom': round(batch.temperatura_coriolis_prom, 2),
+                    'densidad_prom': round(batch.densidad_prom, 4),
+                    'duracion_minutos': round(batch.duracion_minutos, 2),
+                    'total_registros': batch.total_registros
+                })
+            
+            return Response({
+                'success': True,
+                'batches_detectados': len(batches_guardados),
+                'batches': batches_guardados,
+                'configuracion_usada': {
+                    'lim_inf_caudal_masico': lim_inf,
+                    'lim_sup_caudal_masico': lim_sup,
+                    'vol_minimo_batch': vol_minimo
+                },
+                'rango_analizado': {
+                    'fecha_inicio': fecha_inicio.astimezone(COLOMBIA_TZ).strftime('%d/%m/%Y %H:%M:%S'),
+                    'fecha_fin': fecha_fin.astimezone(COLOMBIA_TZ).strftime('%d/%m/%Y %H:%M:%S'),
+                    'total_registros': datos.count()
+                }
+            })
+            
+        except Sistema.DoesNotExist:
+            return Response({
+                'success': False,
+                'error': 'Sistema no encontrado'
+            }, status=404)
+        except ValueError as e:
+            return Response({
+                'success': False,
+                'error': f'Error en formato de fecha: {str(e)}'
+            }, status=400)
+        except Exception as e:
+            logger.error(f"Error en DetectarBatchesView: {str(e)}", exc_info=True)
+            return Response({
+                'success': False,
+                'error': f'Error interno del servidor: {str(e)}'
+            }, status=500)
+    
+    def _detectar_batches(self, datos, lim_inf, lim_sup, vol_minimo, sistema):
+        """
+        Algoritmo para detectar batches basado en los criterios especificados
+        """
+        batches = []
+        en_batch = False
+        inicio_batch = None
+        datos_batch = []
+        masa_inicial_batch = None
+        
+        logger.info(f"Iniciando detección de batches. Límites: inf={lim_inf}, sup={lim_sup}, vol_min={vol_minimo}")
+        
+        for i, dato in enumerate(datos):
+            mass_rate = dato.mass_rate
+            total_mass = dato.total_mass
+            
+            # Verificar que tenemos los datos necesarios
+            if mass_rate is None or total_mass is None:
+                continue
+            
+            # Si el mass_rate está dentro de los límites válidos
+            if lim_inf <= mass_rate <= lim_sup:
+                if not en_batch:
+                    # Iniciar nuevo batch
+                    inicio_batch = dato.created_at
+                    masa_inicial_batch = total_mass
+                    datos_batch = []
+                    en_batch = True
+                    logger.debug(f"Iniciando batch en {inicio_batch}, masa inicial: {masa_inicial_batch}")
+                
+                datos_batch.append(dato)
+                
+                # Calcular masa acumulada desde el inicio del batch
+                masa_acumulada = total_mass - masa_inicial_batch if masa_inicial_batch is not None else 0
+                
+                # Si la masa acumulada supera el volumen mínimo, es un batch válido
+                if masa_acumulada >= vol_minimo:
+                    logger.debug(f"Batch válido detectado: masa acumulada {masa_acumulada} >= {vol_minimo}")
+                    continue
+                    
+            else:
+                # El mass_rate está fuera de los límites
+                if en_batch and datos_batch:
+                    # Finalizar batch si tenemos datos suficientes
+                    masa_final = datos_batch[-1].total_mass
+                    masa_acumulada = masa_final - masa_inicial_batch if masa_inicial_batch is not None else 0
+                    
+                    # Solo guardar si supera el volumen mínimo
+                    if masa_acumulada >= vol_minimo:
+                        # Calcular estadísticas del batch
+                        temperaturas = [d.coriolis_temperature for d in datos_batch if d.coriolis_temperature is not None]
+                        densidades = [d.density for d in datos_batch if d.density is not None]
+                        
+                        if temperaturas and densidades:
+                            temp_promedio = sum(temperaturas) / len(temperaturas)
+                            densidad_promedio = sum(densidades) / len(densidades)
+                            
+                            fin_batch = datos_batch[-1].created_at
+                            duracion = (fin_batch - inicio_batch).total_seconds() / 60  # minutos
+                            
+                            batch_info = {
+                                'fecha_inicio': inicio_batch,
+                                'fecha_fin': fin_batch,
+                                'vol_total': masa_acumulada,
+                                'temperatura_coriolis_prom': temp_promedio,
+                                'densidad_prom': densidad_promedio,
+                                'duracion_minutos': duracion,
+                                'total_registros': len(datos_batch)
+                            }
+                            
+                            batches.append(batch_info)
+                            logger.info(f"Batch guardado: {inicio_batch} a {fin_batch}, vol: {masa_acumulada:.2f} kg")
+                
+                # Resetear estado
+                en_batch = False
+                inicio_batch = None
+                datos_batch = []
+                masa_inicial_batch = None
+        
+        # Verificar si hay un batch en curso al final de los datos
+        if en_batch and datos_batch and masa_inicial_batch is not None:
+            masa_final = datos_batch[-1].total_mass
+            masa_acumulada = masa_final - masa_inicial_batch
+            
+            if masa_acumulada >= vol_minimo:
+                temperaturas = [d.coriolis_temperature for d in datos_batch if d.coriolis_temperature is not None]
+                densidades = [d.density for d in datos_batch if d.density is not None]
+                
+                if temperaturas and densidades:
+                    temp_promedio = sum(temperaturas) / len(temperaturas)
+                    densidad_promedio = sum(densidades) / len(densidades)
+                    
+                    fin_batch = datos_batch[-1].created_at
+                    duracion = (fin_batch - inicio_batch).total_seconds() / 60  # minutos
+                    
+                    batch_info = {
+                        'fecha_inicio': inicio_batch,
+                        'fecha_fin': fin_batch,
+                        'vol_total': masa_acumulada,
+                        'temperatura_coriolis_prom': temp_promedio,
+                        'densidad_prom': densidad_promedio,
+                        'duracion_minutos': duracion,
+                        'total_registros': len(datos_batch)
+                    }
+                    
+                    batches.append(batch_info)
+                    logger.info(f"Batch final guardado: {inicio_batch} a {fin_batch}, vol: {masa_acumulada:.2f} kg")
+        
+        logger.info(f"Detección completada. Total de batches detectados: {len(batches)}")
+        return batches

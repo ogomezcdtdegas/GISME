@@ -79,5 +79,30 @@ class NodeRedData(BaseModel):
     def __str__(self):
         return f"{self.systemId}"
 
+
+class BatchDetectado(BaseModel):
+    """
+    Modelo para almacenar los batches detectados automáticamente
+    """
+    systemId = models.ForeignKey(Sistema, on_delete=models.CASCADE, related_name='batches_detectados')
+    
+    fecha_inicio = models.DateTimeField(verbose_name="Fecha de Inicio del Batch")
+    fecha_fin = models.DateTimeField(verbose_name="Fecha de Fin del Batch")
+    vol_total = models.FloatField(verbose_name="Volumen Total Acumulado (kg)")
+    temperatura_coriolis_prom = models.FloatField(verbose_name="Temperatura Coriolis Promedio (°C)")
+    densidad_prom = models.FloatField(verbose_name="Densidad Promedio (g/cc)")
+    
+    # Información adicional del batch
+    duracion_minutos = models.FloatField(verbose_name="Duración del Batch (minutos)", null=True, blank=True)
+    total_registros = models.IntegerField(verbose_name="Total de Registros en el Batch", default=0)
+    
+    class Meta:
+        verbose_name = "Batch Detectado"
+        verbose_name_plural = "Batches Detectados"
+        ordering = ['-fecha_inicio']
+    
+    def __str__(self):
+        return f"Batch {self.systemId.tag} - {self.fecha_inicio.strftime('%d/%m/%Y %H:%M')} ({self.vol_total:.2f} kg)"
+
 # Create your models here.
 

@@ -4,7 +4,6 @@
 {% block title %}Monitoreo Coriolis - GISME{% endblock %}
 
 {% block extra_css %}
-{% csrf_token %}
 <link rel="stylesheet" href="{% static 'css/monitoreo.css' %}">
 <link rel="stylesheet" href="{% static 'css/coriolis-common.css' %}">
 <link rel="stylesheet" href="{% static 'css/coriolis-spa.css' %}">
@@ -120,6 +119,9 @@ let SISTEMA_ACTUAL;
 <!-- Variables globales se mantienen aquí para Django template -->
 
 <div class="container-fluid mt-4">
+    <!-- Token CSRF para peticiones AJAX -->
+    {% csrf_token %}
+    
     <!-- Loading Overlay -->
     <div id="loadingOverlay" class="loading-overlay">
         <div class="text-center">
@@ -235,6 +237,9 @@ let SISTEMA_ACTUAL;
                             </small>
                         </div>
                         <div class="coriolis-header-buttons d-flex gap-2">
+                            <button class="btn btn-outline-success btn-sm" onclick="abrirModalBatches()">
+                                <i class="bi bi-search"></i> Buscar Batches
+                            </button>
                             <button class="btn btn-outline-danger btn-sm" onclick="descargarReportePDF()">
                                 <i class="bi bi-file-earmark-pdf"></i> Descargar Reporte PDF
                             </button>
@@ -417,6 +422,9 @@ let SISTEMA_ACTUAL;
 
 <!-- Modal de Configuración -->
 {% include '_AppMonitoreoCoriolis/componentes/modal_configuracion.html' %}
+
+<!-- Modal de Búsqueda de Batches -->
+{% include '_AppMonitoreoCoriolis/componentes/modal_batches.html' %}
 
 {% endblock %}
 

@@ -13,6 +13,9 @@ urlpatterns = [
     path('api/datos-temperatura/<uuid:sistema_id>/', views.DatosHistoricosTemperaturaView.as_view(), name='datos_temperatura'),
     path('api/datos-tiempo-real/<uuid:sistema_id>/', views.DatosTiempoRealView.as_view(), name='datos_tiempo_real'),
     path('api/datos-tendencias/<uuid:sistema_id>/', views.DatosTendenciasView.as_view(), name='datos_tendencias'),
+    
+    # API para detección de batches
+    path('api/detectar-batches/<uuid:sistema_id>/', views.DetectarBatchesView.as_view(), name='detectar_batches'),
 ]
 
 urlpatterns += [
