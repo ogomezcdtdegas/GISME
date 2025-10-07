@@ -28,6 +28,13 @@ class CreateOrUpdateCoeficientesCommandView(APIView):
             bt = request.data.get('bt')
             mp = request.data.get('mp')
             bp = request.data.get('bp')
+            zero_presion = request.data.get('zero_presion', 0.0)
+            span_presion = request.data.get('span_presion', 1.0)
+            
+            # Nuevos campos de configuración de batch
+            lim_inf_caudal_masico = request.data.get('lim_inf_caudal_masico', 0.0)
+            lim_sup_caudal_masico = request.data.get('lim_sup_caudal_masico', 1000000.0)
+            vol_masico_ini_batch = request.data.get('vol_masico_ini_batch', 0.0)
 
             # Validaciones básicas
             if not system_id:
@@ -58,7 +65,12 @@ class CreateOrUpdateCoeficientesCommandView(APIView):
                     'mt': float(mt),
                     'bt': float(bt),
                     'mp': float(mp),
-                    'bp': float(bp)
+                    'bp': float(bp),
+                    'zero_presion': float(zero_presion),
+                    'span_presion': float(span_presion),
+                    'lim_inf_caudal_masico': float(lim_inf_caudal_masico),
+                    'lim_sup_caudal_masico': float(lim_sup_caudal_masico),
+                    'vol_masico_ini_batch': float(vol_masico_ini_batch)
                 }
             )
 
@@ -68,6 +80,11 @@ class CreateOrUpdateCoeficientesCommandView(APIView):
                 coeficientes.bt = float(bt)
                 coeficientes.mp = float(mp)
                 coeficientes.bp = float(bp)
+                coeficientes.zero_presion = float(zero_presion)
+                coeficientes.span_presion = float(span_presion)
+                coeficientes.lim_inf_caudal_masico = float(lim_inf_caudal_masico)
+                coeficientes.lim_sup_caudal_masico = float(lim_sup_caudal_masico)
+                coeficientes.vol_masico_ini_batch = float(vol_masico_ini_batch)
                 coeficientes.save()
 
             return Response({
@@ -81,7 +98,10 @@ class CreateOrUpdateCoeficientesCommandView(APIView):
                     "mt": coeficientes.mt,
                     "bt": coeficientes.bt,
                     "mp": coeficientes.mp,
-                    "bp": coeficientes.bp
+                    "bp": coeficientes.bp,
+                    "lim_inf_caudal_masico": coeficientes.lim_inf_caudal_masico,
+                    "lim_sup_caudal_masico": coeficientes.lim_sup_caudal_masico,
+                    "vol_masico_ini_batch": coeficientes.vol_masico_ini_batch
                 }
             }, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
 

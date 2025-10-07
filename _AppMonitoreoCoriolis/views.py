@@ -36,10 +36,26 @@ def get_coeficientes_correccion(sistema):
     """
     try:
         coef = ConfiguracionCoeficientes.objects.get(systemId=sistema)
-        return coef.mt, coef.bt, coef.mp, coef.bp
+        return coef.mt, coef.bt, coef.mp, coef.bp, coef.span_presion, coef.zero_presion
     except ConfiguracionCoeficientes.DoesNotExist:
-        # Valores por defecto: m=1, b=0 (no corrige)
-        return 1.0, 0.0, 1.0, 0.0
+        # Valores por defecto: m=1, b=0 (no corrige), span=1, zero=0
+        return 1.0, 0.0, 1.0, 0.0, 1.0, 0.0
+
+# Función utilitaria para convertir presión con span
+def convertir_presion_con_span(valor_crudo, span_presion):
+    """
+    Convierte el valor crudo de presión usando el span del sistema.
+    Formula: (span_presion / 4095) * valor_crudo
+    Si span_presion es None o 0, retorna el valor crudo sin conversión.
+    """
+    if valor_crudo is None:
+        return None
+    
+    if span_presion is None or span_presion == 0:
+        # Si no hay span configurado, usar el valor crudo directamente
+        return float(valor_crudo)
+    
+    return (float(span_presion) / 4095.0) * float(valor_crudo)
 
 # Vista base para SPA - Solo renderiza el template principal
 class MonitoreoCoriolisBaseView(LoginRequiredMixin, TemplateView):
@@ -209,7 +225,7 @@ class DatosHistoricosPresionView(APIView):
             sistema = Sistema.objects.get(id=sistema_id)
             
             # Obtener coeficientes de corrección
-            mt, bt, mp, bp = get_coeficientes_correccion(sistema)
+            mt, bt, mp, bp, span_presion, zero_presion = get_coeficientes_correccion(sistema)
             
             # Obtener parámetros de fecha
             fecha_inicio = request.GET.get('fecha_inicio')
@@ -274,10 +290,14 @@ class DatosHistoricosPresionView(APIView):
                 
                 # Usar pressure_out con corrección del momento aplicada
                 if dato.pressure_out is not None:
+                    # 1. Convertir valor crudo con span
+                    valor_convertido = convertir_presion_con_span(dato.pressure_out, span_presion)
+                    
+                    # 2. Aplicar corrección mx+b
                     # Usar coeficientes del momento (mp, bp) si están disponibles, sino usar los actuales
                     mp_momento = dato.mp if dato.mp is not None else mp
                     bp_momento = dato.bp if dato.bp is not None else bp
-                    presion_corregida = mp_momento * float(dato.pressure_out) + bp_momento
+                    presion_corregida = mp_momento * valor_convertido + bp_momento
                     datos_presion.append({
                         'fecha': fecha_str,
                         'valor': presion_corregida,
@@ -359,7 +379,7 @@ class DatosHistoricosTemperaturaView(APIView):
             sistema = Sistema.objects.get(id=sistema_id)
             
             # Obtener coeficientes de corrección
-            mt, bt, mp, bp = get_coeficientes_correccion(sistema)
+            mt, bt, mp, bp, span_presion, zero_presion = get_coeficientes_correccion(sistema)
             
             # Obtener parámetros de fecha
             fecha_inicio = request.GET.get('fecha_inicio')
@@ -544,7 +564,7 @@ class DatosTiempoRealView(APIView):
             sistema = Sistema.objects.get(id=sistema_id)
             
             # Obtener coeficientes de corrección
-            mt, bt, mp, bp = get_coeficientes_correccion(sistema)
+            mt, bt, mp, bp, span_presion, zero_presion = get_coeficientes_correccion(sistema)
             
             # Obtener el último registro
             ultimo_dato = NodeRedData.objects.filter(
@@ -566,7 +586,13 @@ class DatosTiempoRealView(APIView):
             
             # Aplicar corrección a Presión (pressure_out)
             presion = ultimo_dato.pressure_out
-            presion_corr = mp * float(presion) + bp if presion is not None else None
+            if presion is not None:
+                # 1. Convertir valor crudo con span
+                valor_convertido = convertir_presion_con_span(presion, span_presion)
+                # 2. Aplicar corrección mx+b
+                presion_corr = mp * valor_convertido + bp
+            else:
+                presion_corr = None
             
             return Response({
                 'success': True,
@@ -655,7 +681,7 @@ class DatosTendenciasView(APIView):
             sistema = Sistema.objects.get(id=sistema_id)
             
             # Obtener coeficientes de corrección
-            mt, bt, mp, bp = get_coeficientes_correccion(sistema)
+            mt, bt, mp, bp, span_presion, zero_presion = get_coeficientes_correccion(sistema)
             
             # Obtener el último dato disponible para establecer el punto de referencia
             ultimo_dato = NodeRedData.objects.filter(
@@ -741,10 +767,14 @@ class DatosTendenciasView(APIView):
                 
                 # Presión - APLICAR CORRECCIÓN DEL MOMENTO y mantener en PSI
                 if dato.pressure_out is not None:
+                    # 1. Convertir valor crudo con span
+                    valor_convertido = convertir_presion_con_span(dato.pressure_out, span_presion)
+                    
+                    # 2. Aplicar corrección mx+b del momento
                     # Usar coeficientes del momento si están disponibles, sino usar los actuales
                     mp_momento = dato.mp if dato.mp is not None else mp
                     bp_momento = dato.bp if dato.bp is not None else bp
-                    presion_corregida = mp_momento * float(dato.pressure_out) + bp_momento
+                    presion_corregida = mp_momento * valor_convertido + bp_momento
                     presion.append({
                         'x': timestamp,
                         'y': presion_corregida,

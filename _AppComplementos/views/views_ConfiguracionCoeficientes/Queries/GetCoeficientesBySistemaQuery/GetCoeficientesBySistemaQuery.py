@@ -51,7 +51,12 @@ class GetCoeficientesBySistemaQueryView(APIView):
                         "mt": 1.0,  # Valores por defecto
                         "bt": 0.0,
                         "mp": 1.0,
-                        "bp": 0.0
+                        "bp": 0.0,
+                        "zero_presion": 0.0,
+                        "span_presion": 1.0,
+                        "lim_inf_caudal_masico": 0.0,
+                        "lim_sup_caudal_masico": 1000000.0,
+                        "vol_masico_ini_batch": 0.0
                     }
                 }, status=status.HTTP_200_OK)
 

@@ -16,9 +16,12 @@
       <div class="modal-body">
         <form id="formConfiguracionSistema">
           <!-- Temperatura de Salida -->
+          <div class="col-12">
+            <h6 class="fw-bold mb-3">Coeficientes de corrección:</h6>
+          </div>
           <div class="row mb-4">
             <div class="col-12">
-              <h6 class="fw-bold text-primary mb-3">Temperatura de Salida:</h6>
+              <h6 class="mb-3">Temperatura de Salida:</h6>
             </div>
             <div class="col-md-6">
               <label for="tempSalidaM" class="form-label">M:</label>
@@ -33,15 +36,23 @@
           <!-- Presión de Salida -->
           <div class="row mb-4">
             <div class="col-12">
-              <h6 class="fw-bold text-success mb-3">Presión de Salida:</h6>
+              <h6 class="mb-3">Presión de Salida:</h6>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-3">
               <label for="presionSalidaM" class="form-label">M:</label>
               <input type="number" class="form-control" id="presionSalidaM" name="presionSalidaM" step="any" placeholder="Ingrese valor M">
             </div>
-            <div class="col-md-6">
+            <div class="col-md-3">
               <label for="presionSalidaB" class="form-label">B:</label>
               <input type="number" class="form-control" id="presionSalidaB" name="presionSalidaB" step="any" placeholder="Ingrese valor B">
+            </div>
+            <div class="col-md-3">
+              <label for="zeroPresion" class="form-label">Zero:</label>
+              <input type="number" class="form-control" id="zeroPresion" name="zeroPresion" step="any" placeholder="0.0">
+            </div>
+            <div class="col-md-3">
+              <label for="spanPresion" class="form-label">Span:</label>
+              <input type="number" class="form-control" id="spanPresion" name="spanPresion" step="any" placeholder="1.0">
             </div>
           </div>
 
@@ -52,6 +63,27 @@
               <strong>Información:</strong> Los coeficientes M y B se utilizan para la corrección lineal de las variables del sistema.
               Fórmula: <code>Valor_Corregido = M × Valor_Original + B</code>
             </small>
+          </div>
+          <!-- Configuración de Batch -->
+          <div class="row mb-4">
+            <div class="col-12">
+              <h6 class="fw-bold mb-3">Configuración detección de Batch:</h6>
+            </div>
+            <div class="col-md-4">
+              <label for="limInfCaudalMasico" class="form-label">Lím Inf Caudal Másico:</label>
+              <input type="number" class="form-control" id="limInfCaudalMasico" name="limInfCaudalMasico" step="any" placeholder="0.0" min="0">
+              <small class="form-text text-muted">kg/h</small>
+            </div>
+            <div class="col-md-4">
+              <label for="limSupCaudalMasico" class="form-label">Lím Sup Caudal Másico:</label>
+              <input type="number" class="form-control" id="limSupCaudalMasico" name="limSupCaudalMasico" step="any" placeholder="1000000.0" min="0">
+              <small class="form-text text-muted">kg/h</small>
+            </div>
+            <div class="col-md-4">
+              <label for="volMasicoIniBatch" class="form-label">Vol detector de bath:</label>
+              <input type="number" class="form-control" id="volMasicoIniBatch" name="volMasicoIniBatch" step="any" placeholder="0.0" min="0">
+              <small class="form-text text-muted">kg</small>
+            </div>
           </div>
         </form>
       </div>
@@ -114,6 +146,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('tempSalidaB').value = data.data.bt || '0.0';
                 document.getElementById('presionSalidaM').value = data.data.mp || '1.0';
                 document.getElementById('presionSalidaB').value = data.data.bp || '0.0';
+                document.getElementById('zeroPresion').value = data.data.zero_presion || '0.0';
+                document.getElementById('spanPresion').value = data.data.span_presion || '1.0';
+                
+                // Nuevos campos de configuración de batch
+                document.getElementById('limInfCaudalMasico').value = data.data.lim_inf_caudal_masico || '0.0';
+                document.getElementById('limSupCaudalMasico').value = data.data.lim_sup_caudal_masico || '1000000.0';
+                document.getElementById('volMasicoIniBatch').value = data.data.vol_masico_ini_batch || '0.0';
                 
                 if (!data.exists) {
                     console.info('Coeficientes no configurados. Mostrando valores por defecto.');
@@ -149,6 +188,13 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('tempSalidaB').value = '0.0';
         document.getElementById('presionSalidaM').value = '1.0';
         document.getElementById('presionSalidaB').value = '0.0';
+        document.getElementById('zeroPresion').value = '0.0';
+        document.getElementById('spanPresion').value = '1.0';
+        
+        // Valores por defecto para configuración de batch
+        document.getElementById('limInfCaudalMasico').value = '0.0';
+        document.getElementById('limSupCaudalMasico').value = '1000000.0';
+        document.getElementById('volMasicoIniBatch').value = '0.0';
     }
 
     function actualizarCoeficientes() {
@@ -165,10 +211,29 @@ document.addEventListener('DOMContentLoaded', function() {
         const bt = parseFloat(document.getElementById('tempSalidaB').value);
         const mp = parseFloat(document.getElementById('presionSalidaM').value);
         const bp = parseFloat(document.getElementById('presionSalidaB').value);
+        const zeroPresion = parseFloat(document.getElementById('zeroPresion').value);
+        const spanPresion = parseFloat(document.getElementById('spanPresion').value);
+        
+        // Obtener valores de configuración de batch
+        const limInfCaudalMasico = parseFloat(document.getElementById('limInfCaudalMasico').value);
+        const limSupCaudalMasico = parseFloat(document.getElementById('limSupCaudalMasico').value);
+        const volMasicoIniBatch = parseFloat(document.getElementById('volMasicoIniBatch').value);
 
         // Validar que todos los valores son números válidos
-        if (isNaN(mt) || isNaN(bt) || isNaN(mp) || isNaN(bp)) {
-            alert('Error: Todos los coeficientes deben ser números válidos');
+        if (isNaN(mt) || isNaN(bt) || isNaN(mp) || isNaN(bp) || isNaN(zeroPresion) || isNaN(spanPresion) ||
+            isNaN(limInfCaudalMasico) || isNaN(limSupCaudalMasico) || isNaN(volMasicoIniBatch)) {
+            alert('Error: Todos los valores deben ser números válidos');
+            return;
+        }
+        
+        // Validaciones adicionales
+        if (limInfCaudalMasico < 0 || limSupCaudalMasico < 0 || volMasicoIniBatch < 0) {
+            alert('Error: Los valores de configuración de batch no pueden ser negativos');
+            return;
+        }
+        
+        if (limInfCaudalMasico >= limSupCaudalMasico) {
+            alert('Error: El límite inferior debe ser menor que el límite superior');
             return;
         }
 
@@ -177,7 +242,12 @@ document.addEventListener('DOMContentLoaded', function() {
             mt: mt,
             bt: bt,
             mp: mp,
-            bp: bp
+            bp: bp,
+            zero_presion: zeroPresion,
+            span_presion: spanPresion,
+            lim_inf_caudal_masico: limInfCaudalMasico,
+            lim_sup_caudal_masico: limSupCaudalMasico,
+            vol_masico_ini_batch: volMasicoIniBatch
         };
 
         console.log('Actualizando coeficientes:', coeficientes);
