@@ -1105,11 +1105,16 @@ class DetalleBatchView(APIView):
             # Obtener el batch
             batch = get_object_or_404(BatchDetectado, id=batch_id)
             
-            # Obtener todos los datos del intervalo del batch
+            # Extender el rango de datos 3 minutos antes y después para mejor contexto visual
+            from datetime import timedelta
+            inicio_extendido = batch.fecha_inicio - timedelta(minutes=3)
+            fin_extendido = batch.fecha_fin + timedelta(minutes=3)
+            
+            # Obtener todos los datos del intervalo extendido del batch
             datos = NodeRedData.objects.filter(
                 systemId=batch.systemId,
-                created_at__gte=batch.fecha_inicio,
-                created_at__lte=batch.fecha_fin
+                created_at__gte=inicio_extendido,
+                created_at__lte=fin_extendido
             ).order_by('created_at')
             
             if not datos.exists():
@@ -1124,6 +1129,9 @@ class DetalleBatchView(APIView):
                 # Convertir UTC a hora de Colombia
                 fecha_colombia = dato.created_at.astimezone(COLOMBIA_TZ)
                 
+                # Determinar si el punto está dentro del batch real o en el contexto extendido
+                dentro_batch = batch.fecha_inicio <= dato.created_at <= batch.fecha_fin
+                
                 # Convertir mass_rate de lb/sec a kg/min para consistencia
                 mass_rate_kg_min = lb_s_a_kg_min(dato.mass_rate) if dato.mass_rate is not None else None
                 
@@ -1134,7 +1142,8 @@ class DetalleBatchView(APIView):
                     'mass_rate_kg_min': mass_rate_kg_min,  # Convertido a kg/min
                     'total_mass': dato.total_mass,
                     'coriolis_temperature': dato.coriolis_temperature,
-                    'density': dato.density
+                    'density': dato.density,
+                    'dentro_batch': dentro_batch  # Indica si está dentro del batch real
                 })
             
             return Response({
@@ -1148,7 +1157,10 @@ class DetalleBatchView(APIView):
                     'temperatura_coriolis_prom': batch.temperatura_coriolis_prom,
                     'densidad_prom': batch.densidad_prom,
                     'duracion_minutos': batch.duracion_minutos,
-                    'total_registros': batch.total_registros
+                    'total_registros': batch.total_registros,
+                    # Timestamps para marcar límites del batch en la gráfica
+                    'timestamp_inicio': int(batch.fecha_inicio.astimezone(COLOMBIA_TZ).timestamp() * 1000),
+                    'timestamp_fin': int(batch.fecha_fin.astimezone(COLOMBIA_TZ).timestamp() * 1000)
                 },
                 'datos_grafico': datos_grafico,
                 'total_datos': len(datos_grafico)

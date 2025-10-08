@@ -86,6 +86,12 @@ function mostrarDetalleBatch(data) {
         <p><strong>Inicio:</strong> ${data.batch_info.fecha_inicio}</p>
         <p><strong>Fin:</strong> ${data.batch_info.fecha_fin}</p>
         <p><strong>Duración:</strong> ${data.batch_info.duracion_minutos} minutos</p>
+        <div class="alert alert-info mt-2 mb-0" style="padding: 8px 12px; font-size: 0.85em;">
+            <i class="bi bi-info-circle"></i> 
+            <strong>Contexto extendido:</strong> La gráfica muestra 3 minutos antes y después del batch para mejor análisis.
+            <br>� <strong>Línea azul clara:</strong> Datos del batch detectado (línea gruesa, puntos grandes)
+            <br>🔷 <strong>Línea azul oscura:</strong> Datos de contexto - antes/después (línea más fina, puntos pequeños)
+        </div>
     `;
     
     // Mostrar estadísticas
@@ -119,25 +125,63 @@ function crearGraficoBatch(datos) {
     // Preparar datos para Chart.js
     const labels = datos.map(d => d.fecha_hora);
     
+    // Separar datos del batch y del contexto para diferentes estilos
+    const datosBatch = datos.filter(d => d.dentro_batch);
+    const datosContexto = datos.filter(d => !d.dentro_batch);
+    
     const datasets = [
+        // Flujo másico completo (contexto + batch) como una sola curva continua
         {
-            label: 'Flujo Másico (kg/min)',
+            label: 'Flujo Másico - Batch (kg/min)',
             data: datos.map(d => d.mass_rate_kg_min),
-            borderColor: '#007bff',
+            borderColor: datos.map(d => d.dentro_batch ? '#007bff' : '#004085'), // Azul normal para batch, azul oscuro para contexto
             backgroundColor: '#007bff20',
             yAxisID: 'y1',
             tension: 0.4,
-            pointRadius: 2,
+            pointRadius: datos.map(d => d.dentro_batch ? 3 : 1), // Puntos más grandes para el batch
+            pointBorderColor: datos.map(d => d.dentro_batch ? '#007bff' : '#004085'),
+            pointBackgroundColor: datos.map(d => d.dentro_batch ? '#007bff' : '#004085'),
+            borderWidth: 2,
+            segment: {
+                borderColor: function(ctx) {
+                    // Cambiar color del segmento según si está en el batch o contexto
+                    const currentIndex = ctx.p0DataIndex;
+                    const isInBatch = datos[currentIndex]?.dentro_batch;
+                    return isInBatch ? '#007bff' : '#004085';
+                },
+                borderWidth: function(ctx) {
+                    // Línea más gruesa para el batch
+                    const currentIndex = ctx.p0DataIndex;
+                    const isInBatch = datos[currentIndex]?.dentro_batch;
+                    return isInBatch ? 3 : 2;
+                }
+            },
             hidden: false
         },
+        // Masa total completa (contexto + batch) como una sola curva continua
         {
-            label: 'Masa Total (lb)',
+            label: 'Masa Total - Batch (lb)',
             data: datos.map(d => d.total_mass),
-            borderColor: '#28a745',
+            borderColor: datos.map(d => d.dentro_batch ? '#28a745' : '#155724'), // Verde normal para batch, verde oscuro para contexto
             backgroundColor: '#28a74520',
             yAxisID: 'y2',
             tension: 0.4,
-            pointRadius: 2,
+            pointRadius: datos.map(d => d.dentro_batch ? 3 : 1),
+            pointBorderColor: datos.map(d => d.dentro_batch ? '#28a745' : '#155724'),
+            pointBackgroundColor: datos.map(d => d.dentro_batch ? '#28a745' : '#155724'),
+            borderWidth: 2,
+            segment: {
+                borderColor: function(ctx) {
+                    const currentIndex = ctx.p0DataIndex;
+                    const isInBatch = datos[currentIndex]?.dentro_batch;
+                    return isInBatch ? '#28a745' : '#155724';
+                },
+                borderWidth: function(ctx) {
+                    const currentIndex = ctx.p0DataIndex;
+                    const isInBatch = datos[currentIndex]?.dentro_batch;
+                    return isInBatch ? 3 : 2;
+                }
+            },
             hidden: false
         },
         {
@@ -162,6 +206,10 @@ function crearGraficoBatch(datos) {
         }
     ];
     
+    // Encontrar índices de inicio y fin del batch para las líneas verticales
+    const indiceInicio = datos.findIndex(d => d.dentro_batch);
+    const indiceFin = datos.length - 1 - datos.slice().reverse().findIndex(d => d.dentro_batch);
+    
     batchChart = new Chart(ctx, {
         type: 'line',
         data: {
@@ -174,6 +222,28 @@ function crearGraficoBatch(datos) {
             interaction: {
                 mode: 'index',
                 intersect: false,
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                    labels: {
+                        usePointStyle: true,
+                        padding: 15
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        title: function(context) {
+                            return context[0].label;
+                        },
+                        label: function(context) {
+                            const punto = datos[context.dataIndex];
+                            const prefijo = punto.dentro_batch ? '🔹 Batch: ' : '⚫ Contexto: ';
+                            return prefijo + context.dataset.label + ': ' + context.formattedValue;
+                        }
+                    }
+                }
             },
             scales: {
                 x: {
