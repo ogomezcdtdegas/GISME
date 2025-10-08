@@ -874,9 +874,9 @@ class DetectarBatchesView(APIView):
             # Obtener límites de configuración
             try:
                 config = ConfiguracionCoeficientes.objects.get(systemId=sistema)
-                lim_inf = config.lim_inf_caudal_masico
-                lim_sup = config.lim_sup_caudal_masico
-                vol_minimo = config.vol_masico_ini_batch  # Cambio: usar vol_masico_ini_batch en lugar de 300
+                lim_inf = config.lim_inf_caudal_masico  # En kg/min
+                lim_sup = config.lim_sup_caudal_masico  # En kg/min
+                vol_minimo = config.vol_masico_ini_batch  # En kg - volumen mínimo para considerar batch
             except ConfiguracionCoeficientes.DoesNotExist:
                 return Response({
                     'success': False,
@@ -969,6 +969,15 @@ class DetectarBatchesView(APIView):
     def _detectar_batches(self, datos, lim_inf, lim_sup, vol_minimo, sistema):
         """
         Algoritmo para detectar batches basado en los criterios especificados
+        
+        Args:
+            datos: QuerySet de NodeRedData ordenado por created_at
+            lim_inf: Límite inferior de caudal másico (kg/min)
+            lim_sup: Límite superior de caudal másico (kg/min)
+            vol_minimo: Volumen mínimo para considerar un batch válido (kg)
+            
+        Nota: Los datos de mass_rate en la DB están en lb/sec y se convierten 
+              automáticamente a kg/min para comparar con los límites.
         """
         batches = []
         en_batch = False
@@ -979,15 +988,18 @@ class DetectarBatchesView(APIView):
         logger.info(f"Iniciando detección de batches. Límites: inf={lim_inf}, sup={lim_sup}, vol_min={vol_minimo}")
         
         for i, dato in enumerate(datos):
-            mass_rate = dato.mass_rate
+            mass_rate_raw = dato.mass_rate  # En lb/sec
             total_mass = dato.total_mass
             
             # Verificar que tenemos los datos necesarios
-            if mass_rate is None or total_mass is None:
+            if mass_rate_raw is None or total_mass is None:
                 continue
             
-            # Si el mass_rate está dentro de los límites válidos
-            if lim_inf <= mass_rate <= lim_sup:
+            # Convertir mass_rate de lb/sec a kg/min para comparar con los límites
+            mass_rate_kg_min = lb_s_a_kg_min(mass_rate_raw)
+            
+            # Si el mass_rate está dentro de los límites válidos (ambos en kg/min)
+            if lim_inf <= mass_rate_kg_min <= lim_sup:
                 if not en_batch:
                     # Iniciar nuevo batch
                     inicio_batch = dato.created_at
