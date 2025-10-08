@@ -16,6 +16,7 @@ urlpatterns = [
     
     # API para detección de batches
     path('api/detectar-batches/<uuid:sistema_id>/', views.DetectarBatchesView.as_view(), name='detectar_batches'),
+    path('api/detalle-batch/<uuid:batch_id>/', views.DetalleBatchView.as_view(), name='detalle_batch'),
 ]
 
 urlpatterns += [

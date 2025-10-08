@@ -168,6 +168,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             <th>Temp. Prom. (°C)</th>
                             <th>Densidad Prom.</th>
                             <th>Registros</th>
+                            <th>Detalle</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -183,6 +184,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     <td>${batch.temperatura_coriolis_prom}</td>
                     <td>${batch.densidad_prom}</td>
                     <td>${batch.total_registros}</td>
+                    <td>
+                        <button class="btn btn-info btn-sm" onclick="verDetalleBatch('${batch.id}')">
+                            <i class="bi bi-graph-up"></i> Ver
+                        </button>
+                    </td>
                 </tr>
             `;
         });
@@ -211,9 +217,35 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+// Función global para ver el detalle de un batch
+async function verDetalleBatch(batchId) {
+    try {
+        const response = await fetch(`/monitoreo/api/detalle-batch/${batchId}/`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            mostrarDetalleBatch(data);
+        } else {
+            alert('Error al cargar detalle: ' + data.error);
+        }
+    } catch (error) {
+        console.error('Error al cargar detalle del batch:', error);
+        alert('Error de conexión al cargar detalle del batch');
+    }
+}
+
 // Función global para abrir el modal de batches
 function abrirModalBatches() {
     const modal = new bootstrap.Modal(document.getElementById('modalBuscarBatches'));
     modal.show();
 }
 </script>
+
+<!-- Incluir el modal de detalle de batch -->
+{% include '_AppMonitoreoCoriolis/componentes/modal_detalle_batch.html' %}

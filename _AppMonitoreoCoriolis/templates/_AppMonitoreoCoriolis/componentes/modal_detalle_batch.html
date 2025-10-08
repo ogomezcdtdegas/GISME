@@ -1,0 +1,291 @@
+<!-- Modal para mostrar el detalle de un batch específico -->
+<div class="modal fade" id="modalDetalleBatch" tabindex="-1" aria-labelledby="modalDetalleBatchLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalDetalleBatchLabel">
+                    <i class="bi bi-graph-up"></i> Detalle del Batch Detectado
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Información básica del batch -->
+                <div id="infoBatch" class="mb-4">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h6><i class="bi bi-info-circle"></i> Información del Batch</h6>
+                            <div id="infoBatchBasica"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6><i class="bi bi-bar-chart"></i> Estadísticas</h6>
+                            <div id="estadisticasBatch"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Gráfico del batch -->
+                <div class="mb-3">
+                    <h6><i class="bi bi-graph-up"></i> Gráfico del Batch</h6>
+                    <div class="chart-container" style="position: relative; height: 400px;">
+                        <canvas id="batchChart"></canvas>
+                    </div>
+                </div>
+                
+                <!-- Controles del gráfico -->
+                <div class="mb-3">
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="showMassRate" checked>
+                        <label class="form-check-label" for="showMassRate">
+                            Flujo Másico (kg/min)
+                        </label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="showTotalMass" checked>
+                        <label class="form-check-label" for="showTotalMass">
+                            Masa Total (lb)
+                        </label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="showTemperature">
+                        <label class="form-check-label" for="showTemperature">
+                            Temperatura (°C)
+                        </label>
+                    </div>
+                    <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="showDensity">
+                        <label class="form-check-label" for="showDensity">
+                            Densidad (g/cc)
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle"></i> Cerrar
+                </button>
+                <button type="button" class="btn btn-primary" onclick="descargarDatosBatch()">
+                    <i class="bi bi-download"></i> Descargar Datos
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let batchChart = null;
+let datosActualesBatch = null;
+
+// Función para mostrar el detalle del batch
+function mostrarDetalleBatch(data) {
+    // Guardar datos para uso posterior
+    datosActualesBatch = data;
+    
+    // Mostrar información básica
+    document.getElementById('infoBatchBasica').innerHTML = `
+        <p><strong>Sistema:</strong> ${data.batch_info.sistema_tag}</p>
+        <p><strong>Inicio:</strong> ${data.batch_info.fecha_inicio}</p>
+        <p><strong>Fin:</strong> ${data.batch_info.fecha_fin}</p>
+        <p><strong>Duración:</strong> ${data.batch_info.duracion_minutos} minutos</p>
+    `;
+    
+    // Mostrar estadísticas
+    document.getElementById('estadisticasBatch').innerHTML = `
+        <p><strong>Volumen Total:</strong> ${data.batch_info.vol_total} kg</p>
+        <p><strong>Temp. Promedio:</strong> ${data.batch_info.temperatura_coriolis_prom}°C</p>
+        <p><strong>Densidad Promedio:</strong> ${data.batch_info.densidad_prom} g/cc</p>
+        <p><strong>Total Registros:</strong> ${data.batch_info.total_registros}</p>
+    `;
+    
+    // Crear el gráfico
+    crearGraficoBatch(data.datos_grafico);
+    
+    // Configurar eventos de los checkboxes
+    configurarEventosGraficoBatch();
+    
+    // Mostrar el modal
+    const modal = new bootstrap.Modal(document.getElementById('modalDetalleBatch'));
+    modal.show();
+}
+
+// Función para crear el gráfico del batch
+function crearGraficoBatch(datos) {
+    const ctx = document.getElementById('batchChart').getContext('2d');
+    
+    // Destruir gráfico anterior si existe
+    if (batchChart) {
+        batchChart.destroy();
+    }
+    
+    // Preparar datos para Chart.js
+    const labels = datos.map(d => d.fecha_hora);
+    
+    const datasets = [
+        {
+            label: 'Flujo Másico (kg/min)',
+            data: datos.map(d => d.mass_rate_kg_min),
+            borderColor: '#007bff',
+            backgroundColor: '#007bff20',
+            yAxisID: 'y1',
+            tension: 0.4,
+            pointRadius: 2,
+            hidden: false
+        },
+        {
+            label: 'Masa Total (lb)',
+            data: datos.map(d => d.total_mass),
+            borderColor: '#28a745',
+            backgroundColor: '#28a74520',
+            yAxisID: 'y2',
+            tension: 0.4,
+            pointRadius: 2,
+            hidden: false
+        },
+        {
+            label: 'Temperatura (°C)',
+            data: datos.map(d => d.coriolis_temperature),
+            borderColor: '#ffc107',
+            backgroundColor: '#ffc10720',
+            yAxisID: 'y3',
+            tension: 0.4,
+            pointRadius: 2,
+            hidden: true
+        },
+        {
+            label: 'Densidad (g/cc)',
+            data: datos.map(d => d.density),
+            borderColor: '#6f42c1',
+            backgroundColor: '#6f42c120',
+            yAxisID: 'y4',
+            tension: 0.4,
+            pointRadius: 2,
+            hidden: true
+        }
+    ];
+    
+    batchChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: datasets
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Tiempo'
+                    }
+                },
+                y1: {
+                    type: 'linear',
+                    position: 'left',
+                    title: {
+                        display: true,
+                        text: 'Flujo Másico (kg/min)'
+                    },
+                    grid: {
+                        color: '#007bff40'
+                    }
+                },
+                y2: {
+                    type: 'linear',
+                    position: 'right',
+                    title: {
+                        display: true,
+                        text: 'Masa Total (lb)'
+                    },
+                    grid: {
+                        drawOnChartArea: false,
+                        color: '#28a74540'
+                    }
+                },
+                y3: {
+                    type: 'linear',
+                    position: 'right',
+                    title: {
+                        display: true,
+                        text: 'Temperatura (°C)'
+                    },
+                    grid: {
+                        drawOnChartArea: false,
+                        color: '#ffc10740'
+                    },
+                    display: false
+                },
+                y4: {
+                    type: 'linear',
+                    position: 'right',
+                    title: {
+                        display: true,
+                        text: 'Densidad (g/cc)'
+                    },
+                    grid: {
+                        drawOnChartArea: false,
+                        color: '#6f42c140'
+                    },
+                    display: false
+                }
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top'
+                },
+                tooltip: {
+                    callbacks: {
+                        label: function(context) {
+                            return `${context.dataset.label}: ${context.parsed.y?.toFixed(2)}`;
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Función para configurar eventos de los checkboxes
+function configurarEventosGraficoBatch() {
+    const checkboxes = ['showMassRate', 'showTotalMass', 'showTemperature', 'showDensity'];
+    const datasets = [0, 1, 2, 3]; // Índices de los datasets
+    const scales = ['y1', 'y2', 'y3', 'y4']; // Escalas correspondientes
+    
+    checkboxes.forEach((checkboxId, index) => {
+        const checkbox = document.getElementById(checkboxId);
+        checkbox.addEventListener('change', function() {
+            if (batchChart) {
+                const dataset = batchChart.data.datasets[datasets[index]];
+                const scale = scales[index];
+                
+                dataset.hidden = !this.checked;
+                batchChart.options.scales[scale].display = this.checked;
+                batchChart.update();
+            }
+        });
+    });
+}
+
+// Función para descargar datos del batch (placeholder)
+function descargarDatosBatch() {
+    if (datosActualesBatch) {
+        const csvContent = "data:text/csv;charset=utf-8," 
+            + "Fecha/Hora,Flujo Másico (kg/min),Masa Total (lb),Temperatura (°C),Densidad (g/cc)\n"
+            + datosActualesBatch.datos_grafico.map(d => 
+                `${d.fecha_hora},${d.mass_rate_kg_min},${d.total_mass},${d.coriolis_temperature},${d.density}`
+            ).join("\n");
+        
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        link.setAttribute("download", `batch_${datosActualesBatch.batch_info.id}_datos.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+}
+</script>

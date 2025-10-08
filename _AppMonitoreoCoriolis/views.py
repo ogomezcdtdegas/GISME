@@ -16,6 +16,7 @@ from _AppComplementos.models import Sistema, ConfiguracionCoeficientes
 from UTIL_LIB.conversiones import (
     celsius_a_fahrenheit, 
     lb_s_a_kg_min, 
+    lb_a_kg,  # Nueva para convertir masa total
     cm3_s_a_m3_min,  # Mantenida aunque no se use
     cm3_s_a_gal_min,  # Nueva para flujo volumétrico
     cm3_a_m3,  # Mantenida aunque no se use
@@ -1003,30 +1004,32 @@ class DetectarBatchesView(APIView):
                 if not en_batch:
                     # Iniciar nuevo batch
                     inicio_batch = dato.created_at
-                    masa_inicial_batch = total_mass
+                    masa_inicial_batch = total_mass  # En lb (se convertirá en los cálculos)
                     datos_batch = []
                     en_batch = True
-                    logger.debug(f"Iniciando batch en {inicio_batch}, masa inicial: {masa_inicial_batch}")
+                    logger.debug(f"Iniciando batch en {inicio_batch}, masa inicial: {masa_inicial_batch} lb")
                 
                 datos_batch.append(dato)
                 
-                # Calcular masa acumulada desde el inicio del batch
-                masa_acumulada = total_mass - masa_inicial_batch if masa_inicial_batch is not None else 0
+                # Calcular masa acumulada desde el inicio del batch (convertir de lb a kg)
+                masa_acumulada_lb = total_mass - masa_inicial_batch if masa_inicial_batch is not None else 0
+                masa_acumulada_kg = lb_a_kg(masa_acumulada_lb)
                 
-                # Si la masa acumulada supera el volumen mínimo, es un batch válido
-                if masa_acumulada >= vol_minimo:
-                    logger.debug(f"Batch válido detectado: masa acumulada {masa_acumulada} >= {vol_minimo}")
+                # Si la masa acumulada supera el volumen mínimo (ambos en kg), es un batch válido
+                if masa_acumulada_kg >= vol_minimo:
+                    logger.debug(f"Batch válido detectado: masa acumulada {masa_acumulada_kg:.2f} kg >= {vol_minimo} kg")
                     continue
                     
             else:
                 # El mass_rate está fuera de los límites
                 if en_batch and datos_batch:
                     # Finalizar batch si tenemos datos suficientes
-                    masa_final = datos_batch[-1].total_mass
-                    masa_acumulada = masa_final - masa_inicial_batch if masa_inicial_batch is not None else 0
+                    masa_final = datos_batch[-1].total_mass  # En lb
+                    masa_acumulada_lb = masa_final - masa_inicial_batch if masa_inicial_batch is not None else 0
+                    masa_acumulada_kg = lb_a_kg(masa_acumulada_lb)  # Convertir a kg
                     
-                    # Solo guardar si supera el volumen mínimo
-                    if masa_acumulada >= vol_minimo:
+                    # Solo guardar si supera el volumen mínimo (ambos en kg)
+                    if masa_acumulada_kg >= vol_minimo:
                         # Calcular estadísticas del batch
                         temperaturas = [d.coriolis_temperature for d in datos_batch if d.coriolis_temperature is not None]
                         densidades = [d.density for d in datos_batch if d.density is not None]
@@ -1041,7 +1044,7 @@ class DetectarBatchesView(APIView):
                             batch_info = {
                                 'fecha_inicio': inicio_batch,
                                 'fecha_fin': fin_batch,
-                                'vol_total': masa_acumulada,
+                                'vol_total': masa_acumulada_kg,  # En kg
                                 'temperatura_coriolis_prom': temp_promedio,
                                 'densidad_prom': densidad_promedio,
                                 'duracion_minutos': duracion,
@@ -1049,7 +1052,7 @@ class DetectarBatchesView(APIView):
                             }
                             
                             batches.append(batch_info)
-                            logger.info(f"Batch guardado: {inicio_batch} a {fin_batch}, vol: {masa_acumulada:.2f} kg")
+                            logger.info(f"Batch guardado: {inicio_batch} a {fin_batch}, vol: {masa_acumulada_kg:.2f} kg")
                 
                 # Resetear estado
                 en_batch = False
@@ -1060,9 +1063,10 @@ class DetectarBatchesView(APIView):
         # Verificar si hay un batch en curso al final de los datos
         if en_batch and datos_batch and masa_inicial_batch is not None:
             masa_final = datos_batch[-1].total_mass
-            masa_acumulada = masa_final - masa_inicial_batch
+            masa_acumulada_lb = masa_final - masa_inicial_batch
+            masa_acumulada_kg = lb_a_kg(masa_acumulada_lb)  # Convertir a kg
             
-            if masa_acumulada >= vol_minimo:
+            if masa_acumulada_kg >= vol_minimo:  # Comparar en kg
                 temperaturas = [d.coriolis_temperature for d in datos_batch if d.coriolis_temperature is not None]
                 densidades = [d.density for d in datos_batch if d.density is not None]
                 
@@ -1076,7 +1080,7 @@ class DetectarBatchesView(APIView):
                     batch_info = {
                         'fecha_inicio': inicio_batch,
                         'fecha_fin': fin_batch,
-                        'vol_total': masa_acumulada,
+                        'vol_total': masa_acumulada_kg,  # En kg
                         'temperatura_coriolis_prom': temp_promedio,
                         'densidad_prom': densidad_promedio,
                         'duracion_minutos': duracion,
@@ -1084,7 +1088,75 @@ class DetectarBatchesView(APIView):
                     }
                     
                     batches.append(batch_info)
-                    logger.info(f"Batch final guardado: {inicio_batch} a {fin_batch}, vol: {masa_acumulada:.2f} kg")
+                    logger.info(f"Batch final guardado: {inicio_batch} a {fin_batch}, vol: {masa_acumulada_kg:.2f} kg")
         
         logger.info(f"Detección completada. Total de batches detectados: {len(batches)}")
         return batches
+
+
+class DetalleBatchView(APIView):
+    """
+    CBV para obtener el detalle de un batch específico con datos para graficar
+    """
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request, batch_id):
+        try:
+            # Obtener el batch
+            batch = get_object_or_404(BatchDetectado, id=batch_id)
+            
+            # Obtener todos los datos del intervalo del batch
+            datos = NodeRedData.objects.filter(
+                systemId=batch.systemId,
+                created_at__gte=batch.fecha_inicio,
+                created_at__lte=batch.fecha_fin
+            ).order_by('created_at')
+            
+            if not datos.exists():
+                return Response({
+                    'success': False,
+                    'error': 'No se encontraron datos para este batch'
+                }, status=404)
+            
+            # Preparar datos para el gráfico
+            datos_grafico = []
+            for dato in datos:
+                # Convertir UTC a hora de Colombia
+                fecha_colombia = dato.created_at.astimezone(COLOMBIA_TZ)
+                
+                # Convertir mass_rate de lb/sec a kg/min para consistencia
+                mass_rate_kg_min = lb_s_a_kg_min(dato.mass_rate) if dato.mass_rate is not None else None
+                
+                datos_grafico.append({
+                    'timestamp': int(fecha_colombia.timestamp() * 1000),  # Para Chart.js
+                    'fecha_hora': fecha_colombia.strftime('%d/%m %H:%M:%S'),
+                    'mass_rate_lb_s': dato.mass_rate,  # Original en lb/s
+                    'mass_rate_kg_min': mass_rate_kg_min,  # Convertido a kg/min
+                    'total_mass': dato.total_mass,
+                    'coriolis_temperature': dato.coriolis_temperature,
+                    'density': dato.density
+                })
+            
+            return Response({
+                'success': True,
+                'batch_info': {
+                    'id': batch.id,
+                    'sistema_tag': batch.systemId.tag,
+                    'fecha_inicio': batch.fecha_inicio.astimezone(COLOMBIA_TZ).strftime('%d/%m/%Y %H:%M:%S'),
+                    'fecha_fin': batch.fecha_fin.astimezone(COLOMBIA_TZ).strftime('%d/%m/%Y %H:%M:%S'),
+                    'vol_total': batch.vol_total,
+                    'temperatura_coriolis_prom': batch.temperatura_coriolis_prom,
+                    'densidad_prom': batch.densidad_prom,
+                    'duracion_minutos': batch.duracion_minutos,
+                    'total_registros': batch.total_registros
+                },
+                'datos_grafico': datos_grafico,
+                'total_datos': len(datos_grafico)
+            })
+            
+        except Exception as e:
+            logger.error(f"Error en DetalleBatchView: {str(e)}", exc_info=True)
+            return Response({
+                'success': False,
+                'error': f'Error al obtener detalle del batch: {str(e)}'
+            }, status=500)
