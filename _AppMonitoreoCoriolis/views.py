@@ -1105,6 +1105,15 @@ class DetalleBatchView(APIView):
             # Obtener el batch
             batch = get_object_or_404(BatchDetectado, id=batch_id)
             
+            # Obtener configuración para los límites del flujo másico
+            try:
+                config = ConfiguracionCoeficientes.objects.get(systemId=batch.systemId)
+                lim_inf = config.lim_inf_caudal_masico or 0  # En kg/min
+                lim_sup = config.lim_sup_caudal_masico or 9999  # En kg/min
+            except ConfiguracionCoeficientes.DoesNotExist:
+                lim_inf = 0
+                lim_sup = 9999
+            
             # Extender el rango de datos 3 minutos antes y después para mejor contexto visual
             from datetime import timedelta
             inicio_extendido = batch.fecha_inicio - timedelta(minutes=3)
@@ -1163,7 +1172,10 @@ class DetalleBatchView(APIView):
                     'timestamp_fin': int(batch.fecha_fin.astimezone(COLOMBIA_TZ).timestamp() * 1000)
                 },
                 'datos_grafico': datos_grafico,
-                'total_datos': len(datos_grafico)
+                'total_datos': len(datos_grafico),
+                # Límites para las líneas horizontales en el gráfico
+                'lim_inf_caudal_masico': lim_inf,
+                'lim_sup_caudal_masico': lim_sup
             })
             
         except Exception as e:

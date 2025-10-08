@@ -26,6 +26,23 @@
                 <!-- Gráfico del batch -->
                 <div class="mb-3">
                     <h6><i class="bi bi-graph-up"></i> Gráfico del Batch</h6>
+                    
+                    <!-- Información sobre la visualización -->
+                    <div class="alert alert-info" role="alert">
+                        <div class="row">
+                            <div class="col-md-8">
+                                <strong><i class="bi bi-info-circle"></i> Contexto extendido:</strong> La gráfica muestra 3 minutos antes y después del batch para mejor análisis.
+                                <br>
+                                🔹 <strong>Línea azul clara:</strong> Datos del batch detectado (línea gruesa, puntos grandes)
+                                <br>
+                                ⚫ <strong>Línea azul oscura:</strong> Datos de contexto - antes/después (línea más fina, puntos pequeños)
+                            </div>
+                            <div class="col-md-4">
+                                🔴 <strong>Líneas rojas punteadas:</strong> Límites inferior y superior de flujo másico configurados para la detección de batches
+                            </div>
+                        </div>
+                    </div>
+                    
                     <div class="chart-container" style="position: relative; height: 400px;">
                         <canvas id="batchChart"></canvas>
                     </div>
@@ -72,6 +89,15 @@
 </div>
 
 <script>
+// Registrar el plugin de anotaciones
+if (typeof window.chartjs_plugin_annotation !== 'undefined') {
+    Chart.register(window.chartjs_plugin_annotation.default || window.chartjs_plugin_annotation);
+} else if (typeof ChartAnnotation !== 'undefined') {
+    Chart.register(ChartAnnotation);
+} else {
+    console.warn('Plugin de anotaciones de Chart.js no está disponible');
+}
+
 let batchChart = null;
 let datosActualesBatch = null;
 
@@ -103,7 +129,11 @@ function mostrarDetalleBatch(data) {
     `;
     
     // Crear el gráfico
-    crearGraficoBatch(data.datos_grafico);
+    const limites = {
+        lim_inf: data.lim_inf_caudal_masico,
+        lim_sup: data.lim_sup_caudal_masico
+    };
+    crearGraficoBatch(data.datos_grafico, limites);
     
     // Configurar eventos de los checkboxes
     configurarEventosGraficoBatch();
@@ -114,7 +144,7 @@ function mostrarDetalleBatch(data) {
 }
 
 // Función para crear el gráfico del batch
-function crearGraficoBatch(datos) {
+function crearGraficoBatch(datos, limites) {
     const ctx = document.getElementById('batchChart').getContext('2d');
     
     // Destruir gráfico anterior si existe
@@ -205,6 +235,41 @@ function crearGraficoBatch(datos) {
             hidden: true
         }
     ];
+    
+    // Agregar líneas horizontales para los límites usando datasets
+    if (limites && limites.lim_inf !== undefined) {
+        datasets.push({
+            label: `Límite Inferior (${limites.lim_inf} kg/min)`,
+            data: datos.map(() => limites.lim_inf),
+            borderColor: 'red',
+            backgroundColor: 'transparent',
+            borderDash: [5, 5],
+            borderWidth: 2,
+            yAxisID: 'y1',
+            pointRadius: 0,
+            pointHoverRadius: 0,
+            tension: 0,
+            hidden: false,
+            type: 'line'
+        });
+    }
+    
+    if (limites && limites.lim_sup !== undefined) {
+        datasets.push({
+            label: `Límite Superior (${limites.lim_sup} kg/min)`,
+            data: datos.map(() => limites.lim_sup),
+            borderColor: 'red',
+            backgroundColor: 'transparent',
+            borderDash: [5, 5],
+            borderWidth: 2,
+            yAxisID: 'y1',
+            pointRadius: 0,
+            pointHoverRadius: 0,
+            tension: 0,
+            hidden: false,
+            type: 'line'
+        });
+    }
     
     // Encontrar índices de inicio y fin del batch para las líneas verticales
     const indiceInicio = datos.findIndex(d => d.dentro_batch);
