@@ -1144,13 +1144,21 @@ class DetalleBatchView(APIView):
                 # Convertir mass_rate de lb/sec a kg/min para consistencia
                 mass_rate_kg_min = lb_s_a_kg_min(dato.mass_rate) if dato.mass_rate is not None else None
                 
+                # Convertir total_mass de lb a kg
+                total_mass_kg = lb_a_kg(dato.total_mass) if dato.total_mass is not None else None
+                
+                # Convertir temperatura de °C a °F
+                temperatura_f = celsius_a_fahrenheit(dato.coriolis_temperature) if dato.coriolis_temperature is not None else None
+                
                 datos_grafico.append({
                     'timestamp': int(fecha_colombia.timestamp() * 1000),  # Para Chart.js
                     'fecha_hora': fecha_colombia.strftime('%d/%m %H:%M:%S'),
                     'mass_rate_lb_s': dato.mass_rate,  # Original en lb/s
                     'mass_rate_kg_min': mass_rate_kg_min,  # Convertido a kg/min
-                    'total_mass': dato.total_mass,
-                    'coriolis_temperature': dato.coriolis_temperature,
+                    'total_mass_lb': dato.total_mass,  # Original en lb
+                    'total_mass_kg': total_mass_kg,  # Convertido a kg
+                    'coriolis_temperature_c': dato.coriolis_temperature,  # Original en °C
+                    'coriolis_temperature_f': temperatura_f,  # Convertido a °F
                     'density': dato.density,
                     'dentro_batch': dentro_batch  # Indica si está dentro del batch real
                 })
@@ -1163,7 +1171,8 @@ class DetalleBatchView(APIView):
                     'fecha_inicio': batch.fecha_inicio.astimezone(COLOMBIA_TZ).strftime('%d/%m/%Y %H:%M:%S'),
                     'fecha_fin': batch.fecha_fin.astimezone(COLOMBIA_TZ).strftime('%d/%m/%Y %H:%M:%S'),
                     'vol_total': batch.vol_total,
-                    'temperatura_coriolis_prom': batch.temperatura_coriolis_prom,
+                    'temperatura_coriolis_prom_c': batch.temperatura_coriolis_prom,  # Original en °C
+                    'temperatura_coriolis_prom_f': celsius_a_fahrenheit(batch.temperatura_coriolis_prom) if batch.temperatura_coriolis_prom is not None else None,  # Convertido a °F
                     'densidad_prom': batch.densidad_prom,
                     'duracion_minutos': batch.duracion_minutos,
                     'total_registros': batch.total_registros,

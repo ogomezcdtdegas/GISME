@@ -59,13 +59,13 @@
                     <div class="form-check form-check-inline">
                         <input class="form-check-input" type="checkbox" id="showTotalMass" checked>
                         <label class="form-check-label" for="showTotalMass">
-                            Masa Total (lb)
+                            Masa Total (kg)
                         </label>
                     </div>
                     <div class="form-check form-check-inline">
                         <input class="form-check-input" type="checkbox" id="showTemperature">
                         <label class="form-check-label" for="showTemperature">
-                            Temperatura (°C)
+                            Temperatura (°F)
                         </label>
                     </div>
                     <div class="form-check form-check-inline">
@@ -123,7 +123,7 @@ function mostrarDetalleBatch(data) {
     // Mostrar estadísticas
     document.getElementById('estadisticasBatch').innerHTML = `
         <p><strong>Volumen Total:</strong> ${data.batch_info.vol_total} kg</p>
-        <p><strong>Temp. Promedio:</strong> ${data.batch_info.temperatura_coriolis_prom}°C</p>
+        <p><strong>Temp. Promedio:</strong> ${data.batch_info.temperatura_coriolis_prom_f ? data.batch_info.temperatura_coriolis_prom_f.toFixed(2) : 'N/A'}°F</p>
         <p><strong>Densidad Promedio:</strong> ${data.batch_info.densidad_prom} g/cc</p>
         <p><strong>Total Registros:</strong> ${data.batch_info.total_registros}</p>
     `;
@@ -190,8 +190,8 @@ function crearGraficoBatch(datos, limites) {
         },
         // Masa total completa (contexto + batch) como una sola curva continua
         {
-            label: 'Masa Total - Batch (lb)',
-            data: datos.map(d => d.total_mass),
+            label: 'Masa Total - Batch (kg)',
+            data: datos.map(d => d.total_mass_kg),
             borderColor: datos.map(d => d.dentro_batch ? '#28a745' : '#155724'), // Verde normal para batch, verde oscuro para contexto
             backgroundColor: '#28a74520',
             yAxisID: 'y2',
@@ -215,8 +215,8 @@ function crearGraficoBatch(datos, limites) {
             hidden: false
         },
         {
-            label: 'Temperatura (°C)',
-            data: datos.map(d => d.coriolis_temperature),
+            label: 'Temperatura (°F)',
+            data: datos.map(d => d.coriolis_temperature_f),
             borderColor: '#ffc107',
             backgroundColor: '#ffc10720',
             yAxisID: 'y3',
@@ -333,7 +333,7 @@ function crearGraficoBatch(datos, limites) {
                     position: 'right',
                     title: {
                         display: true,
-                        text: 'Masa Total (lb)'
+                        text: 'Masa Total (kg)'
                     },
                     grid: {
                         drawOnChartArea: false,
@@ -345,7 +345,7 @@ function crearGraficoBatch(datos, limites) {
                     position: 'right',
                     title: {
                         display: true,
-                        text: 'Temperatura (°C)'
+                        text: 'Temperatura (°F)'
                     },
                     grid: {
                         drawOnChartArea: false,
