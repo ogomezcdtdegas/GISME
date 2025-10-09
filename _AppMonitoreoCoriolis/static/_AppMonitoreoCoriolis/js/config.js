@@ -8,13 +8,14 @@
 const CONFIG = {
     // Configuración de intervalos de actualización (en milisegundos)
     INTERVALOS: {
-        ACTUALIZACION_DISPLAYS: 10000,      // 10 segundos para actualizar displays de sensores
-        ACTUALIZACION_GRAFICOS: 10000,      // 10 segundos para actualizar gráficos en modo tiempo real
+        ACTUALIZACION_DISPLAYS: 1000,      // 2 segundos para actualizar displays de sensores
+        ACTUALIZACION_GRAFICOS: 1000,     // 10 segundos para actualizar gráficos en modo tiempo real
+        ACTUALIZACION_TENDENCIAS: 1000,    // 2 segundos para actualizar gráfico de tendencias específicamente
     },
     
     // Configuración de períodos por defecto
     PERIODOS: {
-        DIAS_POR_DEFECTO: 1,                // Días hacia atrás para mostrar por defecto (últimos 3 días)
+        DIAS_POR_DEFECTO: 0.2,                // Días hacia atrás para mostrar por defecto (últimos 3 días)
     },
     
     // Configuración de gráficos
