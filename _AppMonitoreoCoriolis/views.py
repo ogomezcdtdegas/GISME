@@ -907,8 +907,8 @@ class DetectarBatchesView(APIView):
                     'error': 'No se encontraron datos en el rango de fechas especificado'
                 }, status=404)
             
-            # Ejecutar algoritmo de detección de batches
-            batches_detectados = self._detectar_batches(datos, lim_inf, lim_sup, vol_minimo, sistema)
+            # Ejecutar algoritmo de detección de batches con nueva lógica
+            batches_detectados = self._detectar_batches_nueva_logica(datos, lim_inf, lim_sup, vol_minimo, sistema)
             
             # Guardar batches en la base de datos
             batches_guardados = []
@@ -1091,6 +1091,161 @@ class DetectarBatchesView(APIView):
                     logger.info(f"Batch final guardado: {inicio_batch} a {fin_batch}, vol: {masa_acumulada_kg:.2f} kg")
         
         logger.info(f"Detección completada. Total de batches detectados: {len(batches)}")
+        return batches
+
+    def _detectar_batches_nueva_logica(self, datos, lim_inf, lim_sup, vol_minimo, sistema):
+        """
+        Algoritmo para detectar batches basado en la nueva lógica de estados
+        
+        Args:
+            datos: QuerySet de NodeRedData ordenado por created_at
+            lim_inf: Límite inferior de caudal másico (kg/min)
+            lim_sup: Límite superior de caudal másico (kg/min)
+            vol_minimo: Volumen mínimo para considerar un batch válido (kg)
+            
+        Lógica de detección por estados:
+        1. Cuando flujo > LimInf: Inicia totalización (fase fantasma)
+        2. Si masa acumulada >= vol_minimo Y flujo > LimSup: Confirma batch estable
+        3. Cuando flujo < LimInf: Finaliza batch (si estaba confirmado) o descarta (si era fantasma)
+        
+        Nota: Los datos de mass_rate en la DB están en lb/sec y se convierten 
+              automáticamente a kg/min para comparar con los límites.
+        """
+        batches = []
+        
+        # Estados del algoritmo
+        estado = "sin_batch"  # Posibles estados: "sin_batch", "totalizando_fantasma", "batch_confirmado"
+        inicio_totalizacion = None
+        masa_inicial_totalizacion = None
+        datos_totalizacion = []
+        batch_confirmado_en = None
+        
+        logger.info(f"Iniciando detección de batches con nueva lógica. Límites: inf={lim_inf}, sup={lim_sup}, vol_min={vol_minimo}")
+        
+        for i, dato in enumerate(datos):
+            mass_rate_raw = dato.mass_rate  # En lb/sec
+            total_mass = dato.total_mass
+            
+            # Verificar que tenemos los datos necesarios
+            if mass_rate_raw is None or total_mass is None:
+                continue
+            
+            # Convertir mass_rate de lb/sec a kg/min para comparar con los límites
+            mass_rate_kg_min = lb_s_a_kg_min(mass_rate_raw)
+            
+            # Calcular masa acumulada si estamos totalizando (convertir de lb a kg)
+            masa_acumulada_kg = 0
+            if masa_inicial_totalizacion is not None:
+                masa_acumulada_lb = total_mass - masa_inicial_totalizacion
+                masa_acumulada_kg = lb_a_kg(masa_acumulada_lb)
+            
+            # MÁQUINA DE ESTADOS PARA DETECCIÓN DE BATCH
+            
+            if estado == "sin_batch":
+                # 1. INICIO DE TOTALIZACIÓN: Cuando el flujo másico supera el LimInf
+                if mass_rate_kg_min > lim_inf:
+                    estado = "totalizando_fantasma"
+                    inicio_totalizacion = dato.created_at
+                    masa_inicial_totalizacion = total_mass  # En lb
+                    datos_totalizacion = [dato]
+                    logger.debug(f"Iniciando totalización fantasma en {inicio_totalizacion}, flujo: {mass_rate_kg_min:.2f} kg/min")
+                    
+            elif estado == "totalizando_fantasma":
+                if mass_rate_kg_min > lim_inf:
+                    # Seguimos totalizando
+                    datos_totalizacion.append(dato)
+                    
+                    # 2. VALIDACIÓN DEL BATCH: Verificar si alcanzamos el volumen mínimo
+                    if masa_acumulada_kg >= vol_minimo:
+                        # Verificar si ya superamos LimSup para confirmar batch estable
+                        if mass_rate_kg_min > lim_sup:
+                            # 3. CONFIRMACIÓN DE BATCH ESTABLE
+                            estado = "batch_confirmado"
+                            batch_confirmado_en = dato.created_at
+                            logger.debug(f"Batch confirmado como estable en {batch_confirmado_en}, masa acumulada: {masa_acumulada_kg:.2f} kg")
+                        # Si no supera LimSup, seguimos en fase fantasma pero con volumen suficiente
+                        
+                else:
+                    # 4. REINGRESO O CAÍDA DE FLUJO: El flujo bajó del LimInf antes de confirmar batch
+                    logger.debug(f"Flujo bajo del LimInf antes de confirmar batch. Descartando masa fantasma: {masa_acumulada_kg:.2f} kg")
+                    estado = "sin_batch"
+                    inicio_totalizacion = None
+                    masa_inicial_totalizacion = None
+                    datos_totalizacion = []
+                    batch_confirmado_en = None
+                    
+            elif estado == "batch_confirmado":
+                if mass_rate_kg_min > lim_inf:
+                    # Seguimos totalizando en batch confirmado
+                    datos_totalizacion.append(dato)
+                    
+                    # Verificar si supera LimSup (por si no lo había hecho antes)
+                    if mass_rate_kg_min > lim_sup and batch_confirmado_en is None:
+                        batch_confirmado_en = dato.created_at
+                        
+                else:
+                    # El flujo cayó por debajo de LimInf: FINALIZAR BATCH CONFIRMADO
+                    fin_batch = dato.created_at
+                    masa_final = total_mass
+                    masa_total_batch_lb = masa_final - masa_inicial_totalizacion
+                    masa_total_batch_kg = lb_a_kg(masa_total_batch_lb)
+                    
+                    logger.debug(f"Finalizando batch confirmado. Masa total: {masa_total_batch_kg:.2f} kg")
+                    
+                    # Calcular promedios
+                    if datos_totalizacion:
+                        temperaturas = [d.coriolis_temperature for d in datos_totalizacion if d.coriolis_temperature is not None]
+                        densidades = [d.density for d in datos_totalizacion if d.density is not None]
+                        
+                        if temperaturas and densidades:
+                            temp_prom = sum(temperaturas) / len(temperaturas)
+                            dens_prom = sum(densidades) / len(densidades)
+                            
+                            # Guardar batch detectado
+                            batches.append({
+                                'fecha_inicio': inicio_totalizacion,
+                                'fecha_fin': fin_batch,
+                                'vol_total': masa_total_batch_kg,  # En kg
+                                'temperatura_coriolis_prom': temp_prom,
+                                'densidad_prom': dens_prom,
+                                'duracion_minutos': (fin_batch - inicio_totalizacion).total_seconds() / 60,
+                                'total_registros': len(datos_totalizacion)
+                            })
+                            
+                            logger.info(f"Batch guardado: {inicio_totalizacion} - {fin_batch}, {masa_total_batch_kg:.2f} kg")
+                    
+                    # Resetear estado
+                    estado = "sin_batch"
+                    inicio_totalizacion = None
+                    masa_inicial_totalizacion = None
+                    datos_totalizacion = []
+                    batch_confirmado_en = None
+        
+        # Si terminamos con un batch confirmado en progreso, finalizarlo
+        if estado == "batch_confirmado" and datos_totalizacion and masa_inicial_totalizacion is not None:
+            ultimo_dato = datos_totalizacion[-1]
+            masa_total_batch_lb = ultimo_dato.total_mass - masa_inicial_totalizacion
+            masa_total_batch_kg = lb_a_kg(masa_total_batch_lb)
+            
+            if masa_total_batch_kg >= vol_minimo:
+                temperaturas = [d.coriolis_temperature for d in datos_totalizacion if d.coriolis_temperature is not None]
+                densidades = [d.density for d in datos_totalizacion if d.density is not None]
+                
+                if temperaturas and densidades:
+                    temp_prom = sum(temperaturas) / len(temperaturas)
+                    dens_prom = sum(densidades) / len(densidades)
+                    
+                    batches.append({
+                        'fecha_inicio': inicio_totalizacion,
+                        'fecha_fin': ultimo_dato.created_at,
+                        'vol_total': masa_total_batch_kg,  # En kg
+                        'temperatura_coriolis_prom': temp_prom,
+                        'densidad_prom': dens_prom,
+                        'duracion_minutos': (ultimo_dato.created_at - inicio_totalizacion).total_seconds() / 60,
+                        'total_registros': len(datos_totalizacion)
+                    })
+        
+        logger.info(f"Detección completada con nueva lógica. {len(batches)} batches detectados")
         return batches
 
 
