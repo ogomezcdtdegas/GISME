@@ -7,6 +7,8 @@ class NodeRedData(BaseModel):
 
     mac_gateway = models.CharField(max_length=100, null=True, blank=True)
 
+    created_at_iot = models.DateTimeField(null=True, blank=True, verbose_name="Fecha y Hora del IoT")
+
     total_volume = models.FloatField(null=True, blank=True)
     forward_volume = models.FloatField(null=True, blank=True)
     reverse_volume = models.FloatField(null=True, blank=True)
