@@ -94,6 +94,9 @@ class BatchDetectado(BaseModel):
     temperatura_coriolis_prom = models.FloatField(verbose_name="Temperatura Coriolis Promedio (°C)")
     densidad_prom = models.FloatField(verbose_name="Densidad Promedio (g/cc)")
     
+    # Hash para identificación única basado en fechas, sistema y configuración
+    hash_identificacion = models.CharField(max_length=64, unique=True, default='', verbose_name="Hash de Identificación")
+    
     # Información adicional del batch
     duracion_minutos = models.FloatField(verbose_name="Duración del Batch (minutos)", null=True, blank=True)
     total_registros = models.IntegerField(verbose_name="Total de Registros en el Batch", default=0)

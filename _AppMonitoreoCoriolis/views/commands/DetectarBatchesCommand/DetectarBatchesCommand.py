@@ -1,6 +1,8 @@
 import logging
+import hashlib
 from datetime import datetime
 from django.utils import timezone as django_timezone
+from django.db import IntegrityError
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -69,19 +71,39 @@ class DetectarBatchesCommandView(APIView):
             # Ejecutar algoritmo de detección de batches con nueva lógica
             batches_detectados = self._detectar_batches_nueva_logica(datos, lim_inf, lim_sup, vol_minimo, sistema)
             
-            # Guardar batches en la base de datos
+            # Guardar batches en la base de datos con prevención de duplicados
             batches_guardados = []
+            batches_existentes = 0
+            
             for batch_data in batches_detectados:
-                batch = BatchDetectado.objects.create(
-                    systemId=sistema,
-                    fecha_inicio=batch_data['fecha_inicio'],
-                    fecha_fin=batch_data['fecha_fin'],
-                    vol_total=batch_data['vol_total'],
-                    temperatura_coriolis_prom=batch_data['temperatura_coriolis_prom'],
-                    densidad_prom=batch_data['densidad_prom'],
-                    duracion_minutos=batch_data['duracion_minutos'],
-                    total_registros=batch_data['total_registros']
+                # Generar hash para este batch
+                hash_batch = self._generar_hash_batch(
+                    batch_data['fecha_inicio'],
+                    batch_data['fecha_fin'], 
+                    sistema_id,
+                    lim_inf, 
+                    lim_sup, 
+                    vol_minimo
                 )
+                
+                try:
+                    # Intentar crear el batch con el hash único
+                    batch = BatchDetectado.objects.create(
+                        systemId=sistema,
+                        fecha_inicio=batch_data['fecha_inicio'],
+                        fecha_fin=batch_data['fecha_fin'],
+                        vol_total=batch_data['vol_total'],
+                        temperatura_coriolis_prom=batch_data['temperatura_coriolis_prom'],
+                        densidad_prom=batch_data['densidad_prom'],
+                        hash_identificacion=hash_batch,
+                        duracion_minutos=batch_data['duracion_minutos'],
+                        total_registros=batch_data['total_registros']
+                    )
+                except IntegrityError:
+                    # El batch ya existe (por el hash único), buscar el existente
+                    logger.info(f"Batch ya existe con hash {hash_batch[:16]}...")
+                    batch = BatchDetectado.objects.get(hash_identificacion=hash_batch)
+                    batches_existentes += 1
                 batches_guardados.append({
                     'id': batch.id,
                     'fecha_inicio': batch.fecha_inicio.astimezone(COLOMBIA_TZ).strftime('%d/%m/%Y %H:%M:%S'),
@@ -96,6 +118,8 @@ class DetectarBatchesCommandView(APIView):
             return Response({
                 'success': True,
                 'batches_detectados': len(batches_guardados),
+                'batches_nuevos': len(batches_guardados) - batches_existentes,
+                'batches_existentes': batches_existentes,
                 'batches': batches_guardados,
                 'configuracion_usada': {
                     'lim_inf_caudal_masico': lim_inf,
@@ -280,3 +304,18 @@ class DetectarBatchesCommandView(APIView):
         
         logger.info(f"Detección completada con nueva lógica. {len(batches)} batches detectados")
         return batches
+    
+    def _generar_hash_batch(self, fecha_inicio, fecha_fin, sistema_id, lim_inf, lim_sup, vol_minimo):
+        """
+        Genera un hash único basado en las fechas, sistema ID y configuración.
+        Esto previene duplicados cuando se ejecuta la detección múltiples veces.
+        """
+        # Crear string único con parámetros del batch
+        fecha_inicio_str = fecha_inicio.strftime('%Y-%m-%d %H:%M:%S')
+        fecha_fin_str = fecha_fin.strftime('%Y-%m-%d %H:%M:%S')
+        
+        datos_hash = f"{sistema_id}_{fecha_inicio_str}_{fecha_fin_str}_{lim_inf}_{lim_sup}_{vol_minimo}"
+        
+        # Generar hash SHA-256
+        hash_obj = hashlib.sha256(datos_hash.encode('utf-8'))
+        return hash_obj.hexdigest()

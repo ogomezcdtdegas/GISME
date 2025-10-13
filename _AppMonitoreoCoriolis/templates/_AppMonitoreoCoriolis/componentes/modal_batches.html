@@ -1,6 +1,6 @@
 <!-- Modal para Búsqueda de Batches -->
 <div class="modal fade" id="modalBuscarBatches" tabindex="-1" aria-labelledby="modalBuscarBatchesLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
+    <div class="modal-dialog modal-xl">
         <div class="modal-content">
             <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title" id="modalBuscarBatchesLabel">
@@ -8,55 +8,67 @@
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
-                <form id="formBuscarBatches">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <label for="fechaInicioBatch" class="form-label">Fecha de Inicio</label>
-                            <input type="date" class="form-control" id="fechaInicioBatch" name="fecha_inicio" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="fechaFinBatch" class="form-label">Fecha de Fin</label>
-                            <input type="date" class="form-control" id="fechaFinBatch" name="fecha_fin" required>
-                        </div>
-                    </div>
-                    
-                    <div class="row mt-3">
-                        <div class="col-12">
-                            <div class="alert alert-info">
-                                <i class="bi bi-info-circle"></i>
-                                <strong>Información:</strong> El sistema buscará automáticamente los batches basándose en:
-                                <ul class="mb-0 mt-2">
-                                    <li>Caudal másico dentro de los límites configurados</li>
-                                    <li>Volumen mínimo acumulado según configuración</li>
-                                    <li>Inicio y fin basado en los límites de caudal</li>
-                                </ul>
+            
+            <!-- Sección fija superior: Formulario y Configuración -->
+            <div class="modal-body" style="padding-bottom: 0;">
+                <!-- Formulario de búsqueda -->
+                <div class="bg-light p-3 rounded mb-3" style="border: 1px solid #dee2e6;">
+                    <form id="formBuscarBatches">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <label for="fechaInicioBatch" class="form-label">Fecha de Inicio</label>
+                                <input type="date" class="form-control" id="fechaInicioBatch" name="fecha_inicio" required>
+                            </div>
+                            <div class="col-md-4">
+                                <label for="fechaFinBatch" class="form-label">Fecha de Fin</label>
+                                <input type="date" class="form-control" id="fechaFinBatch" name="fecha_fin" required>
+                            </div>
+                            <div class="col-md-4 d-flex align-items-end">
+                                <button type="button" id="btnBuscarBatches" class="btn btn-primary w-100">
+                                    <i class="bi bi-search"></i> Buscar Batches
+                                </button>
                             </div>
                         </div>
-                    </div>
-                </form>
+                    </form>
+                </div>
                 
-                <!-- Área de resultados -->
-                <div id="resultadosBatches" style="display: none;">
-                    <hr>
-                    <h6><i class="bi bi-list-check"></i> Batches Detectados</h6>
-                    <div id="listaBatches"></div>
+                <!-- Configuración utilizada - Siempre visible -->
+                <div id="configuracionUtilizada" class="bg-info bg-opacity-10 p-3 rounded mb-3" style="border: 1px solid #b6d7ff; display: none;">
+                    <h6 class="mb-2"><i class="bi bi-gear"></i> Configuración utilizada:</h6>
+                    <div class="row">
+                        <div class="col-md-4">
+                            <small><strong>Límite inferior caudal:</strong> <span id="limInfCaudal">-</span> kg/h</small>
+                        </div>
+                        <div class="col-md-4">
+                            <small><strong>Límite superior caudal:</strong> <span id="limSupCaudal">-</span> kg/h</small>
+                        </div>
+                        <div class="col-md-4">
+                            <small><strong>Volumen mínimo batch:</strong> <span id="volMinBatch">-</span> kg</small>
+                        </div>
+                    </div>
                 </div>
                 
                 <!-- Spinner de carga -->
-                <div id="spinnerBatches" style="display: none;" class="text-center mt-3">
+                <div id="spinnerBatches" style="display: none;" class="text-center py-3">
                     <div class="spinner-border text-primary" role="status">
                         <span class="visually-hidden">Buscando batches...</span>
                     </div>
-                    <p class="mt-2">Analizando datos y detectando batches...</p>
+                    <p class="mt-2 mb-0">Analizando datos y detectando batches...</p>
                 </div>
             </div>
+            
+            <!-- Área de resultados con scroll -->
+            <div class="modal-body" style="padding-top: 0; max-height: 400px; overflow-y: auto;">
+                <div id="resultadosBatches" style="display: none;">
+                    <hr class="mt-0">
+                    <h6><i class="bi bi-list-check"></i> Batches Detectados</h6>
+                    <div id="listaBatches"></div>
+                </div>
+            </div>
+            
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                     <i class="bi bi-x-circle"></i> Cerrar
-                </button>
-                <button type="button" id="btnBuscarBatches" class="btn btn-primary">
-                    <i class="bi bi-search"></i> Buscar Batches
                 </button>
             </div>
         </div>
@@ -135,6 +147,9 @@ document.addEventListener('DOMContentLoaded', function() {
     });
     
     function mostrarResultadosBatches(data) {
+        // Mostrar configuración en la sección fija superior
+        mostrarConfiguracion(data.configuracion_usada);
+        
         resultadosBatches.style.display = 'block';
         
         if (data.batches_detectados === 0) {
@@ -197,18 +212,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     </tbody>
                 </table>
             </div>
-            
-            <div class="mt-3">
-                <h6>Configuración utilizada:</h6>
-                <ul class="list-unstyled">
-                    <li><strong>Límite inferior caudal:</strong> ${data.configuracion_usada.lim_inf_caudal_masico} kg/h</li>
-                    <li><strong>Límite superior caudal:</strong> ${data.configuracion_usada.lim_sup_caudal_masico} kg/h</li>
-                    <li><strong>Volumen mínimo batch:</strong> ${data.configuracion_usada.vol_minimo_batch} kg</li>
-                </ul>
-            </div>
         `;
         
         listaBatches.innerHTML = html;
+    }
+    
+    function mostrarConfiguracion(config) {
+        document.getElementById('limInfCaudal').textContent = config.lim_inf_caudal_masico;
+        document.getElementById('limSupCaudal').textContent = config.lim_sup_caudal_masico;
+        document.getElementById('volMinBatch').textContent = config.vol_minimo_batch;
+        document.getElementById('configuracionUtilizada').style.display = 'block';
     }
     
     // Función para obtener CSRF token (siguiendo la filosofía de BaseAPI en _AppComplementos)
