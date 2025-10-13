@@ -97,6 +97,11 @@ class BatchDetectado(BaseModel):
     # Hash para identificación única basado en fechas, sistema y configuración
     hash_identificacion = models.CharField(max_length=64, unique=True, default='', verbose_name="Hash de Identificación")
     
+    # Perfil de configuración usado para detectar este batch
+    perfil_lim_inf_caudal = models.FloatField(verbose_name="Límite Inferior Caudal del Perfil (kg/h)", null=True, blank=True)
+    perfil_lim_sup_caudal = models.FloatField(verbose_name="Límite Superior Caudal del Perfil (kg/h)", null=True, blank=True)
+    perfil_vol_minimo = models.FloatField(verbose_name="Volumen Mínimo del Perfil (kg)", null=True, blank=True)
+    
     # Información adicional del batch
     duracion_minutos = models.FloatField(verbose_name="Duración del Batch (minutos)", null=True, blank=True)
     total_registros = models.IntegerField(verbose_name="Total de Registros en el Batch", default=0)

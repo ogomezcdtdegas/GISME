@@ -96,6 +96,9 @@ class DetectarBatchesCommandView(APIView):
                         temperatura_coriolis_prom=batch_data['temperatura_coriolis_prom'],
                         densidad_prom=batch_data['densidad_prom'],
                         hash_identificacion=hash_batch,
+                        perfil_lim_inf_caudal=lim_inf,
+                        perfil_lim_sup_caudal=lim_sup,
+                        perfil_vol_minimo=vol_minimo,
                         duracion_minutos=batch_data['duracion_minutos'],
                         total_registros=batch_data['total_registros']
                     )
@@ -112,15 +115,41 @@ class DetectarBatchesCommandView(APIView):
                     'temperatura_coriolis_prom': round(batch.temperatura_coriolis_prom, 2),
                     'densidad_prom': round(batch.densidad_prom, 4),
                     'duracion_minutos': round(batch.duracion_minutos, 2),
-                    'total_registros': batch.total_registros
+                    'total_registros': batch.total_registros,
+                    'perfil_lim_inf': batch.perfil_lim_inf_caudal,
+                    'perfil_lim_sup': batch.perfil_lim_sup_caudal,
+                    'perfil_vol_min': batch.perfil_vol_minimo
+                })
+            
+            # Obtener TODOS los batches existentes en el rango de fechas (no solo los recién detectados)
+            todos_batches = BatchDetectado.objects.filter(
+                systemId=sistema,
+                fecha_inicio__gte=fecha_inicio,
+                fecha_fin__lte=fecha_fin
+            ).order_by('-fecha_inicio')
+            
+            batches_completos = []
+            for batch in todos_batches:
+                batches_completos.append({
+                    'id': batch.id,
+                    'fecha_inicio': batch.fecha_inicio.astimezone(COLOMBIA_TZ).strftime('%d/%m/%Y %H:%M:%S'),
+                    'fecha_fin': batch.fecha_fin.astimezone(COLOMBIA_TZ).strftime('%d/%m/%Y %H:%M:%S'),
+                    'vol_total': round(batch.vol_total, 2),
+                    'temperatura_coriolis_prom': round(batch.temperatura_coriolis_prom, 2),
+                    'densidad_prom': round(batch.densidad_prom, 4),
+                    'duracion_minutos': round(batch.duracion_minutos, 2),
+                    'total_registros': batch.total_registros,
+                    'perfil_lim_inf': batch.perfil_lim_inf_caudal or 0,
+                    'perfil_lim_sup': batch.perfil_lim_sup_caudal or 0,
+                    'perfil_vol_min': batch.perfil_vol_minimo or 0
                 })
             
             return Response({
                 'success': True,
-                'batches_detectados': len(batches_guardados),
+                'batches_detectados': len(batches_completos),
                 'batches_nuevos': len(batches_guardados) - batches_existentes,
                 'batches_existentes': batches_existentes,
-                'batches': batches_guardados,
+                'batches': batches_completos,
                 'configuracion_usada': {
                     'lim_inf_caudal_masico': lim_inf,
                     'lim_sup_caudal_masico': lim_sup,

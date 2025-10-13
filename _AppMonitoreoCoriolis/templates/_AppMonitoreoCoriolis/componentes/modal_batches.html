@@ -32,9 +32,9 @@
                     </form>
                 </div>
                 
-                <!-- Configuración utilizada - Siempre visible -->
+                <!-- Perfil actual - Siempre visible -->
                 <div id="configuracionUtilizada" class="bg-info bg-opacity-10 p-3 rounded mb-3" style="border: 1px solid #b6d7ff; display: none;">
-                    <h6 class="mb-2"><i class="bi bi-gear"></i> Configuración utilizada:</h6>
+                    <h6 class="mb-2"><i class="bi bi-gear"></i> Perfil actual:</h6>
                     <div class="row">
                         <div class="col-md-4">
                             <small><strong>Límite inferior caudal:</strong> <span id="limInfCaudal">-</span> kg/h</small>
@@ -182,6 +182,9 @@ document.addEventListener('DOMContentLoaded', function() {
                             <th>Vol. Total (kg)</th>
                             <th>Temp. Prom. (°C)</th>
                             <th>Densidad Prom.</th>
+                            <th>Lím. Inf. (kg/h)</th>
+                            <th>Lím. Sup. (kg/h)</th>
+                            <th>Vol. Mín. (kg)</th>
                             <th>Registros</th>
                             <th>Detalle</th>
                         </tr>
@@ -198,6 +201,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     <td><strong>${batch.vol_total}</strong></td>
                     <td>${batch.temperatura_coriolis_prom}</td>
                     <td>${batch.densidad_prom}</td>
+                    <td><small>${batch.perfil_lim_inf || '-'}</small></td>
+                    <td><small>${batch.perfil_lim_sup || '-'}</small></td>
+                    <td><small>${batch.perfil_vol_min || '-'}</small></td>
                     <td>${batch.total_registros}</td>
                     <td>
                         <button class="btn btn-info btn-sm" onclick="verDetalleBatch('${batch.id}')">
