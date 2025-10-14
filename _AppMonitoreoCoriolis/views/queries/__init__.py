@@ -5,6 +5,7 @@ from .DatosHistoricosTemperaturaQuery import DatosHistoricosTemperaturaQueryView
 from .DatosTiempoRealQuery import DatosTiempoRealQueryView
 from .DatosTendenciasQuery import DatosTendenciasQueryView
 from .DetalleBatchQuery import DetalleBatchQueryView
+from .ListarBatchesQuery import ListarBatchesQueryView
 
 __all__ = [
     'DatosHistoricosFlujoQueryView',
@@ -12,5 +13,6 @@ __all__ = [
     'DatosHistoricosTemperaturaQueryView',
     'DatosTiempoRealQueryView',
     'DatosTendenciasQueryView',
-    'DetalleBatchQueryView'
+    'DetalleBatchQueryView',
+    'ListarBatchesQueryView'
 ]

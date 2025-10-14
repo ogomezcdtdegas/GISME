@@ -4,7 +4,7 @@
         <div class="modal-content">
             <div class="modal-header bg-primary text-white">
                 <h5 class="modal-title" id="modalBuscarBatchesLabel">
-                    <i class="bi bi-search"></i> Buscar Batches Automáticamente
+                    <i class="bi bi-search"></i> Gestión de Batches
                 </h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
@@ -15,17 +15,20 @@
                 <div class="bg-light p-3 rounded mb-3" style="border: 1px solid #dee2e6;">
                     <form id="formBuscarBatches">
                         <div class="row">
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label for="fechaInicioBatch" class="form-label">Fecha de Inicio</label>
                                 <input type="date" class="form-control" id="fechaInicioBatch" name="fecha_inicio" required>
                             </div>
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <label for="fechaFinBatch" class="form-label">Fecha de Fin</label>
                                 <input type="date" class="form-control" id="fechaFinBatch" name="fecha_fin" required>
                             </div>
-                            <div class="col-md-4 d-flex align-items-end">
-                                <button type="button" id="btnBuscarBatches" class="btn btn-primary w-100">
+                            <div class="col-md-6 d-flex align-items-end">
+                                <button type="button" id="btnBuscarBatches" class="btn btn-primary w-100 me-2">
                                     <i class="bi bi-search"></i> Buscar Batches
+                                </button>
+                                <button type="button" id="btnListarBatches" class="btn btn-success w-100">
+                                    <i class="bi bi-list-ul"></i> Listar Batches
                                 </button>
                             </div>
                         </div>
@@ -51,9 +54,9 @@
                 <!-- Spinner de carga -->
                 <div id="spinnerBatches" style="display: none;" class="text-center py-3">
                     <div class="spinner-border text-primary" role="status">
-                        <span class="visually-hidden">Buscando batches...</span>
+                        <span class="visually-hidden">Procesando...</span>
                     </div>
-                    <p class="mt-2 mb-0">Analizando datos y detectando batches...</p>
+                    <p id="spinnerText" class="mt-2 mb-0">Procesando solicitud...</p>
                 </div>
             </div>
             
@@ -79,6 +82,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     const modalBatches = document.getElementById('modalBuscarBatches');
     const btnBuscarBatches = document.getElementById('btnBuscarBatches');
+    const btnListarBatches = document.getElementById('btnListarBatches');
     const formBuscarBatches = document.getElementById('formBuscarBatches');
     const spinnerBatches = document.getElementById('spinnerBatches');
     const resultadosBatches = document.getElementById('resultadosBatches');
@@ -113,6 +117,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // Mostrar spinner y ocultar resultados anteriores
+        document.getElementById('spinnerText').textContent = 'Analizando datos y detectando batches...';
         spinnerBatches.style.display = 'block';
         resultadosBatches.style.display = 'none';
         btnBuscarBatches.disabled = true;
@@ -143,6 +148,62 @@ document.addEventListener('DOMContentLoaded', function() {
         } finally {
             spinnerBatches.style.display = 'none';
             btnBuscarBatches.disabled = false;
+        }
+    });
+    
+    // Event listener para Listar Batches (solo consulta, no detecta)
+    btnListarBatches.addEventListener('click', async function() {
+        const sistemaId = obtenerSistemaActual();
+        if (!sistemaId) {
+            alert('No se ha seleccionado un sistema');
+            return;
+        }
+        
+        const fechaInicio = document.getElementById('fechaInicioBatch').value;
+        const fechaFin = document.getElementById('fechaFinBatch').value;
+        
+        if (!fechaInicio || !fechaFin) {
+            alert('Por favor, seleccione ambas fechas');
+            return;
+        }
+        
+        if (new Date(fechaInicio) > new Date(fechaFin)) {
+            alert('La fecha de inicio no puede ser mayor que la fecha de fin');
+            return;
+        }
+        
+        // Mostrar spinner y ocultar resultados anteriores
+        document.getElementById('spinnerText').textContent = 'Consultando batches existentes...';
+        spinnerBatches.style.display = 'block';
+        resultadosBatches.style.display = 'none';
+        btnListarBatches.disabled = true;
+        
+        try {
+            const response = await fetch(`/monitoreo/api/listar-batches/${sistemaId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCSRFToken()
+                },
+                body: JSON.stringify({
+                    fecha_inicio: fechaInicio,
+                    fecha_fin: fechaFin
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                mostrarBatchesListados(data);
+            } else {
+                alert('Error: ' + data.error);
+            }
+        } catch (error) {
+            console.error('Error al listar batches:', error);
+            alert('Error de conexión al listar batches');
+        } finally {
+            spinnerBatches.style.display = 'none';
+            btnListarBatches.disabled = false;
         }
     });
     
@@ -205,6 +266,75 @@ document.addEventListener('DOMContentLoaded', function() {
                     <td><small>${batch.perfil_lim_sup || '-'}</small></td>
                     <td><small>${batch.perfil_vol_min || '-'}</small></td>
                     <td>${batch.total_registros}</td>
+                    <td>
+                        <button class="btn btn-info btn-sm" onclick="verDetalleBatch('${batch.id}')">
+                            <i class="bi bi-graph-up"></i> Ver
+                        </button>
+                    </td>
+                </tr>
+            `;
+        });
+        
+        html += `
+                    </tbody>
+                </table>
+            </div>
+        `;
+        
+        listaBatches.innerHTML = html;
+    }
+    
+    function mostrarBatchesListados(data) {
+        // Para listado, no mostramos configuración ya que solo consultamos
+        resultadosBatches.style.display = 'block';
+        
+        if (data.total_batches === 0) {
+            listaBatches.innerHTML = `
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle"></i>
+                    No hay batches detectados en el rango de fechas especificado.
+                    <br>
+                    <small>Use "Buscar Batches" para ejecutar la detección automática.</small>
+                </div>
+            `;
+            return;
+        }
+        
+        let html = `
+            <div class="alert alert-info">
+                <i class="bi bi-list-check"></i>
+                <strong>Se encontraron ${data.total_batches} batch(es) previamente detectado(s)</strong>
+                <br>
+                <small>Sistema: ${data.sistema.tag} - ${data.sistema.sistema_id} (${data.sistema.ubicacion})</small>
+                <br>
+                <small>Rango consultado: ${data.fecha_inicio} - ${data.fecha_fin}</small>
+            </div>
+            
+            <div class="table-responsive">
+                <table class="table table-striped table-sm">
+                    <thead class="table-secondary">
+                        <tr>
+                            <th>Inicio</th>
+                            <th>Fin</th>
+                            <th>Duración</th>
+                            <th>Vol. Total (kg)</th>
+                            <th>Temp. Prom. (°C)</th>
+                            <th>Densidad Prom.</th>
+                            <th>Detalle</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+        
+        data.batches.forEach(batch => {
+            html += `
+                <tr>
+                    <td><small>${batch.fecha_inicio}</small></td>
+                    <td><small>${batch.fecha_fin}</small></td>
+                    <td><small>${batch.duracion_minutos} min</small></td>
+                    <td><strong>${batch.vol_total}</strong></td>
+                    <td>${batch.temperatura_prom}</td>
+                    <td>${batch.densidad_prom}</td>
                     <td>
                         <button class="btn btn-info btn-sm" onclick="verDetalleBatch('${batch.id}')">
                             <i class="bi bi-graph-up"></i> Ver

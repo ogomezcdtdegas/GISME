@@ -11,7 +11,8 @@ from .queries import (
     DatosHistoricosTemperaturaQueryView,
     DatosTiempoRealQueryView,
     DatosTendenciasQueryView,
-    DetalleBatchQueryView
+    DetalleBatchQueryView,
+    ListarBatchesQueryView
 )
 
 # Command Views (modifican datos)
@@ -25,6 +26,7 @@ DatosTiempoRealView = DatosTiempoRealQueryView
 DatosTendenciasView = DatosTendenciasQueryView
 DetectarBatchesView = DetectarBatchesCommandView
 DetalleBatchView = DetalleBatchQueryView
+ListarBatchesView = ListarBatchesQueryView
 
 __all__ = [
     # Template Views
@@ -38,6 +40,7 @@ __all__ = [
     'DatosTiempoRealQueryView',
     'DatosTendenciasQueryView',
     'DetalleBatchQueryView',
+    'ListarBatchesQueryView',
     
     # Command Views (new names)
     'DetectarBatchesCommandView',
@@ -49,5 +52,6 @@ __all__ = [
     'DatosTiempoRealView',
     'DatosTendenciasView',
     'DetectarBatchesView',
-    'DetalleBatchView'
+    'DetalleBatchView',
+    'ListarBatchesView'
 ]
