@@ -68,6 +68,7 @@ class ListarBatchesQueryView(APIView):
             for batch in batches:
                 batches_data.append({
                     'id': str(batch.id),
+                    'num_ticket': batch.num_ticket,
                     'fecha_inicio': batch.fecha_inicio.strftime('%Y-%m-%d %H:%M:%S'),
                     'fecha_fin': batch.fecha_fin.strftime('%Y-%m-%d %H:%M:%S'),
                     'duracion_minutos': round((batch.fecha_fin - batch.fecha_inicio).total_seconds() / 60, 2),

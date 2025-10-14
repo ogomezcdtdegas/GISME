@@ -80,6 +80,9 @@
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                     <i class="bi bi-x-circle"></i> Cerrar
                 </button>
+                <button type="button" id="btnAsignarTicket" class="btn btn-warning" onclick="asignarTicketBatch()">
+                    <i class="bi bi-tag"></i> Asignar Ticket
+                </button>
                 <button type="button" class="btn btn-primary" onclick="descargarDatosBatch()">
                     <i class="bi bi-download"></i> Descargar Datos
                 </button>
@@ -109,13 +112,14 @@ function mostrarDetalleBatch(data) {
     // Mostrar información básica
     document.getElementById('infoBatchBasica').innerHTML = `
         <p><strong>Sistema:</strong> ${data.batch_info.sistema_tag}</p>
+        ${data.batch_info.num_ticket ? `<p><strong># Ticket:</strong> <span class="badge bg-success">${data.batch_info.num_ticket}</span></p>` : ''}
         <p><strong>Inicio:</strong> ${data.batch_info.fecha_inicio}</p>
         <p><strong>Fin:</strong> ${data.batch_info.fecha_fin}</p>
         <p><strong>Duración:</strong> ${data.batch_info.duracion_minutos} minutos</p>
         <div class="alert alert-info mt-2 mb-0" style="padding: 8px 12px; font-size: 0.85em;">
             <i class="bi bi-info-circle"></i> 
             <strong>Contexto extendido:</strong> La gráfica muestra 3 minutos antes y después del batch para mejor análisis.
-            <br>� <strong>Línea azul clara:</strong> Datos del batch detectado (línea gruesa, puntos grandes)
+            <br>🔹 <strong>Línea azul clara:</strong> Datos del batch detectado (línea gruesa, puntos grandes)
             <br>🔷 <strong>Línea azul oscura:</strong> Datos de contexto - antes/después (línea más fina, puntos pequeños)
         </div>
     `;
@@ -422,5 +426,88 @@ function descargarDatosBatch() {
         link.click();
         document.body.removeChild(link);
     }
+}
+
+// Función para asignar ticket al batch
+async function asignarTicketBatch() {
+    if (!datosActualesBatch || !datosActualesBatch.batch_info) {
+        alert('Error: No hay datos del batch disponibles');
+        return;
+    }
+    
+    const batchId = datosActualesBatch.batch_info.id;
+    const batchNumTicket = datosActualesBatch.batch_info.num_ticket;
+    
+    // Verificar si ya tiene ticket asignado
+    if (batchNumTicket) {
+        if (!confirm(`Este batch ya tiene el ticket #${batchNumTicket} asignado. ¿Desea reasignar un nuevo ticket?`)) {
+            return;
+        }
+    }
+    
+    try {
+        // Deshabilitar el botón mientras se procesa
+        const btn = document.getElementById('btnAsignarTicket');
+        const textoOriginal = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Asignando...';
+        
+        const response = await fetch('/monitoreo/api/asignar-ticket-batch/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken(),
+            },
+            body: JSON.stringify({
+                batch_id: batchId
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert(`¡Ticket #${data.num_ticket} asignado exitosamente al batch!`);
+            
+            // Actualizar la información del batch en el modal
+            datosActualesBatch.batch_info.num_ticket = data.num_ticket;
+            
+            // Actualizar la visualización
+            document.getElementById('infoBatchBasica').innerHTML = `
+                <p><strong>Sistema:</strong> ${datosActualesBatch.batch_info.sistema_tag}</p>
+                <p><strong># Ticket:</strong> <span class="badge bg-success">${data.num_ticket}</span></p>
+                <p><strong>Inicio:</strong> ${datosActualesBatch.batch_info.fecha_inicio}</p>
+                <p><strong>Fin:</strong> ${datosActualesBatch.batch_info.fecha_fin}</p>
+                <p><strong>Duración:</strong> ${datosActualesBatch.batch_info.duracion_minutos} minutos</p>
+                <div class="alert alert-info mt-2 mb-0" style="padding: 8px 12px; font-size: 0.85em;">
+                    <i class="bi bi-info-circle"></i> 
+                    <strong>Contexto extendido:</strong> La gráfica muestra 3 minutos antes y después del batch para mejor análisis.
+                    <br>🔹 <strong>Línea azul clara:</strong> Datos del batch detectado (línea gruesa, puntos grandes)
+                    <br>🔷 <strong>Línea azul oscura:</strong> Datos de contexto - antes/después (línea más fina, puntos pequeños)
+                </div>
+            `;
+        } else {
+            alert('Error al asignar ticket: ' + data.error);
+        }
+    } catch (error) {
+        console.error('Error al asignar ticket:', error);
+        alert('Error de conexión al asignar ticket');
+    } finally {
+        // Restaurar el botón
+        const btn = document.getElementById('btnAsignarTicket');
+        btn.disabled = false;
+        btn.innerHTML = textoOriginal;
+    }
+}
+
+// Función para obtener CSRF token (reutilizando la misma lógica de modal_batches.html)
+function getCSRFToken() {
+    const cookies = document.cookie.split(';');
+    for (let cookie of cookies) {
+        const [name, value] = cookie.trim().split('=');
+        if (name === 'csrftoken') {
+            return value;
+        }
+    }
+    return '';
 }
 </script>

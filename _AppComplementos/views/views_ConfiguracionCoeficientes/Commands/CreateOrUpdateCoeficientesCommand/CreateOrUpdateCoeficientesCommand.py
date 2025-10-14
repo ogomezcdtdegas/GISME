@@ -3,6 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
+from django.db import models
 
 from .....models import ConfiguracionCoeficientes, Sistema
 
@@ -35,6 +36,7 @@ class CreateOrUpdateCoeficientesCommandView(APIView):
             lim_inf_caudal_masico = request.data.get('lim_inf_caudal_masico', 0.0)
             lim_sup_caudal_masico = request.data.get('lim_sup_caudal_masico', 1000000.0)
             vol_masico_ini_batch = request.data.get('vol_masico_ini_batch', 0.0)
+            num_ticket = request.data.get('num_ticket', 1)
 
             # Validaciones básicas
             if not system_id:
@@ -58,6 +60,23 @@ class CreateOrUpdateCoeficientesCommandView(APIView):
                     "error": "El sistema especificado no existe"
                 }, status=status.HTTP_404_NOT_FOUND)
 
+            # Validar num_ticket: debe ser mayor o igual al máximo + 1 en batches
+            if num_ticket is not None:
+                # Importar aquí para evitar circular imports
+                from _AppMonitoreoCoriolis.models import BatchDetectado
+                
+                max_ticket = BatchDetectado.objects.filter(
+                    systemId=sistema,
+                    num_ticket__isnull=False
+                ).aggregate(models.Max('num_ticket'))['num_ticket__max'] or 0
+                
+                min_allowed = max_ticket + 1
+                if int(num_ticket) < min_allowed:
+                    return Response({
+                        "success": False,
+                        "error": f"El número de ticket debe ser mayor o igual a {min_allowed}. El máximo ticket asignado es {max_ticket}."
+                    }, status=status.HTTP_400_BAD_REQUEST)
+
             # Crear o actualizar coeficientes usando get_or_create
             coeficientes, created = ConfiguracionCoeficientes.objects.get_or_create(
                 systemId=sistema,
@@ -70,7 +89,8 @@ class CreateOrUpdateCoeficientesCommandView(APIView):
                     'span_presion': float(span_presion),
                     'lim_inf_caudal_masico': float(lim_inf_caudal_masico),
                     'lim_sup_caudal_masico': float(lim_sup_caudal_masico),
-                    'vol_masico_ini_batch': float(vol_masico_ini_batch)
+                    'vol_masico_ini_batch': float(vol_masico_ini_batch),
+                    'num_ticket': int(num_ticket)
                 }
             )
 
@@ -85,6 +105,7 @@ class CreateOrUpdateCoeficientesCommandView(APIView):
                 coeficientes.lim_inf_caudal_masico = float(lim_inf_caudal_masico)
                 coeficientes.lim_sup_caudal_masico = float(lim_sup_caudal_masico)
                 coeficientes.vol_masico_ini_batch = float(vol_masico_ini_batch)
+                coeficientes.num_ticket = int(num_ticket)
                 coeficientes.save()
 
             return Response({
@@ -101,7 +122,8 @@ class CreateOrUpdateCoeficientesCommandView(APIView):
                     "bp": coeficientes.bp,
                     "lim_inf_caudal_masico": coeficientes.lim_inf_caudal_masico,
                     "lim_sup_caudal_masico": coeficientes.lim_sup_caudal_masico,
-                    "vol_masico_ini_batch": coeficientes.vol_masico_ini_batch
+                    "vol_masico_ini_batch": coeficientes.vol_masico_ini_batch,
+                    "num_ticket": coeficientes.num_ticket
                 }
             }, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
 

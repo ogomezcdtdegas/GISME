@@ -163,6 +163,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('limInfCaudalMasico').value = data.data.lim_inf_caudal_masico || '0.0';
                 document.getElementById('limSupCaudalMasico').value = data.data.lim_sup_caudal_masico || '1000000.0';
                 document.getElementById('volMasicoIniBatch').value = data.data.vol_masico_ini_batch || '0.0';
+                document.getElementById('numberTicket').value = data.data.num_ticket || '1';
                 
                 if (!data.exists) {
                     console.info('Coeficientes no configurados. Mostrando valores por defecto.');
@@ -205,6 +206,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('limInfCaudalMasico').value = '0.0';
         document.getElementById('limSupCaudalMasico').value = '1000000.0';
         document.getElementById('volMasicoIniBatch').value = '0.0';
+        document.getElementById('numberTicket').value = '1';
     }
 
     function actualizarCoeficientes() {
@@ -228,17 +230,18 @@ document.addEventListener('DOMContentLoaded', function() {
         const limInfCaudalMasico = parseFloat(document.getElementById('limInfCaudalMasico').value);
         const limSupCaudalMasico = parseFloat(document.getElementById('limSupCaudalMasico').value);
         const volMasicoIniBatch = parseFloat(document.getElementById('volMasicoIniBatch').value);
+        const numTicket = parseInt(document.getElementById('numberTicket').value);
 
         // Validar que todos los valores son números válidos
         if (isNaN(mt) || isNaN(bt) || isNaN(mp) || isNaN(bp) || isNaN(zeroPresion) || isNaN(spanPresion) ||
-            isNaN(limInfCaudalMasico) || isNaN(limSupCaudalMasico) || isNaN(volMasicoIniBatch)) {
+            isNaN(limInfCaudalMasico) || isNaN(limSupCaudalMasico) || isNaN(volMasicoIniBatch) || isNaN(numTicket)) {
             alert('Error: Todos los valores deben ser números válidos');
             return;
         }
         
         // Validaciones adicionales
-        if (limInfCaudalMasico < 0 || limSupCaudalMasico < 0 || volMasicoIniBatch < 0) {
-            alert('Error: Los valores de configuración de batch no pueden ser negativos');
+        if (limInfCaudalMasico < 0 || limSupCaudalMasico < 0 || volMasicoIniBatch < 0 || numTicket < 1) {
+            alert('Error: Los valores de configuración no pueden ser negativos y el número de ticket debe ser mayor a 0');
             return;
         }
         
@@ -257,7 +260,8 @@ document.addEventListener('DOMContentLoaded', function() {
             span_presion: spanPresion,
             lim_inf_caudal_masico: limInfCaudalMasico,
             lim_sup_caudal_masico: limSupCaudalMasico,
-            vol_masico_ini_batch: volMasicoIniBatch
+            vol_masico_ini_batch: volMasicoIniBatch,
+            num_ticket: numTicket
         };
 
         console.log('Actualizando coeficientes:', coeficientes);

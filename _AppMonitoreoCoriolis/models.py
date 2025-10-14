@@ -105,6 +105,7 @@ class BatchDetectado(BaseModel):
     # Información adicional del batch
     duracion_minutos = models.FloatField(verbose_name="Duración del Batch (minutos)", null=True, blank=True)
     total_registros = models.IntegerField(verbose_name="Total de Registros en el Batch", default=0)
+    num_ticket = models.IntegerField(verbose_name="Número de Ticket asignado", null=True, blank=True)
     
     class Meta:
         verbose_name = "Batch Detectado"

@@ -56,7 +56,8 @@ class GetCoeficientesBySistemaQueryView(APIView):
                         "span_presion": 1.0,
                         "lim_inf_caudal_masico": 0.0,
                         "lim_sup_caudal_masico": 1000000.0,
-                        "vol_masico_ini_batch": 0.0
+                        "vol_masico_ini_batch": 0.0,
+                        "num_ticket": 1
                     }
                 }, status=status.HTTP_200_OK)
 

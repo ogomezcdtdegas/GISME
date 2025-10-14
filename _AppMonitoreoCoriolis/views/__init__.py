@@ -16,7 +16,7 @@ from .queries import (
 )
 
 # Command Views (modifican datos)
-from .commands import DetectarBatchesCommandView
+from .commands import DetectarBatchesCommandView, AsignarTicketBatchCommandView
 
 # Mantener nombres originales para compatibilidad
 DatosHistoricosFlujoView = DatosHistoricosFlujoQueryView
@@ -27,6 +27,7 @@ DatosTendenciasView = DatosTendenciasQueryView
 DetectarBatchesView = DetectarBatchesCommandView
 DetalleBatchView = DetalleBatchQueryView
 ListarBatchesView = ListarBatchesQueryView
+AsignarTicketBatchView = AsignarTicketBatchCommandView
 
 __all__ = [
     # Template Views
@@ -44,6 +45,7 @@ __all__ = [
     
     # Command Views (new names)
     'DetectarBatchesCommandView',
+    'AsignarTicketBatchCommandView',
     
     # Legacy names for compatibility
     'DatosHistoricosFlujoView',
@@ -53,5 +55,6 @@ __all__ = [
     'DatosTendenciasView',
     'DetectarBatchesView',
     'DetalleBatchView',
-    'ListarBatchesView'
+    'ListarBatchesView',
+    'AsignarTicketBatchView'
 ]
