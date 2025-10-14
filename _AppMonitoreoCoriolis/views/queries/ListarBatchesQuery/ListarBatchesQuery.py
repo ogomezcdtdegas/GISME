@@ -74,6 +74,10 @@ class ListarBatchesQueryView(APIView):
                     'vol_total': round(batch.vol_total, 2) if batch.vol_total else 0,
                     'temperatura_prom': round(batch.temperatura_coriolis_prom, 2) if batch.temperatura_coriolis_prom else 0,
                     'densidad_prom': round(batch.densidad_prom, 2) if batch.densidad_prom else 0,
+                    'perfil_lim_inf': round(batch.perfil_lim_inf_caudal, 2) if batch.perfil_lim_inf_caudal else '-',
+                    'perfil_lim_sup': round(batch.perfil_lim_sup_caudal, 2) if batch.perfil_lim_sup_caudal else '-',
+                    'perfil_vol_min': round(batch.perfil_vol_minimo, 2) if batch.perfil_vol_minimo else '-',
+                    'total_registros': batch.total_registros or 0,
                 })
             
             logger.info(f"Listando {len(batches_data)} batches para sistema {sistema_id} entre {fecha_inicio} y {fecha_fin}")

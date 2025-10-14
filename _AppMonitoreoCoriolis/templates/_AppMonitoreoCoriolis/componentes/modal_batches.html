@@ -88,6 +88,9 @@ document.addEventListener('DOMContentLoaded', function() {
     const resultadosBatches = document.getElementById('resultadosBatches');
     const listaBatches = document.getElementById('listaBatches');
     
+    // Variable para controlar la cancelación de búsquedas
+    let buscarBatchesController = null;
+    
     // Configurar fechas por defecto (últimos 7 días)
     const hoy = new Date();
     const hace7Dias = new Date();
@@ -97,9 +100,18 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('fechaInicioBatch').value = hace7Dias.toISOString().split('T')[0];
     
     btnBuscarBatches.addEventListener('click', async function() {
+        // Si hay una búsqueda anterior en curso, aborta
+        if (buscarBatchesController) {
+            buscarBatchesController.abort();
+        }
+        
+        // Crear nuevo controller para esta búsqueda
+        buscarBatchesController = new AbortController();
+        
         const sistemaId = obtenerSistemaActual();
         if (!sistemaId) {
             alert('No se ha seleccionado un sistema');
+            buscarBatchesController = null;
             return;
         }
         
@@ -108,11 +120,13 @@ document.addEventListener('DOMContentLoaded', function() {
         
         if (!fechaInicio || !fechaFin) {
             alert('Por favor, seleccione ambas fechas');
+            buscarBatchesController = null;
             return;
         }
         
         if (new Date(fechaInicio) > new Date(fechaFin)) {
             alert('La fecha de inicio no puede ser mayor que la fecha de fin');
+            buscarBatchesController = null;
             return;
         }
         
@@ -132,7 +146,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 body: JSON.stringify({
                     fecha_inicio: fechaInicio,
                     fecha_fin: fechaFin
-                })
+                }),
+                signal: buscarBatchesController.signal
             });
             
             const data = await response.json();
@@ -143,16 +158,28 @@ document.addEventListener('DOMContentLoaded', function() {
                 alert('Error: ' + data.error);
             }
         } catch (error) {
+            if (error.name === 'AbortError') {
+                console.log('Búsqueda de batches cancelada por el usuario');
+                return; // No mostrar error si fue cancelado intencionalmente
+            }
             console.error('Error al buscar batches:', error);
             alert('Error de conexión al buscar batches');
         } finally {
             spinnerBatches.style.display = 'none';
             btnBuscarBatches.disabled = false;
+            buscarBatchesController = null;
         }
     });
     
     // Event listener para Listar Batches (solo consulta, no detecta)
     btnListarBatches.addEventListener('click', async function() {
+        // Si hay una búsqueda en curso, aborta
+        if (buscarBatchesController) {
+            console.log('Cancelando búsqueda en curso...');
+            buscarBatchesController.abort();
+            buscarBatchesController = null;
+        }
+        
         const sistemaId = obtenerSistemaActual();
         if (!sistemaId) {
             alert('No se ha seleccionado un sistema');
@@ -320,6 +347,10 @@ document.addEventListener('DOMContentLoaded', function() {
                             <th>Vol. Total (kg)</th>
                             <th>Temp. Prom. (°C)</th>
                             <th>Densidad Prom.</th>
+                            <th>Lím. Inf. (kg/h)</th>
+                            <th>Lím. Sup. (kg/h)</th>
+                            <th>Vol. Mín. (kg)</th>
+                            <th>Registros</th>
                             <th>Detalle</th>
                         </tr>
                     </thead>
@@ -335,6 +366,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     <td><strong>${batch.vol_total}</strong></td>
                     <td>${batch.temperatura_prom}</td>
                     <td>${batch.densidad_prom}</td>
+                    <td><small>${batch.perfil_lim_inf || '-'}</small></td>
+                    <td><small>${batch.perfil_lim_sup || '-'}</small></td>
+                    <td><small>${batch.perfil_vol_min || '-'}</small></td>
+                    <td>${batch.total_registros}</td>
                     <td>
                         <button class="btn btn-info btn-sm" onclick="verDetalleBatch('${batch.id}')">
                             <i class="bi bi-graph-up"></i> Ver
