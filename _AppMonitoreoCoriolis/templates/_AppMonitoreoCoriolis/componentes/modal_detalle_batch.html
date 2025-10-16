@@ -132,6 +132,9 @@ function mostrarDetalleBatch(data) {
         <p><strong>Total Registros:</strong> ${data.batch_info.total_registros}</p>
     `;
     
+    // Controlar estado del botón de asignar ticket
+    actualizarEstadoBotonTicket(data.batch_info.num_ticket);
+    
     // Crear el gráfico
     const limites = {
         lim_inf: data.lim_inf_caudal_masico,
@@ -428,6 +431,23 @@ function descargarDatosBatch() {
     }
 }
 
+// Función para controlar el estado del botón de asignar ticket
+function actualizarEstadoBotonTicket(numTicket) {
+    const btn = document.getElementById('btnAsignarTicket');
+    
+    if (numTicket) {
+        // Ya tiene ticket - deshabilitar botón
+        btn.disabled = true;
+        btn.className = 'btn btn-secondary';
+        btn.innerHTML = '<i class="bi bi-check-circle"></i> Ticket ya asignado';
+    } else {
+        // No tiene ticket - habilitar botón
+        btn.disabled = false;
+        btn.className = 'btn btn-warning';
+        btn.innerHTML = '<i class="bi bi-ticket-perforated"></i> Asignar Ticket';
+    }
+}
+
 // Función para asignar ticket al batch
 async function asignarTicketBatch() {
     if (!datosActualesBatch || !datosActualesBatch.batch_info) {
@@ -438,11 +458,10 @@ async function asignarTicketBatch() {
     const batchId = datosActualesBatch.batch_info.id;
     const batchNumTicket = datosActualesBatch.batch_info.num_ticket;
     
-    // Verificar si ya tiene ticket asignado
+    // Verificar si ya tiene ticket asignado - NO permitir reasignación
     if (batchNumTicket) {
-        if (!confirm(`Este batch ya tiene el ticket #${batchNumTicket} asignado. ¿Desea reasignar un nuevo ticket?`)) {
-            return;
-        }
+        alert(`Este batch ya tiene el ticket #${batchNumTicket} asignado. No se puede reasignar.`);
+        return;
     }
     
     try {
@@ -452,29 +471,26 @@ async function asignarTicketBatch() {
         btn.disabled = true;
         btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Asignando...';
         
-        const response = await fetch('/monitoreo/api/asignar-ticket-batch/', {
+        const response = await fetch(`/monitoreo/api/asignar-ticket-batch/${batchId}/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
                 'X-CSRFToken': getCSRFToken(),
-            },
-            body: JSON.stringify({
-                batch_id: batchId
-            })
+            }
         });
         
         const data = await response.json();
         
         if (data.success) {
-            alert(`¡Ticket #${data.num_ticket} asignado exitosamente al batch!`);
+            alert(`¡Ticket #${data.data.ticket_asignado} asignado exitosamente al batch!`);
             
             // Actualizar la información del batch en el modal
-            datosActualesBatch.batch_info.num_ticket = data.num_ticket;
+            datosActualesBatch.batch_info.num_ticket = data.data.ticket_asignado;
             
             // Actualizar la visualización
             document.getElementById('infoBatchBasica').innerHTML = `
                 <p><strong>Sistema:</strong> ${datosActualesBatch.batch_info.sistema_tag}</p>
-                <p><strong># Ticket:</strong> <span class="badge bg-success">${data.num_ticket}</span></p>
+                <p><strong># Ticket:</strong> <span class="badge bg-success">${data.data.ticket_asignado}</span></p>
                 <p><strong>Inicio:</strong> ${datosActualesBatch.batch_info.fecha_inicio}</p>
                 <p><strong>Fin:</strong> ${datosActualesBatch.batch_info.fecha_fin}</p>
                 <p><strong>Duración:</strong> ${datosActualesBatch.batch_info.duracion_minutos} minutos</p>
@@ -485,6 +501,10 @@ async function asignarTicketBatch() {
                     <br>🔷 <strong>Línea azul oscura:</strong> Datos de contexto - antes/después (línea más fina, puntos pequeños)
                 </div>
             `;
+            
+            // Actualizar el estado del botón (ya no se podrá usar)
+            actualizarEstadoBotonTicket(data.data.ticket_asignado);
+            
         } else {
             alert('Error al asignar ticket: ' + data.error);
         }
@@ -499,15 +519,34 @@ async function asignarTicketBatch() {
     }
 }
 
-// Función para obtener CSRF token (reutilizando la misma lógica de modal_batches.html)
+// Función para obtener CSRF token (versión robusta)
 function getCSRFToken() {
-    const cookies = document.cookie.split(';');
-    for (let cookie of cookies) {
-        const [name, value] = cookie.trim().split('=');
-        if (name === 'csrftoken') {
-            return value;
+    // Primero intentar obtener del input hidden
+    let token = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+    
+    // Si no se encuentra, intentar obtener de las cookies
+    if (!token) {
+        const name = 'csrftoken';
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
         }
+        token = cookieValue;
     }
-    return '';
+    
+    // Validar que el token tenga el formato correcto (debería tener 64 caracteres)
+    if (token && token.length !== 64) {
+        console.warn('⚠️ Token CSRF con longitud incorrecta:', token.length, 'caracteres. Esperados: 64');
+    }
+    
+    console.log('🔐 Token CSRF obtenido:', token ? `✅ Válido (${token.length} chars)` : '❌ No encontrado');
+    return token || '';
 }
 </script>

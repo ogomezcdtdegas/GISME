@@ -24,10 +24,35 @@ window.CoriolisCommon = {
         });
     },
 
-    // Función utilitaria para obtener CSRF token
+    // Función utilitaria para obtener CSRF token (versión robusta)
     getCSRFToken() {
-        const token = document.querySelector('[name=csrfmiddlewaretoken]');
-        return token ? token.value : '';
+        // Primero intentar obtener del input hidden
+        let token = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+        
+        // Si no se encuentra, intentar obtener de las cookies
+        if (!token) {
+            const name = 'csrftoken';
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            token = cookieValue;
+        }
+        
+        // Validar que el token tenga el formato correcto (debería tener 64 caracteres)
+        if (token && token.length !== 64) {
+            console.warn('⚠️ Token CSRF con longitud incorrecta:', token.length, 'caracteres. Esperados: 64');
+        }
+        
+        console.log('🔐 Token CSRF obtenido:', token ? `✅ Válido (${token.length} chars)` : '❌ No encontrado');
+        return token || '';
     },
 
     // Función para mostrar notificaciones

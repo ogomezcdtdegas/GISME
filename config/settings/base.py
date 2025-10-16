@@ -23,8 +23,9 @@ NODE_RED_PASS = os.getenv("NODE_RED_PASS")
 SESSION_COOKIE_HTTPONLY = True
 
 # Similar a SESSION_COOKIE_HTTPONLY, esta configuración hace que la cookie CSRF (utilizada para proteger contra ataques de falsificación de solicitudes entre sitios) no sea accesible por JavaScript. 
-# Aunque es menos común habilitarla (ya que algunos frameworks pueden necesitar acceso a esta cookie), activarla incrementa la seguridad al reducir la superficie de ataque en caso de vulnerabilidades XSS.
-CSRF_COOKIE_HTTPONLY = True
+# IMPORTANTE: Se cambia a False para permitir peticiones AJAX con token CSRF desde JavaScript
+# Aunque reduce ligeramente la seguridad, es necesario para el funcionamiento de las peticiones AJAX
+CSRF_COOKIE_HTTPONLY = False
 
 # Esta configuración controla cómo se envían las cookies de sesión en solicitudes entre sitios. El valor 'Lax' permite que la cookie se envíe en solicitudes GET seguras (como navegaciones de nivel superior), pero bloquea su envío en solicitudes POST o de otros métodos desde sitios externos. 
 # Esto ayuda a mitigar ataques CSRF al limitar el envío de cookies a contextos confiables. El valor 'Strict' sería aún más restrictivo, pero podría afectar la experiencia del usuario.
@@ -33,6 +34,10 @@ SESSION_COOKIE_SAMESITE = 'Lax'
 # Similar a SESSION_COOKIE_SAMESITE, esta configuración aplica la política SameSite a la cookie CSRF. Al establecerla en 'Lax', se asegura que la cookie CSRF solo se envíe en solicitudes seguras entre sitios, reduciendo el riesgo de ataques CSRF. 
 # Usar 'Lax' es un buen equilibrio entre seguridad y usabilidad, pero puedes considerar 'Strict' si tu aplicación no depende de solicitudes entre sitios
 CSRF_COOKIE_SAMESITE = 'Lax'
+
+# Configuración adicional para CSRF
+# Nombre estándar de la cookie CSRF (debe coincidir con lo que busca JavaScript)
+CSRF_COOKIE_NAME = 'csrftoken'
 
 # Protección contra clickjacking
 X_FRAME_OPTIONS = 'DENY'
