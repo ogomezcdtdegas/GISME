@@ -99,6 +99,61 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('fechaFinBatch').value = hoy.toISOString().split('T')[0];
     document.getElementById('fechaInicioBatch').value = hace7Dias.toISOString().split('T')[0];
     
+    // ================================
+    // FUNCIÓN COMÚN PARA LISTAR BATCHES
+    // ================================
+    async function listarBatchesDetectados() {
+        const sistemaId = obtenerSistemaActual();
+        if (!sistemaId) {
+            alert('No se ha seleccionado un sistema');
+            return false;
+        }
+        
+        const fechaInicio = document.getElementById('fechaInicioBatch').value;
+        const fechaFin = document.getElementById('fechaFinBatch').value;
+        
+        if (!fechaInicio || !fechaFin) {
+            alert('Por favor, seleccione ambas fechas');
+            return false;
+        }
+        
+        if (new Date(fechaInicio) > new Date(fechaFin)) {
+            alert('La fecha de inicio no puede ser mayor que la fecha de fin');
+            return false;
+        }
+        
+        try {
+            const response = await fetch(`/monitoreo/api/listar-batches/${sistemaId}/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCSRFToken()
+                },
+                body: JSON.stringify({
+                    fecha_inicio: fechaInicio,
+                    fecha_fin: fechaFin
+                })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                mostrarBatchesListados(data);
+                return true;
+            } else {
+                alert('Error al listar batches: ' + data.error);
+                return false;
+            }
+        } catch (error) {
+            console.error('Error al listar batches:', error);
+            alert('Error de conexión al listar batches');
+            return false;
+        }
+    }
+    
+    // ================================
+    // BOTÓN BUSCAR BATCHES: Detecta + Lista
+    // ================================
     btnBuscarBatches.addEventListener('click', async function() {
         // Si hay una búsqueda anterior en curso, aborta
         if (buscarBatchesController) {
@@ -130,14 +185,16 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // Mostrar spinner y ocultar resultados anteriores
+        // Mostrar spinner para detección
         document.getElementById('spinnerText').textContent = 'Analizando datos y detectando batches...';
         spinnerBatches.style.display = 'block';
         resultadosBatches.style.display = 'none';
         btnBuscarBatches.disabled = true;
+        btnListarBatches.disabled = true;
         
         try {
-            const response = await fetch(`/monitoreo/api/detectar-batches/${sistemaId}/`, {
+            // PASO 1: Ejecutar detección de batches
+            const responseDeteccion = await fetch(`/monitoreo/api/detectar-batches/${sistemaId}/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -150,28 +207,39 @@ document.addEventListener('DOMContentLoaded', function() {
                 signal: buscarBatchesController.signal
             });
             
-            const data = await response.json();
+            const dataDeteccion = await responseDeteccion.json();
             
-            if (data.success) {
-                mostrarResultadosBatches(data);
-            } else {
-                alert('Error: ' + data.error);
+            if (!dataDeteccion.success) {
+                alert('Error en detección: ' + dataDeteccion.error);
+                return;
             }
+            
+            console.log(`✅ Detección completada: ${dataDeteccion.batches_detectados} batches encontrados`);
+            
+            // PASO 2: Cambiar spinner para listado
+            document.getElementById('spinnerText').textContent = 'Cargando batches detectados...';
+            
+            // PASO 3: Listar batches usando la función común
+            await listarBatchesDetectados();
+            
         } catch (error) {
             if (error.name === 'AbortError') {
                 console.log('Búsqueda de batches cancelada por el usuario');
-                return; // No mostrar error si fue cancelado intencionalmente
+                return;
             }
             console.error('Error al buscar batches:', error);
             alert('Error de conexión al buscar batches');
         } finally {
             spinnerBatches.style.display = 'none';
             btnBuscarBatches.disabled = false;
+            btnListarBatches.disabled = false;
             buscarBatchesController = null;
         }
     });
     
-    // Event listener para Listar Batches (solo consulta, no detecta)
+    // ================================
+    // BOTÓN LISTAR BATCHES: Solo Lista
+    // ================================
     btnListarBatches.addEventListener('click', async function() {
         // Si hay una búsqueda en curso, aborta
         if (buscarBatchesController) {
@@ -180,12 +248,14 @@ document.addEventListener('DOMContentLoaded', function() {
             buscarBatchesController = null;
         }
         
+        // Validar sistema seleccionado
         const sistemaId = obtenerSistemaActual();
         if (!sistemaId) {
             alert('No se ha seleccionado un sistema');
             return;
         }
         
+        // Validar fechas
         const fechaInicio = document.getElementById('fechaInicioBatch').value;
         const fechaFin = document.getElementById('fechaFinBatch').value;
         
@@ -199,52 +269,45 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // Mostrar spinner y ocultar resultados anteriores
-        document.getElementById('spinnerText').textContent = 'Consultando batches existentes...';
+        // Mostrar spinner para listado
+        document.getElementById('spinnerText').textContent = 'Cargando batches detectados...';
         spinnerBatches.style.display = 'block';
         resultadosBatches.style.display = 'none';
+        btnBuscarBatches.disabled = true;
         btnListarBatches.disabled = true;
         
         try {
-            const response = await fetch(`/monitoreo/api/listar-batches/${sistemaId}/`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCSRFToken()
-                },
-                body: JSON.stringify({
-                    fecha_inicio: fechaInicio,
-                    fecha_fin: fechaFin
-                })
-            });
-            
-            const data = await response.json();
-            
-            if (data.success) {
-                mostrarBatchesListados(data);
-            } else {
-                alert('Error: ' + data.error);
-            }
+            // Usar la función común para listar
+            await listarBatchesDetectados();
         } catch (error) {
             console.error('Error al listar batches:', error);
             alert('Error de conexión al listar batches');
         } finally {
             spinnerBatches.style.display = 'none';
+            btnBuscarBatches.disabled = false;
             btnListarBatches.disabled = false;
         }
     });
     
     function mostrarResultadosBatches(data) {
-        // Mostrar configuración en la sección fija superior
-        mostrarConfiguracion(data.configuracion_usada);
+        // Mostrar configuración solo si está disponible (viene de detección, no de listado)
+        if (data.configuracion_usada) {
+            mostrarConfiguracion(data.configuracion_usada);
+        } else {
+            // Ocultar la sección de configuración si no está disponible
+            document.getElementById('configuracionUtilizada').style.display = 'none';
+        }
         
         resultadosBatches.style.display = 'block';
         
-        if (data.batches_detectados === 0) {
+        // Usar el campo correcto según el endpoint (batches_detectados vs total_batches)
+        const totalBatches = data.batches_detectados || data.total_batches || 0;
+        
+        if (totalBatches === 0) {
             listaBatches.innerHTML = `
                 <div class="alert alert-warning">
                     <i class="bi bi-exclamation-triangle"></i>
-                    No se detectaron batches en el rango de fechas especificado.
+                    No se encontraron batches en el rango de fechas especificado.
                 </div>
             `;
             return;
@@ -253,11 +316,22 @@ document.addEventListener('DOMContentLoaded', function() {
         let html = `
             <div class="alert alert-success">
                 <i class="bi bi-check-circle"></i>
-                <strong>Se detectaron ${data.batches_detectados} batch(es)</strong>
+                <strong>Se encontraron ${totalBatches} batch(es)</strong>`;
+        
+        // Solo mostrar información detallada si viene de detección
+        if (data.rango_analizado) {
+            html += `
                 <br>
                 <small>Rango analizado: ${data.rango_analizado.fecha_inicio} - ${data.rango_analizado.fecha_fin}</small>
                 <br>
-                <small>Total de registros analizados: ${data.rango_analizado.total_registros}</small>
+                <small>Total de registros analizados: ${data.rango_analizado.total_registros}</small>`;
+        } else if (data.fecha_inicio && data.fecha_fin) {
+            html += `
+                <br>
+                <small>Período consultado: ${data.fecha_inicio} - ${data.fecha_fin}</small>`;
+        }
+        
+        html += `
             </div>
             
             <div class="table-responsive">
@@ -403,10 +477,21 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     function mostrarConfiguracion(config) {
-        document.getElementById('limInfCaudal').textContent = config.lim_inf_caudal_masico;
-        document.getElementById('limSupCaudal').textContent = config.lim_sup_caudal_masico;
-        document.getElementById('volMinBatch').textContent = config.vol_minimo_batch;
-        document.getElementById('configuracionUtilizada').style.display = 'block';
+        if (!config) {
+            console.warn('No se recibió configuración para mostrar');
+            document.getElementById('configuracionUtilizada').style.display = 'none';
+            return;
+        }
+        
+        try {
+            document.getElementById('limInfCaudal').textContent = config.lim_inf_caudal_masico || 'N/A';
+            document.getElementById('limSupCaudal').textContent = config.lim_sup_caudal_masico || 'N/A';
+            document.getElementById('volMinBatch').textContent = config.vol_minimo_batch || 'N/A';
+            document.getElementById('configuracionUtilizada').style.display = 'block';
+        } catch (error) {
+            console.error('Error al mostrar configuración:', error);
+            document.getElementById('configuracionUtilizada').style.display = 'none';
+        }
     }
     
     // Función para obtener CSRF token (versión robusta)
