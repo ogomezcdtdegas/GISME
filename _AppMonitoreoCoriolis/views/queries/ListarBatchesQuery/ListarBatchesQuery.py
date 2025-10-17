@@ -69,8 +69,8 @@ class ListarBatchesQueryView(APIView):
                 batches_data.append({
                     'id': str(batch.id),
                     'num_ticket': batch.num_ticket,
-                    'fecha_inicio': batch.fecha_inicio.strftime('%Y-%m-%d %H:%M:%S'),
-                    'fecha_fin': batch.fecha_fin.strftime('%Y-%m-%d %H:%M:%S'),
+                    'fecha_inicio': batch.fecha_inicio.astimezone(COLOMBIA_TZ).strftime('%Y-%m-%d %H:%M:%S'),
+                    'fecha_fin': batch.fecha_fin.astimezone(COLOMBIA_TZ).strftime('%Y-%m-%d %H:%M:%S'),
                     'duracion_minutos': round((batch.fecha_fin - batch.fecha_inicio).total_seconds() / 60, 2),
                     'vol_total': round(batch.vol_total, 2) if batch.vol_total else 0,
                     'temperatura_prom': round(batch.temperatura_coriolis_prom, 2) if batch.temperatura_coriolis_prom else 0,
