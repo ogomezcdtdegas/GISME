@@ -1,5 +1,6 @@
 import logging
 import hashlib
+import pytz
 from datetime import datetime
 from django.utils import timezone as django_timezone
 from django.db import IntegrityError
@@ -48,15 +49,20 @@ class DetectarBatchesCommandView(APIView):
                 }, status=400)
             
             # Convertir fechas a datetime
-            fecha_inicio = datetime.strptime(fecha_inicio_str, '%Y-%m-%d').replace(hour=0, minute=0, second=0, microsecond=0)
-            fecha_fin = datetime.strptime(fecha_fin_str, '%Y-%m-%d').replace(hour=23, minute=59, second=59, microsecond=999999)
+            fecha_inicio_naive = datetime.strptime(fecha_inicio_str, '%Y-%m-%d').replace(hour=0, minute=0, second=0, microsecond=0)
+            fecha_fin_naive = datetime.strptime(fecha_fin_str, '%Y-%m-%d').replace(hour=23, minute=59, second=59, microsecond=999999)
             
             # Convertir a timezone aware usando COLOMBIA_TZ explícitamente
-            fecha_inicio = COLOMBIA_TZ.localize(fecha_inicio)
-            fecha_fin = COLOMBIA_TZ.localize(fecha_fin)
+            fecha_inicio_colombia = COLOMBIA_TZ.localize(fecha_inicio_naive)
+            fecha_fin_colombia = COLOMBIA_TZ.localize(fecha_fin_naive)
+            
+            # Convertir a UTC para consultas de base de datos (igual que otras queries)
+            fecha_inicio = fecha_inicio_colombia.astimezone(pytz.UTC)
+            fecha_fin = fecha_fin_colombia.astimezone(pytz.UTC)
             
             # Log para debugging de zona horaria
-            logger.info(f"Fechas procesadas - Inicio: {fecha_inicio} | Fin: {fecha_fin}")
+            logger.info(f"Fechas Colombia - Inicio: {fecha_inicio_colombia} | Fin: {fecha_fin_colombia}")
+            logger.info(f"Fechas UTC (para DB) - Inicio: {fecha_inicio} | Fin: {fecha_fin}")
             logger.info(f"Input recibido - fecha_inicio_str: '{fecha_inicio_str}', fecha_fin_str: '{fecha_fin_str}'")
             
             # Obtener datos del rango de fechas, ordenados por fecha
