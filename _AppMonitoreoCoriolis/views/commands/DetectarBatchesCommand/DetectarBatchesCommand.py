@@ -48,11 +48,26 @@ class DetectarBatchesCommandView(APIView):
                     'error': 'No se encontró configuración de límites para este sistema'
                 }, status=400)
             
-            # Convertir fechas a datetime
-            fecha_inicio_naive = datetime.strptime(fecha_inicio_str, '%Y-%m-%d').replace(hour=0, minute=0, second=0, microsecond=0)
-            fecha_fin_naive = datetime.strptime(fecha_fin_str, '%Y-%m-%d').replace(hour=23, minute=59, second=59, microsecond=999999)
+            # Parsear fechas con formato datetime (igual que las queries históricas)
+            try:
+                # Intentar formato con fecha y hora: "2025-10-16T00:00:00"
+                fecha_inicio_naive = datetime.strptime(fecha_inicio_str, '%Y-%m-%dT%H:%M:%S')
+                fecha_fin_naive = datetime.strptime(fecha_fin_str, '%Y-%m-%dT%H:%M:%S')
+            except ValueError:
+                try:
+                    # Fallback a formato solo fecha: "2025-10-16"
+                    fecha_inicio_naive = datetime.strptime(fecha_inicio_str, '%Y-%m-%d')
+                    fecha_fin_naive = datetime.strptime(fecha_fin_str, '%Y-%m-%d')
+                    # Establecer horas para cubrir todo el rango del día
+                    fecha_inicio_naive = fecha_inicio_naive.replace(hour=0, minute=0, second=0, microsecond=0)
+                    fecha_fin_naive = fecha_fin_naive.replace(hour=23, minute=59, second=59, microsecond=999999)
+                except ValueError:
+                    return Response({
+                        'success': False,
+                        'error': 'Formato de fecha inválido. Use YYYY-MM-DD o YYYY-MM-DDTHH:MM:SS'
+                    }, status=400)
             
-            # Convertir a timezone aware usando COLOMBIA_TZ explícitamente
+            # Asumir que las fechas del frontend están en hora de Colombia y convertir a UTC
             fecha_inicio_colombia = COLOMBIA_TZ.localize(fecha_inicio_naive)
             fecha_fin_colombia = COLOMBIA_TZ.localize(fecha_fin_naive)
             

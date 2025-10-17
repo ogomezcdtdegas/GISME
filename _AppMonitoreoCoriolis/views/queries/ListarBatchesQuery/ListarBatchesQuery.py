@@ -1,4 +1,5 @@
 import logging
+import pytz
 from datetime import datetime
 from django.shortcuts import get_object_or_404
 from django.db import models
@@ -34,26 +35,31 @@ class ListarBatchesQueryView(APIView):
                     'error': 'Las fechas de inicio y fin son requeridas'
                 }, status=400)
             
-            # Convertir fechas a objetos datetime
+            # Parsear fechas con formato datetime (igual que las queries históricas)
             try:
-                fecha_inicio = datetime.fromisoformat(fecha_inicio_str.replace('Z', '+00:00'))
-                fecha_fin = datetime.fromisoformat(fecha_fin_str.replace('Z', '+00:00'))
-                
-                # Convertir a timezone de Colombia
-                fecha_inicio = fecha_inicio.astimezone(COLOMBIA_TZ)
-                fecha_fin = fecha_fin.astimezone(COLOMBIA_TZ)
-                
-                # Ajustar las fechas para cubrir todo el día
-                # Inicio del día para fecha_inicio
-                fecha_inicio = fecha_inicio.replace(hour=0, minute=0, second=0, microsecond=0)
-                # Final del día para fecha_fin
-                fecha_fin = fecha_fin.replace(hour=23, minute=59, second=59, microsecond=999999)
-                
-            except ValueError as e:
-                return Response({
-                    'success': False,
-                    'error': f'Formato de fecha inválido: {str(e)}'
-                }, status=400)
+                # Intentar formato con fecha y hora: "2025-10-16T00:00:00"
+                fecha_inicio_naive = datetime.strptime(fecha_inicio_str, '%Y-%m-%dT%H:%M:%S')
+                fecha_fin_naive = datetime.strptime(fecha_fin_str, '%Y-%m-%dT%H:%M:%S')
+            except ValueError:
+                try:
+                    # Fallback a formato solo fecha: "2025-10-16"
+                    fecha_inicio_naive = datetime.strptime(fecha_inicio_str, '%Y-%m-%d')
+                    fecha_fin_naive = datetime.strptime(fecha_fin_str, '%Y-%m-%d')
+                    
+                    # Establecer horas para cubrir todo el rango del día
+                    fecha_inicio_naive = fecha_inicio_naive.replace(hour=0, minute=0, second=0, microsecond=0)
+                    fecha_fin_naive = fecha_fin_naive.replace(hour=23, minute=59, second=59, microsecond=999999)
+                except ValueError:
+                    return Response({
+                        'success': False,
+                        'error': 'Formato de fecha inválido. Use YYYY-MM-DD o YYYY-MM-DDTHH:MM:SS'
+                    }, status=400)
+                    
+            # Asumir que las fechas del frontend están en hora de Colombia y convertir a UTC
+            fecha_inicio = COLOMBIA_TZ.localize(fecha_inicio_naive).astimezone(pytz.UTC)
+            fecha_fin = COLOMBIA_TZ.localize(fecha_fin_naive).astimezone(pytz.UTC)
+            
+            logger.info(f"Fechas convertidas a UTC - Inicio: {fecha_inicio}, Fin: {fecha_fin}")
             
             # Buscar batches que tengan fecha_inicio dentro del rango de fechas
             # Cualquier batch que inicie dentro del día seleccionado
