@@ -27,8 +27,9 @@ class DatosTendenciasQueryView(APIView):
             
             # Obtener el último dato disponible para establecer el punto de referencia
             ultimo_dato = NodeRedData.objects.filter(
-                systemId=sistema
-            ).order_by('-created_at').first()
+                systemId=sistema,
+                created_at_iot__isnull=False
+            ).order_by('-created_at_iot').first()
             
             if not ultimo_dato:
                 return Response({
@@ -45,14 +46,15 @@ class DatosTendenciasQueryView(APIView):
                 })
             
             # Calcular ventana de 30 minutos desde el último dato hacia atrás
-            fecha_fin = ultimo_dato.created_at
+            fecha_fin = ultimo_dato.created_at_iot
             fecha_inicio = fecha_fin - timedelta(minutes=30)
             
-            # Consultar datos en esa ventana de tiempo
+            # Consultar datos en esa ventana de tiempo usando timestamp IoT
             datos = NodeRedData.objects.filter(
                 systemId=sistema,
-                created_at__range=[fecha_inicio, fecha_fin]
-            ).order_by('created_at')
+                created_at_iot__range=[fecha_inicio, fecha_fin],
+                created_at_iot__isnull=False
+            ).order_by('created_at_iot')
             
             # Preparar datos para cada variable
             flujo_masico = []
@@ -62,8 +64,8 @@ class DatosTendenciasQueryView(APIView):
             presion = []
             
             for dato in datos:
-                # Convertir UTC a hora de Colombia
-                fecha_colombia = dato.created_at.astimezone(COLOMBIA_TZ)
+                # Convertir UTC a hora de Colombia usando timestamp IoT
+                fecha_colombia = dato.created_at_iot.astimezone(COLOMBIA_TZ)
                 timestamp = int(fecha_colombia.timestamp() * 1000)
                 fecha_str = fecha_colombia.strftime('%H:%M')
                 
@@ -171,7 +173,7 @@ class DatosTendenciasQueryView(APIView):
                 'ventana_tiempo': {
                     'inicio': fecha_inicio.astimezone(COLOMBIA_TZ).strftime('%H:%M'),
                     'fin': fecha_fin.astimezone(COLOMBIA_TZ).strftime('%H:%M'),
-                    'ultimo_dato': ultimo_dato.created_at.astimezone(COLOMBIA_TZ).strftime('%d/%m/%Y %H:%M:%S')
+                    'ultimo_dato': ultimo_dato.created_at_iot.astimezone(COLOMBIA_TZ).strftime('%d/%m/%Y %H:%M:%S')
                 },
                 'timestamp': fecha_fin.isoformat(),
                 'total_registros': datos.count()

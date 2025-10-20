@@ -80,12 +80,13 @@ class DetectarBatchesCommandView(APIView):
             logger.info(f"Fechas UTC (para DB) - Inicio: {fecha_inicio} | Fin: {fecha_fin}")
             logger.info(f"Input recibido - fecha_inicio_str: '{fecha_inicio_str}', fecha_fin_str: '{fecha_fin_str}'")
             
-            # Obtener datos del rango de fechas, ordenados por fecha
+            # Obtener datos del rango de fechas, ordenados por fecha IoT
             datos = NodeRedData.objects.filter(
                 systemId=sistema,
-                created_at__gte=fecha_inicio,
-                created_at__lte=fecha_fin
-            ).order_by('created_at')
+                created_at_iot__gte=fecha_inicio,
+                created_at_iot__lte=fecha_fin,
+                created_at_iot__isnull=False  # Solo datos con timestamp IoT válido
+            ).order_by('created_at_iot')
             
             if not datos.exists():
                 return Response({
@@ -211,7 +212,7 @@ class DetectarBatchesCommandView(APIView):
         - Si la diferencia supera vol_minimo, es batch válido
         
         Args:
-            datos: QuerySet de NodeRedData ordenado por created_at
+            datos: QuerySet de NodeRedData ordenado por created_at_iot
             lim_inf: Límite inferior de caudal másico (kg/min) - SOLO PARA MOSTRAR
             lim_sup: Límite superior de caudal másico (kg/min) - SOLO PARA MOSTRAR
             vol_minimo: Volumen mínimo para considerar un batch válido (kg)
@@ -241,13 +242,13 @@ class DetectarBatchesCommandView(APIView):
                 if not en_batch:
                     # Iniciar nuevo batch - usar punto anterior como referencia inicial
                     en_batch = True
-                    inicio_batch = dato.created_at
+                    inicio_batch = dato.created_at_iot
                     
                     # Si tenemos punto anterior (donde flujo = 0), usarlo como referencia
                     if punto_anterior is not None:
                         primer_dato = punto_anterior
                         logger.debug(f"Iniciando batch en {inicio_batch}, usando punto anterior como referencia")
-                        logger.debug(f"Punto inicial (flujo=0): masa={primer_dato.total_mass} lb en {primer_dato.created_at}")
+                        logger.debug(f"Punto inicial (flujo=0): masa={primer_dato.total_mass} lb en {primer_dato.created_at_iot}")
                     else:
                         # Si no hay punto anterior, usar el actual
                         primer_dato = dato
@@ -261,7 +262,7 @@ class DetectarBatchesCommandView(APIView):
             else:
                 # mass_rate <= 0: terminar batch si estaba activo, o guardar como punto anterior
                 if en_batch:
-                    fin_batch = dato.created_at
+                    fin_batch = dato.created_at_iot
                     ultimo_dato = datos_batch[-1]  # Último punto con flujo > 0
                     
                     # Calcular diferencia de masa total entre último y primer punto
@@ -272,8 +273,8 @@ class DetectarBatchesCommandView(APIView):
                         diferencia_kg = lb_a_kg(diferencia_lb)
                         
                         logger.debug(f"Terminando batch en {fin_batch}")
-                        logger.debug(f"Masa inicial (punto en 0): {masa_inicial_lb:.2f} lb en {primer_dato.created_at}")
-                        logger.debug(f"Masa final (último punto >0): {masa_final_lb:.2f} lb en {ultimo_dato.created_at}")
+                        logger.debug(f"Masa inicial (punto en 0): {masa_inicial_lb:.2f} lb en {primer_dato.created_at_iot}")
+                        logger.debug(f"Masa final (último punto >0): {masa_final_lb:.2f} lb en {ultimo_dato.created_at_iot}")
                         logger.debug(f"Diferencia: {diferencia_lb:.2f} lb = {diferencia_kg:.2f} kg")
                         
                         # Solo guardar si la diferencia supera el volumen mínimo
@@ -285,15 +286,15 @@ class DetectarBatchesCommandView(APIView):
                             dens_prom = sum(densidades) / len(densidades) if densidades else 0
                             
                             batches.append({
-                                'fecha_inicio': primer_dato.created_at,  # Usar fecha del punto inicial (flujo=0)
+                                'fecha_inicio': primer_dato.created_at_iot,  # Usar fecha IoT del punto inicial (flujo=0)
                                 'fecha_fin': fin_batch,
                                 'vol_total': diferencia_kg,
                                 'temperatura_coriolis_prom': temp_prom,
                                 'densidad_prom': dens_prom,
-                                'duracion_minutos': (fin_batch - primer_dato.created_at).total_seconds() / 60,
+                                'duracion_minutos': (fin_batch - primer_dato.created_at_iot).total_seconds() / 60,
                                 'total_registros': len(datos_batch)
                             })
-                            logger.info(f"Batch guardado: {primer_dato.created_at} - {fin_batch}, {diferencia_kg:.2f} kg")
+                            logger.info(f"Batch guardado: {primer_dato.created_at_iot} - {fin_batch}, {diferencia_kg:.2f} kg")
                         else:
                             logger.debug(f"Batch descartado: {diferencia_kg:.2f} kg < {vol_minimo} kg")
                     
@@ -315,8 +316,8 @@ class DetectarBatchesCommandView(APIView):
             diferencia_kg = lb_a_kg(diferencia_lb)
             
             logger.debug(f"Cerrando batch abierto al final")
-            logger.debug(f"Masa inicial (punto en 0): {masa_inicial_lb:.2f} lb en {primer_dato.created_at}")
-            logger.debug(f"Masa final (último punto >0): {masa_final_lb:.2f} lb en {ultimo_dato.created_at}")
+            logger.debug(f"Masa inicial (punto en 0): {masa_inicial_lb:.2f} lb en {primer_dato.created_at_iot}")
+            logger.debug(f"Masa final (último punto >0): {masa_final_lb:.2f} lb en {ultimo_dato.created_at_iot}")
             logger.debug(f"Diferencia: {diferencia_lb:.2f} lb = {diferencia_kg:.2f} kg")
             
             if diferencia_kg >= vol_minimo:
@@ -326,15 +327,15 @@ class DetectarBatchesCommandView(APIView):
                 dens_prom = sum(densidades) / len(densidades) if densidades else 0
                 
                 batches.append({
-                    'fecha_inicio': primer_dato.created_at,  # Usar fecha del punto inicial (flujo=0)
-                    'fecha_fin': ultimo_dato.created_at,
+                    'fecha_inicio': primer_dato.created_at_iot,  # Usar fecha IoT del punto inicial (flujo=0)
+                    'fecha_fin': ultimo_dato.created_at_iot,
                     'vol_total': diferencia_kg,
                     'temperatura_coriolis_prom': temp_prom,
                     'densidad_prom': dens_prom,
-                    'duracion_minutos': (ultimo_dato.created_at - primer_dato.created_at).total_seconds() / 60,
+                    'duracion_minutos': (ultimo_dato.created_at_iot - primer_dato.created_at_iot).total_seconds() / 60,
                     'total_registros': len(datos_batch)
                 })
-                logger.info(f"Batch final guardado: {primer_dato.created_at} - {ultimo_dato.created_at}, {diferencia_kg:.2f} kg")
+                logger.info(f"Batch final guardado: {primer_dato.created_at_iot} - {ultimo_dato.created_at_iot}, {diferencia_kg:.2f} kg")
 
         logger.info(f"Detección completada con lógica de diferencia de masa. {len(batches)} batches detectados")
         return batches

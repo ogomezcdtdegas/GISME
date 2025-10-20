@@ -73,9 +73,10 @@ class DatosHistoricosTemperaturaQueryView(APIView):
             # Consultar datos de temperatura del sistema
             datos_query = NodeRedData.objects.filter(
                 systemId=sistema,
-                created_at__gte=fecha_inicio,
-                created_at__lte=fecha_fin
-            ).order_by('created_at')
+                created_at_iot__gte=fecha_inicio,
+                created_at_iot__lte=fecha_fin,
+                created_at_iot__isnull=False
+            ).order_by('created_at_iot')
             
             logger.info(f"Query generada: {datos_query.query}")
             logger.info(f"Total de registros encontrados: {datos_query.count()}")
@@ -91,7 +92,7 @@ class DatosHistoricosTemperaturaQueryView(APIView):
             
             for dato in datos_query:
                 # Convertir timestamp a hora de Colombia para mostrar
-                fecha_colombia = dato.created_at.astimezone(COLOMBIA_TZ)
+                fecha_colombia = dato.created_at_iot.astimezone(COLOMBIA_TZ)
                 fecha_str = fecha_colombia.strftime('%d/%m/%Y %H:%M:%S')
                 timestamp = fecha_colombia.isoformat()
                 
@@ -182,7 +183,7 @@ class DatosHistoricosTemperaturaQueryView(APIView):
         writer.writerow(['Fecha', 'Hora', 'Temp. Coriolis (°C)', 'Temp. Diagnóstico (°C)', 'Temp. Redundante (°C)', 'Sistema'])
         
         for dato in datos:
-            fecha_colombia = dato.created_at.astimezone(COLOMBIA_TZ)
+            fecha_colombia = dato.created_at_iot.astimezone(COLOMBIA_TZ)
             
             # Aplicar corrección del momento a temperatura redundante (temperatura de salida)
             temp_redundante_corregida = None

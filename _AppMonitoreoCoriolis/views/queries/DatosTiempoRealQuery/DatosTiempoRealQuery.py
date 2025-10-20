@@ -23,10 +23,11 @@ class DatosTiempoRealQueryView(APIView):
             # Obtener coeficientes de corrección
             mt, bt, mp, bp, span_presion, zero_presion = get_coeficientes_correccion(sistema)
             
-            # Obtener el último registro
+            # Obtener el último registro con timestamp IoT válido
             ultimo_dato = NodeRedData.objects.filter(
-                systemId=sistema
-            ).order_by('-created_at').first()
+                systemId=sistema,
+                created_at_iot__isnull=False
+            ).order_by('-created_at_iot').first()
             
             if not ultimo_dato:
                 return Response({
@@ -34,8 +35,8 @@ class DatosTiempoRealQueryView(APIView):
                     'error': 'No hay datos disponibles para este sistema'
                 }, status=404)
             
-            # Convertir UTC a hora de Colombia
-            fecha_colombia = ultimo_dato.created_at.astimezone(COLOMBIA_TZ)
+            # Convertir UTC a hora de Colombia usando timestamp IoT
+            fecha_colombia = ultimo_dato.created_at_iot.astimezone(COLOMBIA_TZ)
             
             # Aplicar corrección a Temperatura de Salida (redundant_temperature)
             temp_salida = ultimo_dato.redundant_temperature

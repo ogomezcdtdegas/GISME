@@ -72,8 +72,9 @@ class DatosHistoricosPresionQueryView(APIView):
             logger.info(f"Consultando datos de presión para sistema: {sistema.tag}")
             datos = NodeRedData.objects.filter(
                 systemId=sistema,
-                created_at__range=[fecha_inicio, fecha_fin]
-            ).order_by('created_at')
+                created_at_iot__range=[fecha_inicio, fecha_fin],
+                created_at_iot__isnull=False
+            ).order_by('created_at_iot')
             
             logger.info(f"Datos encontrados: {datos.count()} registros")
             
@@ -86,8 +87,8 @@ class DatosHistoricosPresionQueryView(APIView):
             datos_presion = []
             
             for dato in datos:
-                # Convertir UTC a hora de Colombia
-                fecha_colombia = dato.created_at.astimezone(COLOMBIA_TZ)
+                # Convertir UTC a hora de Colombia usando timestamp IoT
+                fecha_colombia = dato.created_at_iot.astimezone(COLOMBIA_TZ)
                 timestamp = int(fecha_colombia.timestamp() * 1000)
                 fecha_str = fecha_colombia.strftime('%d/%m %H:%M')
                 

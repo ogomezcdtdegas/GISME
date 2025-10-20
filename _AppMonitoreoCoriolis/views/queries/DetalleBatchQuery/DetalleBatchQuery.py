@@ -39,9 +39,10 @@ class DetalleBatchQueryView(APIView):
             # Obtener todos los datos del intervalo extendido del batch
             datos = NodeRedData.objects.filter(
                 systemId=batch.systemId,
-                created_at__gte=inicio_extendido,
-                created_at__lte=fin_extendido
-            ).order_by('created_at')
+                created_at_iot__gte=inicio_extendido,
+                created_at_iot__lte=fin_extendido,
+                created_at_iot__isnull=False  # Solo datos con timestamp IoT válido
+            ).order_by('created_at_iot')
             
             if not datos.exists():
                 return Response({
@@ -52,11 +53,11 @@ class DetalleBatchQueryView(APIView):
             # Preparar datos para el gráfico
             datos_grafico = []
             for dato in datos:
-                # Convertir UTC a hora de Colombia
-                fecha_colombia = dato.created_at.astimezone(COLOMBIA_TZ)
+                # Convertir UTC a hora de Colombia usando timestamp IoT
+                fecha_colombia = dato.created_at_iot.astimezone(COLOMBIA_TZ)
                 
                 # Determinar si el punto está dentro del batch real o en el contexto extendido
-                dentro_batch = batch.fecha_inicio <= dato.created_at <= batch.fecha_fin
+                dentro_batch = batch.fecha_inicio <= dato.created_at_iot <= batch.fecha_fin
                 
                 # Convertir mass_rate de lb/sec a kg/min para consistencia
                 mass_rate_kg_min = lb_s_a_kg_min(dato.mass_rate) if dato.mass_rate is not None else None
