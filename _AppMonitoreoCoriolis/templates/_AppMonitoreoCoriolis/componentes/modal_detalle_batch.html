@@ -88,7 +88,7 @@
                 {% endif %}
 
                 <button type="button" class="btn btn-primary" onclick="descargarDatosBatch()">
-                    <i class="bi bi-download"></i> Descargar Datos
+                    <i class="bi bi-file-earmark-pdf"></i> Descargar PDF Ticket
                 </button>
             </div>
         </div>
@@ -416,22 +416,14 @@ function configurarEventosGraficoBatch() {
     });
 }
 
-// Función para descargar datos del batch (placeholder)
+// Función para descargar PDF del ticket del batch
 function descargarDatosBatch() {
-    if (datosActualesBatch) {
-        const csvContent = "data:text/csv;charset=utf-8," 
-            + "Fecha/Hora,Flujo Másico (kg/min),Masa Total (lb),Temperatura (°C),Densidad (g/cc)\n"
-            + datosActualesBatch.datos_grafico.map(d => 
-                `${d.fecha_hora},${d.mass_rate_kg_min},${d.total_mass},${d.coriolis_temperature},${d.density}`
-            ).join("\n");
-        
-        const encodedUri = encodeURI(csvContent);
-        const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        link.setAttribute("download", `batch_${datosActualesBatch.batch_info.id}_datos.csv`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+    if (datosActualesBatch && datosActualesBatch.batch_info) {
+        const batchId = datosActualesBatch.batch_info.id;
+        // Abrir PDF en nueva ventana para descarga
+        window.open(`/monitoreo/pdf/ticket-batch/${batchId}/`, '_blank');
+    } else {
+        alert('No hay datos del batch disponibles para descargar.');
     }
 }
 

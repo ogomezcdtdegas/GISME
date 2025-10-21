@@ -1,6 +1,7 @@
 from django.urls import path
 from . import views
 from .views_node_red import NodeRedReceiverView
+from .views.queries.pdf_views import DescargarTicketBatchPDFView
 
 urlpatterns = [
     # Vistas principales SPA (CBVs)
@@ -19,6 +20,9 @@ urlpatterns = [
     path('api/listar-batches/<uuid:sistema_id>/', views.ListarBatchesView.as_view(), name='listar_batches'),
     path('api/asignar-ticket-batch/<uuid:batch_id>/', views.AsignarTicketBatchView.as_view(), name='asignar_ticket_batch'),
     path('api/detalle-batch/<uuid:batch_id>/', views.DetalleBatchView.as_view(), name='detalle_batch'),
+    
+    # PDF Downloads
+    path('pdf/ticket-batch/<uuid:batch_id>/', DescargarTicketBatchPDFView.as_view(), name='descargar_ticket_batch_pdf'),
 ]
 
 urlpatterns += [
