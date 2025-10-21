@@ -6,6 +6,7 @@ from django.shortcuts import get_object_or_404
 from django.db import models
 
 from .....models import ConfiguracionCoeficientes, Sistema
+from _AppAdmin.utils import log_user_action, get_client_ip
 
 from drf_spectacular.utils import extend_schema, extend_schema_view
 
@@ -107,6 +108,17 @@ class CreateOrUpdateCoeficientesCommandView(APIView):
                 coeficientes.vol_masico_ini_batch = float(vol_masico_ini_batch)
                 coeficientes.num_ticket = int(num_ticket)
                 coeficientes.save()
+
+            # Registrar la acción en el log universal
+            action = 'crear' if created else 'editar'
+            log_user_action(
+                user=request.user,
+                action=action,
+                affected_type='sistema',  # Tipo de registro afectado
+                affected_value=f'{sistema.tag} - Coeficientes de corrección: {{MT: {coeficientes.mt}, BT: {coeficientes.bt}, MP: {coeficientes.mp}, BP: {coeficientes.bp}, Zero: {coeficientes.zero_presion}, Span: {coeficientes.span_presion}, LimInf: {coeficientes.lim_inf_caudal_masico}, LimSup: {coeficientes.lim_sup_caudal_masico}, VolBatch: {coeficientes.vol_masico_ini_batch}, Ticket: {coeficientes.num_ticket}}}',
+                affected_id=str(sistema.id),  # ID del sistema afectado
+                ip_address=get_client_ip(request)
+            )
 
             return Response({
                 "success": True,
