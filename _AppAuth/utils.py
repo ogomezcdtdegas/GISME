@@ -114,7 +114,7 @@ def get_monitoring_context(user):
         'can_configure_constants': user_role in ['admin', 'admin_principal'],
         'can_view_batch_detection': user_role in ['admin', 'admin_principal', 'supervisor'],
         'can_modify_batch_detection': user_role in ['admin', 'admin_principal'],
-        'can_assign_tickets': user_role in ['admin', 'admin_principal', 'supervisor'],
+        'can_assign_tickets': user_role in ['admin', 'admin_principal'],  # Solo admin puede asignar tickets
         
         # Configuración de acceso
         'show_config_buttons': user_role in ['admin', 'admin_principal'],

@@ -80,9 +80,13 @@
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                     <i class="bi bi-x-circle"></i> Cerrar
                 </button>
+
+                {% if can_assign_tickets %}
                 <button type="button" id="btnAsignarTicket" class="btn btn-warning" onclick="asignarTicketBatch()">
                     <i class="bi bi-tag"></i> Asignar Ticket
                 </button>
+                {% endif %}
+
                 <button type="button" class="btn btn-primary" onclick="descargarDatosBatch()">
                     <i class="bi bi-download"></i> Descargar Datos
                 </button>
@@ -435,6 +439,11 @@ function descargarDatosBatch() {
 function actualizarEstadoBotonTicket(numTicket) {
     const btn = document.getElementById('btnAsignarTicket');
     
+    // Verificar si el botón existe (puede no existir si el usuario no tiene permisos)
+    if (!btn) {
+        return;
+    }
+    
     if (numTicket) {
         // Ya tiene ticket - deshabilitar botón
         btn.disabled = true;
@@ -465,8 +474,13 @@ async function asignarTicketBatch() {
     }
     
     try {
-        // Deshabilitar el botón mientras se procesa
+        // Deshabilitar el botón mientras se procesa (verificar que existe)
         const btn = document.getElementById('btnAsignarTicket');
+        if (!btn) {
+            alert('Error: No tiene permisos para asignar tickets');
+            return;
+        }
+        
         const textoOriginal = btn.innerHTML;
         btn.disabled = true;
         btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Asignando...';
@@ -512,10 +526,12 @@ async function asignarTicketBatch() {
         console.error('Error al asignar ticket:', error);
         alert('Error de conexión al asignar ticket');
     } finally {
-        // Restaurar el botón
+        // Restaurar el botón (si existe)
         const btn = document.getElementById('btnAsignarTicket');
-        btn.disabled = false;
-        btn.innerHTML = textoOriginal;
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = textoOriginal;
+        }
     }
 }
 
