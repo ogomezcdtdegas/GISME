@@ -10,6 +10,9 @@
       <div class="modal-header">
         <h5 class="modal-title" id="modalConfiguracionSistemaLabel">
           <i class="bi bi-gear-fill"></i> COEFICIENTES DE CORRECCIÓN Y VARIABLES DE CONFIGURACIÓN
+          {% if readonly_config_view %}
+          <span class="badge bg-warning ms-2">Solo Lectura</span>
+          {% endif %}
         </h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
       </div>
@@ -99,11 +102,17 @@
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-          <i class="bi bi-x-circle"></i> Cancelar
+          <i class="bi bi-x-circle"></i> Cerrar
         </button>
+        {% if can_configure_constants %}
         <button type="button" class="btn btn-primary" id="btnActualizarCoeficientes">
           <i class="bi bi-check-circle"></i> Actualizar
         </button>
+        {% elif readonly_config_view %}
+        <button type="button" class="btn btn-outline-secondary" disabled title="Solo los Administradores pueden modificar coeficientes">
+          <i class="bi bi-lock"></i> Solo Lectura (Supervisor)
+        </button>
+        {% endif %}
       </div>
     </div>
   </div>
@@ -331,6 +340,30 @@ document.addEventListener('DOMContentLoaded', function() {
         
         console.log('🔐 Token CSRF obtenido:', token ? `✅ Válido (${token.length} chars)` : '❌ No encontrado');
         return token || '';
+    }
+
+    function aplicarModoSoloLectura() {
+        // Obtener todos los campos del formulario
+        const formElements = form.querySelectorAll('input, select, textarea');
+        
+        formElements.forEach(element => {
+            // Hacer los campos de solo lectura
+            element.setAttribute('readonly', 'readonly');
+            element.style.backgroundColor = '#f8f9fa';
+            element.style.cursor = 'not-allowed';
+            
+            // Agregar tooltip explicativo
+            element.setAttribute('title', 'Solo lectura - Supervisor no puede modificar configuraciones');
+        });
+
+        // Deshabilitar también cualquier botón dentro del formulario
+        const formButtons = form.querySelectorAll('button[type="button"]:not(.btn-close)');
+        formButtons.forEach(button => {
+            button.disabled = true;
+            button.style.cursor = 'not-allowed';
+        });
+        
+        console.log('✅ Modo solo lectura aplicado para rol Supervisor');
     }
 });
 </script>

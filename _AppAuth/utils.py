@@ -43,6 +43,7 @@ def get_user_role_context(user):
         'can_access_tools': user_role in ['admin', 'admin_principal', 'supervisor'],
         'can_access_calculations': user_role in ['admin', 'admin_principal', 'supervisor'],
         'can_manage_equipment': user_role in ['admin', 'admin_principal'],
+        'can_access_complementos': user_role in ['admin', 'admin_principal'],  # Supervisor NO tiene acceso
     }
     
     # Configurar mensajes de acceso denegado específicos
@@ -88,6 +89,47 @@ def get_admin_context(user):
     
     # Combinar contextos
     base_context.update(admin_context)
+    return base_context
+
+
+def get_monitoring_context(user):
+    """
+    Contexto específico para módulo de monitoreo Coriolis
+    
+    Args:
+        user: Usuario autenticado
+        
+    Returns:
+        dict: Contexto con permisos específicos para monitoreo
+    """
+    base_context = get_user_role_context(user)
+    user_role = base_context.get('current_user_role')
+    
+    # Configuración específica para monitoreo Coriolis
+    monitoring_context = {
+        'access_denied': False,
+        'access_denied_message': '',
+        
+        # Permisos específicos para configuración de constantes/coeficientes
+        'can_configure_constants': user_role in ['admin', 'admin_principal'],
+        'can_view_batch_detection': user_role in ['admin', 'admin_principal', 'supervisor'],
+        'can_modify_batch_detection': user_role in ['admin', 'admin_principal'],
+        'can_assign_tickets': user_role in ['admin', 'admin_principal', 'supervisor'],
+        
+        # Configuración de acceso
+        'show_config_buttons': user_role in ['admin', 'admin_principal'],
+        'readonly_config_view': user_role == 'supervisor',
+    }
+    
+    # Verificar acceso general al monitoreo
+    if user_role not in ['admin', 'admin_principal', 'supervisor']:
+        monitoring_context.update({
+            'access_denied': True,
+            'access_denied_message': 'Su rol de usuario no tiene permisos para acceder al módulo de monitoreo Coriolis.'
+        })
+    
+    # Combinar contextos
+    base_context.update(monitoring_context)
     return base_context
 
 

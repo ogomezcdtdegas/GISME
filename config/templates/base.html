@@ -52,12 +52,14 @@
             <a href="{% url 'monitoreo_coriolis' %}" class="{% if active_section == 'monitoreo_coriolis' %}active{% endif %}"><i class="bi bi-diagram-3"></i> Monitoreo Coriolis</a>
         </div>
 
-        <!-- Menú desplegable -->
+        <!-- Menú Complementos - Solo Admin -->
+        {% if can_access_admin %}
         <a href="#" id="toggleComplementos" data-bs-toggle="collapse" data-bs-target="#complementosSubmenu" aria-expanded="{% if active_section == 'complementos_ubicacion' or active_section == 'complementos_sistema' %}true{% else %}false{% endif %}" aria-controls="complementosSubmenu"><i class="bi bi-grid"></i> Complementos <i class="bi bi-chevron-down float-end"></i></a>
         <div class="submenu collapse {% if active_section == 'complementos_ubicacion' or active_section == 'complementos_sistema' %}show{% endif %}" id="complementosSubmenu">
             <a href="{% url 'allUbicacionesPag' %}" class="{% if active_section == 'complementos_ubicacion' %}active{% endif %}"><i class="bi bi-geo-alt"></i> Ubicaciones</a>
             <a href="{% url 'allSistemasPag' %}" class="{% if active_section == 'complementos_sistema' %}active{% endif %}"><i class="bi bi-cpu"></i> Sistemas</a>
         </div>
+        {% endif %}
 
         <!-- Botón de Logout -->
         {% if request.user.is_authenticated %}
