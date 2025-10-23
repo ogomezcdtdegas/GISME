@@ -234,6 +234,8 @@ class DescargarTicketBatchPDFView(LoginRequiredMixin, View):
              Paragraph("Densidad@flujo", style_label), Paragraph(densidad_flujo, style_value)],
             [Paragraph("Presión del fluido", style_label), Paragraph(presion_fluido, style_value),
              Paragraph("Volumen bruto", style_label), Paragraph(volumen_estandar, style_value)],
+            [Paragraph("Volumen a 60°F", style_label), Paragraph("20.00 gal", style_value),
+             Paragraph("", style_label), Paragraph("", style_value)],
         ]
         content.append(make_card("Datos de operación", card2_rows, col_widths))
         content.append(Spacer(1, 8))
