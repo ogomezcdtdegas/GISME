@@ -128,13 +128,12 @@ class DescargarTicketBatchPDFView(LoginRequiredMixin, View):
         densidad_std = f"{batch.densidad_prom:.5f} g/cm³" if batch.densidad_prom else "N/A"
         temperatura_fluido = f"{batch.temperatura_coriolis_prom:.1f} °F" if batch.temperatura_coriolis_prom else "N/A"
         presion_fluido = "15 bar"  # Valor por defecto (puede ser calculado después)
-        masa_total = f"{batch.vol_total:.0f} kg" if batch.vol_total else "N/A"
+        masa_total = f"{batch.mass_total:.0f} kg" if batch.mass_total else "N/A"
         densidad_flujo = f"{batch.densidad_prom:.2f} g/cm³" if batch.densidad_prom else "N/A"
         
-        # Calcular volumen estándar basado en masa y densidad
-        if batch.vol_total and batch.densidad_prom:
-            volumen_estandar_calc = batch.vol_total / (batch.densidad_prom * 1000)  # Convertir g/cm³ a kg/m³
-            volumen_estandar = f"{volumen_estandar_calc:.2f} m³"
+        # Usar volumen total directamente (ya está en m³)
+        if batch.vol_total:
+            volumen_estandar = f"{batch.vol_total:.6f} m³"
         else:
             volumen_estandar = "N/A"
         
