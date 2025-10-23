@@ -125,15 +125,15 @@ class DescargarTicketBatchPDFView(LoginRequiredMixin, View):
         producto = "GLP"  # Valor quemado como solicitaste
         
         # Datos reales del batch
-        densidad_std = f"{batch.densidad_prom:.5f} g/cm³" if batch.densidad_prom else "N/A"
-        temperatura_fluido = f"{batch.temperatura_coriolis_prom:.1f} °F" if batch.temperatura_coriolis_prom else "N/A"
-        presion_fluido = "15 bar"  # Valor por defecto (puede ser calculado después)
-        masa_total = f"{batch.mass_total:.0f} kg" if batch.mass_total else "N/A"
-        densidad_flujo = f"{batch.densidad_prom:.2f} g/cm³" if batch.densidad_prom else "N/A"
+        densidad_std = f"{batch.densidad_prom:.5f} g/cm³" if batch.densidad_prom is not None else "N/A"
+        temperatura_fluido = f"{batch.temperatura_coriolis_prom:.2f} °F" if batch.temperatura_coriolis_prom is not None else "N/A"
+        presion_fluido = f"{batch.pressure_out_prom:.2f} psi" if batch.pressure_out_prom is not None else "N/A"
+        masa_total = f"{batch.mass_total:.2f} kg" if batch.mass_total is not None else "N/A"
+        densidad_flujo = f"{batch.densidad_prom:.5f} g/cm³" if batch.densidad_prom is not None else "N/A"
         
-        # Usar volumen total directamente (ya está en m³)
-        if batch.vol_total:
-            volumen_estandar = f"{batch.vol_total:.6f} m³"
+        # Usar volumen total directamente (ya está en galones)
+        if batch.vol_total is not None:
+            volumen_estandar = f"{batch.vol_total:.2f} gal"
         else:
             volumen_estandar = "N/A"
         
@@ -141,7 +141,7 @@ class DescargarTicketBatchPDFView(LoginRequiredMixin, View):
         if batch.fecha_inicio and batch.fecha_fin:
             duracion_td = batch.fecha_fin - batch.fecha_inicio
             duracion_minutos = duracion_td.total_seconds() / 60
-            duracion = f"{duracion_minutos:.0f} minutos"
+            duracion = f"{duracion_minutos:.2f} minutos"
         else:
             duracion = "N/A"
             
@@ -233,7 +233,7 @@ class DescargarTicketBatchPDFView(LoginRequiredMixin, View):
             [Paragraph("Temperatura del fluido", style_label), Paragraph(temperatura_fluido, style_value),
              Paragraph("Densidad@flujo", style_label), Paragraph(densidad_flujo, style_value)],
             [Paragraph("Presión del fluido", style_label), Paragraph(presion_fluido, style_value),
-             Paragraph("Volumen estándar", style_label), Paragraph(volumen_estandar, style_value)],
+             Paragraph("Volumen bruto", style_label), Paragraph(volumen_estandar, style_value)],
         ]
         content.append(make_card("Datos de operación", card2_rows, col_widths))
         content.append(Spacer(1, 8))

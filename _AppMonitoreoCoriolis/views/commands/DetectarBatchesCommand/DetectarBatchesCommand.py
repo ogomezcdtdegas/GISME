@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from _AppComplementos.models import Sistema, ConfiguracionCoeficientes
 from _AppMonitoreoCoriolis.models import NodeRedData, BatchDetectado
-from UTIL_LIB.conversiones import lb_s_a_kg_min, lb_a_kg, cm3_a_m3
+from UTIL_LIB.conversiones import lb_s_a_kg_min, lb_a_kg, cm3_a_gal
 from _AppMonitoreoCoriolis.views.utils import COLOMBIA_TZ
 
 # Configurar logging
@@ -120,6 +120,7 @@ class DetectarBatchesCommandView(APIView):
                         mass_total=batch_data['mass_total'],
                         temperatura_coriolis_prom=batch_data['temperatura_coriolis_prom'],
                         densidad_prom=batch_data['densidad_prom'],
+                        pressure_out_prom=batch_data.get('pressure_out_prom'),
                         hash_identificacion=hash_batch,
                         perfil_lim_inf_caudal=lim_inf,
                         perfil_lim_sup_caudal=lim_sup,
@@ -140,6 +141,7 @@ class DetectarBatchesCommandView(APIView):
                     'mass_total': round(batch.mass_total, 2),
                     'temperatura_coriolis_prom': round(batch.temperatura_coriolis_prom, 2),
                     'densidad_prom': round(batch.densidad_prom, 10),
+                    'pressure_out_prom': round(batch.pressure_out_prom, 2) if batch.pressure_out_prom else None,
                     'duracion_minutos': round(batch.duracion_minutos, 2),
                     'total_registros': batch.total_registros,
                     'perfil_lim_inf': batch.perfil_lim_inf_caudal,
@@ -164,6 +166,7 @@ class DetectarBatchesCommandView(APIView):
                     'mass_total': round(batch.mass_total, 2),
                     'temperatura_coriolis_prom': round(batch.temperatura_coriolis_prom, 2),
                     'densidad_prom': round(batch.densidad_prom, 10),
+                    'pressure_out_prom': round(batch.pressure_out_prom, 2) if batch.pressure_out_prom else None,
                     'duracion_minutos': round(batch.duracion_minutos, 2),
                     'total_registros': batch.total_registros,
                     'perfil_lim_inf': batch.perfil_lim_inf_caudal or 0,
@@ -277,38 +280,41 @@ class DetectarBatchesCommandView(APIView):
                         diferencia_masa_lb = masa_final_lb - masa_inicial_lb
                         diferencia_masa_kg = lb_a_kg(diferencia_masa_lb)
                         
-                        # Cálculos de volumen (convertir de cm³ a m³)
+                        # Cálculos de volumen (convertir de cm³ a galones)
                         volumen_inicial_cm3 = primer_dato.total_volume
                         volumen_final_cm3 = ultimo_dato.total_volume
                         diferencia_volumen_cm3 = volumen_final_cm3 - volumen_inicial_cm3
-                        diferencia_volumen_m3 = cm3_a_m3(diferencia_volumen_cm3)
+                        diferencia_volumen_gal = cm3_a_gal(diferencia_volumen_cm3)
                         
                         logger.debug(f"Terminando batch en {fin_batch}")
                         logger.debug(f"Masa inicial (punto en 0): {masa_inicial_lb:.2f} lb en {primer_dato.created_at_iot}")
                         logger.debug(f"Masa final (último punto >0): {masa_final_lb:.2f} lb en {ultimo_dato.created_at_iot}")
                         logger.debug(f"Diferencia masa: {diferencia_masa_lb:.2f} lb = {diferencia_masa_kg:.2f} kg")
                         logger.debug(f"Volumen inicial: {volumen_inicial_cm3:.2f} cm³, Volumen final: {volumen_final_cm3:.2f} cm³")
-                        logger.debug(f"Diferencia volumen: {diferencia_volumen_cm3:.2f} cm³ = {diferencia_volumen_m3:.6f} m³")
+                        logger.debug(f"Diferencia volumen: {diferencia_volumen_cm3:.2f} cm³ = {diferencia_volumen_gal:.3f} gal")
                         
                         # Solo guardar si la diferencia de masa supera el volumen mínimo (criterio de validación)
                         if diferencia_masa_kg >= vol_minimo:
                             # Calcular promedios
                             temperaturas = [d.coriolis_temperature for d in datos_batch if d.coriolis_temperature is not None]
                             densidades = [d.density for d in datos_batch if d.density is not None]
+                            presiones = [d.pressure_out for d in datos_batch if d.pressure_out is not None]
                             temp_prom = sum(temperaturas) / len(temperaturas) if temperaturas else 0
                             dens_prom = sum(densidades) / len(densidades) if densidades else 0
+                            pres_prom = sum(presiones) / len(presiones) if presiones else None
                             
                             batches.append({
                                 'fecha_inicio': primer_dato.created_at_iot,  # Usar fecha IoT del punto inicial (flujo=0)
                                 'fecha_fin': fin_batch,
-                                'vol_total': diferencia_volumen_m3,  # Ahora almacena volumen en m³
+                                'vol_total': diferencia_volumen_gal,  # Ahora almacena volumen en galones
                                 'mass_total': diferencia_masa_kg,    # Ahora almacena masa en kg
                                 'temperatura_coriolis_prom': temp_prom,
                                 'densidad_prom': dens_prom,
+                                'pressure_out_prom': pres_prom,
                                 'duracion_minutos': (fin_batch - primer_dato.created_at_iot).total_seconds() / 60,
                                 'total_registros': len(datos_batch)
                             })
-                            logger.info(f"Batch guardado: {primer_dato.created_at_iot} - {fin_batch}, Vol: {diferencia_volumen_m3:.6f} m³, Masa: {diferencia_masa_kg:.2f} kg")
+                            logger.info(f"Batch guardado: {primer_dato.created_at_iot} - {fin_batch}, Vol: {diferencia_volumen_gal:.3f} gal, Masa: {diferencia_masa_kg:.2f} kg")
                         else:
                             logger.debug(f"Batch descartado: {diferencia_masa_kg:.2f} kg < {vol_minimo} kg")
                     
@@ -331,36 +337,39 @@ class DetectarBatchesCommandView(APIView):
             diferencia_masa_lb = masa_final_lb - masa_inicial_lb
             diferencia_masa_kg = lb_a_kg(diferencia_masa_lb)
             
-            # Cálculos de volumen (convertir de cm³ a m³)
+            # Cálculos de volumen (convertir de cm³ a galones)
             volumen_inicial_cm3 = primer_dato.total_volume
             volumen_final_cm3 = ultimo_dato.total_volume
             diferencia_volumen_cm3 = volumen_final_cm3 - volumen_inicial_cm3
-            diferencia_volumen_m3 = cm3_a_m3(diferencia_volumen_cm3)
+            diferencia_volumen_gal = cm3_a_gal(diferencia_volumen_cm3)
             
             logger.debug(f"Cerrando batch abierto al final")
             logger.debug(f"Masa inicial (punto en 0): {masa_inicial_lb:.2f} lb en {primer_dato.created_at_iot}")
             logger.debug(f"Masa final (último punto >0): {masa_final_lb:.2f} lb en {ultimo_dato.created_at_iot}")
             logger.debug(f"Diferencia masa: {diferencia_masa_lb:.2f} lb = {diferencia_masa_kg:.2f} kg")
             logger.debug(f"Volumen inicial: {volumen_inicial_cm3:.2f} cm³, Volumen final: {volumen_final_cm3:.2f} cm³")
-            logger.debug(f"Diferencia volumen: {diferencia_volumen_cm3:.2f} cm³ = {diferencia_volumen_m3:.6f} m³")
+            logger.debug(f"Diferencia volumen: {diferencia_volumen_cm3:.2f} cm³ = {diferencia_volumen_gal:.3f} gal")
             
             if diferencia_masa_kg >= vol_minimo:
                 temperaturas = [d.coriolis_temperature for d in datos_batch if d.coriolis_temperature is not None]
                 densidades = [d.density for d in datos_batch if d.density is not None]
+                presiones = [d.pressure_out for d in datos_batch if d.pressure_out is not None]
                 temp_prom = sum(temperaturas) / len(temperaturas) if temperaturas else 0
                 dens_prom = sum(densidades) / len(densidades) if densidades else 0
+                pres_prom = sum(presiones) / len(presiones) if presiones else None
                 
                 batches.append({
                     'fecha_inicio': primer_dato.created_at_iot,  # Usar fecha IoT del punto inicial (flujo=0)
                     'fecha_fin': ultimo_dato.created_at_iot,
-                    'vol_total': diferencia_volumen_m3,  # Ahora almacena volumen en m³
+                    'vol_total': diferencia_volumen_gal,  # Ahora almacena volumen en galones
                     'mass_total': diferencia_masa_kg,    # Ahora almacena masa en kg
                     'temperatura_coriolis_prom': temp_prom,
                     'densidad_prom': dens_prom,
+                    'pressure_out_prom': pres_prom,
                     'duracion_minutos': (ultimo_dato.created_at_iot - primer_dato.created_at_iot).total_seconds() / 60,
                     'total_registros': len(datos_batch)
                 })
-                logger.info(f"Batch final guardado: {primer_dato.created_at_iot} - {ultimo_dato.created_at_iot}, Vol: {diferencia_volumen_m3:.6f} m³, Masa: {diferencia_masa_kg:.2f} kg")
+                logger.info(f"Batch final guardado: {primer_dato.created_at_iot} - {ultimo_dato.created_at_iot}, Vol: {diferencia_volumen_gal:.3f} gal, Masa: {diferencia_masa_kg:.2f} kg")
 
         logger.info(f"Detección completada con lógica de diferencia de masa. {len(batches)} batches detectados")
         return batches

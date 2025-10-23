@@ -90,10 +90,11 @@ class BatchDetectado(BaseModel):
     
     fecha_inicio = models.DateTimeField(verbose_name="Fecha de Inicio del Batch")
     fecha_fin = models.DateTimeField(verbose_name="Fecha de Fin del Batch")
-    vol_total = models.FloatField(verbose_name="Volumen Total Acumulado (m³)")
+    vol_total = models.FloatField(verbose_name="Volumen Total Acumulado (gal)")
     mass_total = models.FloatField(verbose_name="Masa Total Acumulada (kg)", default=0.0)
     temperatura_coriolis_prom = models.FloatField(verbose_name="Temperatura Coriolis Promedio (°C)")
     densidad_prom = models.FloatField(verbose_name="Densidad Promedio (g/cc)")
+    pressure_out_prom = models.FloatField(verbose_name="Presión de Salida Promedio (PSI)", null=True, blank=True)
     
     # Hash para identificación única basado en fechas, sistema y configuración
     hash_identificacion = models.CharField(max_length=64, unique=True, default='', verbose_name="Hash de Identificación")
@@ -114,7 +115,8 @@ class BatchDetectado(BaseModel):
         ordering = ['-fecha_inicio']
     
     def __str__(self):
-        return f"Batch {self.systemId.tag} - {self.fecha_inicio.strftime('%d/%m/%Y %H:%M')} ({self.vol_total:.2f} L - {self.mass_total:.2f} kg)"
+        presion_str = f" - {self.pressure_out_prom:.1f} PSI" if self.pressure_out_prom else ""
+        return f"Batch {self.systemId.tag} - {self.fecha_inicio.strftime('%d/%m/%Y %H:%M')} ({self.vol_total:.2f} gal - {self.mass_total:.2f} kg{presion_str})"
 
 # Create your models here.
 
