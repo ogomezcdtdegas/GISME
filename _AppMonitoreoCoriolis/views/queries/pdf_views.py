@@ -5,11 +5,69 @@ from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.views.generic import View
-from reportlab.lib.pagesizes import A4
+from reportlab.lib.pagesizes import letter, A4
+from reportlab.lib import colors
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.platypus import (
+    SimpleDocTemplate,
+    Table,
+    TableStyle,
+    Paragraph,
+    Spacer,
+    KeepTogether,
+)
 from reportlab.pdfgen import canvas
 from reportlab.lib.units import mm
+import datetime
 from _AppMonitoreoCoriolis.models import BatchDetectado
 from _AppComplementos.models import Sistema
+from _AppMonitoreoCoriolis.views.utils import COLOMBIA_TZ
+
+
+def _header_footer(ticket_num: str, generado_por: str, generado_dt: datetime.datetime, logo_path: str):
+    """Crea un callback para dibujar header y footer en cada página."""
+
+    def draw(c: canvas.Canvas, doc):
+        c.saveState()
+
+        page_width, page_height = A4
+        margin = 18 * mm
+
+        # Línea superior decorativa
+        c.setStrokeColor(colors.HexColor("#0f4c81"))
+        c.setLineWidth(1.2)
+        c.line(margin, page_height - margin + 6, page_width - margin, page_height - margin + 6)
+
+        # Logo y título empresa
+        try:
+            c.drawImage(logo_path, margin, page_height - margin - 20, width=28 * mm, height=22 * mm, preserveAspectRatio=True, mask='auto')
+        except Exception:
+            # Si no hay logo, continuamos sin él
+            pass
+
+        c.setFont("Helvetica-Bold", 14)
+        c.drawString(margin + 32 * mm, page_height - margin - 20, "COLGAS S.A E.S.P")
+
+        # Ticket a la derecha
+        c.setFont("Helvetica", 11)
+        text = f"Ticket #: {ticket_num}"
+        tw = c.stringWidth(text, "Helvetica", 11)
+        c.drawString(page_width - margin - tw, page_height - margin - 4, text)
+
+        # Footer con generación y paginación
+        c.setFont("Helvetica", 8)
+        generado_str = generado_dt.strftime("%d/%m/%Y a las %H:%M")
+        footer_left = f"Generado el {generado_str} por {generado_por}"
+        c.drawString(margin, margin - 8, footer_left)
+        c.drawString(margin, margin - 18, "GISME - Sistema de Gestión Integral de Medición de Energía")
+
+        page_text = f"Página {doc.page}"
+        ptw = c.stringWidth(page_text, "Helvetica", 8)
+        c.drawString(page_width - margin - ptw, margin - 8, page_text)
+
+        c.restoreState()
+
+    return draw
 
 
 class DescargarTicketBatchPDFView(LoginRequiredMixin, View):
@@ -19,7 +77,7 @@ class DescargarTicketBatchPDFView(LoginRequiredMixin, View):
     
     def get(self, request, batch_id):
         """
-        Genera PDF con información del ticket del batch
+        Genera PDF con información del ticket del batch usando el nuevo formato de tarjetas
         """
         try:
             # Obtener datos del batch
@@ -29,116 +87,165 @@ class DescargarTicketBatchPDFView(LoginRequiredMixin, View):
             response = HttpResponse(content_type='application/pdf')
             response['Content-Disposition'] = f'attachment; filename="ticket_batch_{batch_id}.pdf"'
             
-            # Crear canvas para PDF
-            p = canvas.Canvas(response, pagesize=A4)
-            width, height = A4
-            
-            # === HEADER SECTION ===
-            # Logo (simulado como rectángulo negro)
-            p.setFillColorRGB(0, 0, 0)
-            p.rect(40, height-100, 100, 70, fill=1)
-            
-            # Título y número de ticket
-            p.setFont("Helvetica-Bold", 18)
-            p.drawString(180, height-60, "COLGAS S.A E.S.P")
-            
-            p.setFont("Helvetica", 14)
-            p.drawString(180, height-85, "Ticket #:")
-            ticket_num = batch.num_ticket if batch.num_ticket else "SIN ASIGNAR"
-            p.setFont("Helvetica-Bold", 14)
-            p.drawString(250, height-85, str(ticket_num))
-            
-            # === INFORMACIÓN BÁSICA ===
-            y_pos = height - 130
-            p.setFont("Helvetica-Bold", 16)
-            p.drawCentredString(width/2, y_pos, "INFORMACIÓN BÁSICA")
-            
-            # Tabla de información básica
-            y_pos -= 30
-            
-            # Fecha (fila completa)
-            p.setFillColorRGB(0.9, 0.9, 0.9)  # Fondo gris claro
-            p.rect(40, y_pos-20, 250, 20, fill=1, stroke=1)
-            p.setFillColorRGB(0, 0, 0)  # Texto negro
-            p.setFont("Helvetica", 12)
-            p.drawString(50, y_pos-10, "Fecha")
-            p.drawString(200, y_pos-10, batch.fecha_inicio.strftime("%d/%m/%Y") if batch.fecha_inicio else "N/A")
-            
-            # Hora inicio y final (dos columnas)
-            y_pos -= 20
-            # Hora inicio
-            p.rect(40, y_pos-20, 125, 20, stroke=1)
-            p.drawString(50, y_pos-10, "Hora inicio")
-            p.drawString(100, y_pos-10, batch.fecha_inicio.strftime("%H:%M") if batch.fecha_inicio else "N/A")
-            
-            # Hora final
-            p.rect(165, y_pos-20, 125, 20, stroke=1)
-            p.drawString(175, y_pos-10, "Hora final")
-            p.drawString(225, y_pos-10, batch.fecha_fin.strftime("%H:%M") if batch.fecha_fin else "N/A")
-            
-            # === SECCIÓN PRODUCTO Y RECIBIDO ===
-            y_pos -= 40
-            
-            # Headers de las dos columnas
-            p.setFont("Helvetica-Bold", 14)
-            p.setFillColorRGB(0.8, 0.8, 0.8)  # Fondo gris
-            p.rect(40, y_pos-20, 125, 20, fill=1, stroke=1)
-            p.rect(165, y_pos-20, 125, 20, fill=1, stroke=1)
-            p.setFillColorRGB(0, 0, 0)  # Texto negro
-            p.drawCentredString(102.5, y_pos-10, "PRODUCTO:")
-            p.drawCentredString(227.5, y_pos-10, "RECIBIDO")
-            
-            y_pos -= 20
-            
-            # Datos del producto y recibido
-            producto_datos = [
-                ("Gravedad Específica a 60°F:", "10654,0000"),
-                ("Temperatura:", f"{batch.temperatura_coriolis_prom:.2f}°C" if batch.temperatura_coriolis_prom else "N/A"),
-                ("Volumen bruto:", f"{batch.vol_total:.2f}" if batch.vol_total else "N/A")
-            ]
-            
-            recibido_datos = [
-                ("Masa Total (kg):", f"{batch.vol_total:.2f}" if batch.vol_total else "N/A"),
-                ("Volumen a 60°F:", "597,25"),  # Dato quemado por ahora
-                ("Densidad:", f"{batch.densidad_prom:.3f}" if batch.densidad_prom else "N/A")
-            ]
-            
-            # Dibujar filas de datos
-            for i in range(3):
-                # Columna PRODUCTO
-                p.rect(40, y_pos-20, 125, 20, stroke=1)
-                p.setFont("Helvetica", 10)
-                p.drawString(45, y_pos-10, producto_datos[i][0])
-                p.setFont("Helvetica-Bold", 10)
-                p.drawString(45, y_pos-15, producto_datos[i][1])
-                
-                # Columna RECIBIDO
-                p.rect(165, y_pos-20, 125, 20, stroke=1)
-                p.setFont("Helvetica", 10)
-                p.drawString(170, y_pos-10, recibido_datos[i][0])
-                p.setFont("Helvetica-Bold", 10)
-                p.drawString(170, y_pos-15, recibido_datos[i][1])
-                
-                y_pos -= 20
-            
-            # === INFORMACIÓN ADICIONAL ===
-            y_pos -= 30
-            p.setFont("Helvetica", 10)
-            p.drawString(40, y_pos, f"Sistema: {batch.systemId.tag if batch.systemId else 'N/A'}")
-            p.drawString(40, y_pos-15, f"Duración: {batch.duracion_minutos if batch.duracion_minutos else 'N/A'} minutos")
-            p.drawString(40, y_pos-30, f"Total registros: {batch.total_registros if batch.total_registros else 'N/A'}")
-            
-            # === FOOTER ===
-            p.setFont("Helvetica", 8)
-            p.drawString(40, 40, f"Generado el {batch.created_at.strftime('%d/%m/%Y %H:%M:%S') if batch.created_at else 'N/A'}")
-            p.drawString(40, 30, "GISME - Sistema de Gestión Integral de Medición de Energía")
-            
-            # Finalizar PDF
-            p.showPage()
-            p.save()
+            # Generar PDF usando la función build_pdf
+            self._build_pdf(response, batch, request.user.username)
             
             return response
             
         except Exception as e:
             # En caso de error, devolver respuesta de error
             return HttpResponse(f"Error al generar PDF: {str(e)}", status=500)
+    
+    def _build_pdf(self, output_stream, batch: BatchDetectado, generado_por: str):
+        """Genera un PDF con tres tarjetas centradas (estilo ficha)."""
+        
+        generado_dt = datetime.datetime.now(COLOMBIA_TZ)
+        
+        # Extraer datos del batch con conversión a zona horaria de Colombia
+        ticket_num = str(batch.num_ticket)[:8]  # Usar los primeros 8 caracteres del ID como ticket
+        
+        # Convertir fechas UTC a Colombia
+        if batch.fecha_inicio:
+            fecha_inicio_colombia = batch.fecha_inicio.astimezone(COLOMBIA_TZ)
+            fecha = fecha_inicio_colombia.strftime("%d/%m/%Y")
+            hora_inicio = fecha_inicio_colombia.strftime("%H:%M")
+        else:
+            fecha = "N/A"
+            hora_inicio = "N/A"
+            
+        if batch.fecha_fin:
+            fecha_fin_colombia = batch.fecha_fin.astimezone(COLOMBIA_TZ)
+            hora_final = fecha_fin_colombia.strftime("%H:%M")
+        else:
+            hora_final = "N/A"
+        
+        # Datos del batch - Valores quemados y valores reales
+        localizacion = "Salgar, Cundinamarca"  # Valor quemado como solicitaste
+        nombre_sistema = batch.systemId.tag if batch.systemId else "N/A"
+        producto = "GLP"  # Valor quemado como solicitaste
+        
+        # Datos reales del batch
+        densidad_std = f"{batch.densidad_prom:.5f} g/cm³" if batch.densidad_prom else "N/A"
+        temperatura_fluido = f"{batch.temperatura_coriolis_prom:.1f} °F" if batch.temperatura_coriolis_prom else "N/A"
+        presion_fluido = "15 bar"  # Valor por defecto (puede ser calculado después)
+        masa_total = f"{batch.vol_total:.0f} kg" if batch.vol_total else "N/A"
+        densidad_flujo = f"{batch.densidad_prom:.2f} g/cm³" if batch.densidad_prom else "N/A"
+        
+        # Calcular volumen estándar basado en masa y densidad
+        if batch.vol_total and batch.densidad_prom:
+            volumen_estandar_calc = batch.vol_total / (batch.densidad_prom * 1000)  # Convertir g/cm³ a kg/m³
+            volumen_estandar = f"{volumen_estandar_calc:.2f} m³"
+        else:
+            volumen_estandar = "N/A"
+        
+        # Calcular duración del batch
+        if batch.fecha_inicio and batch.fecha_fin:
+            duracion_td = batch.fecha_fin - batch.fecha_inicio
+            duracion_minutos = duracion_td.total_seconds() / 60
+            duracion = f"{duracion_minutos:.0f} minutos"
+        else:
+            duracion = "N/A"
+            
+        identificacion_medidor = "Medidor #A-1234"  # Valor quemado como solicitaste
+        total_registros = batch.total_registros if hasattr(batch, 'total_registros') and batch.total_registros else 0
+        logo_path = "colgasLogo.jpg"  # Path del logo
+        
+        # Documento y estilos
+        doc = SimpleDocTemplate(
+            output_stream,
+            pagesize=A4,
+            leftMargin=18 * mm,
+            rightMargin=18 * mm,
+            topMargin=25 * mm,
+            bottomMargin=20 * mm,
+            title="Ticket Colgas",
+            author=generado_por,
+        )
+
+        styles = getSampleStyleSheet()
+        style_card_title = ParagraphStyle(
+            name="CardTitle",
+            parent=styles["Heading4"],
+            fontName="Helvetica-Bold",
+            fontSize=11.5,
+            textColor=colors.HexColor("#0f4c81"),
+            alignment=1,  # CENTER
+            spaceBefore=2,
+            spaceAfter=2,
+        )
+        style_label = ParagraphStyle(
+            name="Label",
+            parent=styles["BodyText"],
+            fontName="Helvetica",
+            fontSize=9.5,
+            textColor=colors.black,
+        )
+        style_value = ParagraphStyle(
+            name="Value",
+            parent=styles["BodyText"],
+            fontName="Helvetica-Bold",
+            fontSize=9.5,
+            textColor=colors.black,
+            alignment=2,  # RIGHT
+        )
+
+        def make_card(title: str, rows: list, col_widths):
+            header = [Paragraph(title, style_card_title)]
+            data = [header] + rows
+            tbl = Table(data, colWidths=col_widths, hAlign="CENTER")
+            tbl.setStyle(
+                TableStyle([
+                    ("SPAN", (0, 0), (-1, 0)),
+                    ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#e9eef6")),
+                    ("BOX", (0, 0), (-1, -1), 0.9, colors.HexColor("#d9dde8")),
+                    ("INNERGRID", (0, 1), (-1, -1), 0.25, colors.lightgrey),
+                    ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                    ("LEFTPADDING", (0, 0), (-1, -1), 6),
+                    ("RIGHTPADDING", (0, 0), (-1, -1), 6),
+                    ("TOPPADDING", (0, 0), (-1, -1), 6),
+                    ("BOTTOMPADDING", (0, 0), (-1, -1), 6),
+                    ("ALIGN", (1, 1), (1, -1), "RIGHT"),
+                    ("ALIGN", (3, 1), (3, -1), "RIGHT"),
+                ])
+            )
+            return KeepTogether(tbl)
+
+        content = []
+
+        # Ancho de tarjeta (4 columnas: etq/val | etq/val)
+        col_widths = [45 * mm, 40 * mm, 45 * mm, 40 * mm]
+
+        # Tarjeta 1: Información básica
+        card1_rows = [
+            [Paragraph("Localización", style_label), Paragraph(localizacion, style_value),
+             Paragraph("Nombre del sistema", style_label), Paragraph(nombre_sistema, style_value)],
+            [Paragraph("Fecha de generación", style_label), Paragraph(generado_dt.strftime("%d/%m/%Y %H:%M"), style_value),
+             Paragraph("Producto", style_label), Paragraph(producto, style_value)],
+            [Paragraph("Inicio de bache", style_label), Paragraph(f"{fecha} {hora_inicio}", style_value),
+             Paragraph("Fin de bache", style_label), Paragraph(f"{fecha} {hora_final}", style_value)],
+        ]
+        content.append(make_card("Información básica", card1_rows, col_widths))
+        content.append(Spacer(1, 8))
+
+        # Tarjeta 2: Datos de operación (dos columnas)
+        card2_rows = [
+            [Paragraph("Densidad@std", style_label), Paragraph(densidad_std, style_value),
+             Paragraph("Masa total", style_label), Paragraph(masa_total, style_value)],
+            [Paragraph("Temperatura del fluido", style_label), Paragraph(temperatura_fluido, style_value),
+             Paragraph("Densidad@flujo", style_label), Paragraph(densidad_flujo, style_value)],
+            [Paragraph("Presión del fluido", style_label), Paragraph(presion_fluido, style_value),
+             Paragraph("Volumen estándar", style_label), Paragraph(volumen_estandar, style_value)],
+        ]
+        content.append(make_card("Datos de operación", card2_rows, col_widths))
+        content.append(Spacer(1, 8))
+
+        # Tarjeta 3: Información adicional
+        card3_rows = [
+            [Paragraph("Duración del bache", style_label), Paragraph(duracion, style_value),
+             Paragraph("Identificación del medidor", style_label), Paragraph(identificacion_medidor, style_value)],
+        ]
+        content.append(make_card("Información adicional", card3_rows, col_widths))
+
+        # Construir documento con callback de header/footer
+        draw_cb = _header_footer(ticket_num, generado_por, generado_dt, logo_path)
+        doc.build(content, onFirstPage=draw_cb, onLaterPages=draw_cb)
