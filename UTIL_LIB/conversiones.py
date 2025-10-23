@@ -18,6 +18,21 @@ def celsius_a_fahrenheit(celsius):
     except (ValueError, TypeError):
         return 0
 
+def fahrenheit_a_celsius(fahrenheit):
+    """
+    Convierte temperatura de Fahrenheit a Celsius
+    Args:
+        fahrenheit (float): Temperatura en grados Fahrenheit
+    Returns:
+        float: Temperatura en grados Celsius
+    """
+    if fahrenheit is None:
+        return 0
+    try:
+        return (float(fahrenheit) - 32.0) * 5.0 / 9.0
+    except (ValueError, TypeError):
+        return 0
+
 def lb_s_a_kg_min(lb_s):
     """
     Convierte flujo másico de libras por segundo a kilogramos por minuto
@@ -107,6 +122,54 @@ def cm3_a_gal(cm3):
         return 0
     try:
         return float(cm3) / 3785.41
+    except (ValueError, TypeError):
+        return 0
+
+def m3_a_gal(m3):
+    """
+    Convierte volumen de m³ a gal (galón estadounidense)
+    1 m³ = 264.172 galones estadounidenses
+    Args:
+        m3 (float): Volumen en m³
+    Returns:
+        float: Volumen en gal
+    """
+    if m3 is None:
+        return 0
+    try:
+        return float(m3) * 264.172
+    except (ValueError, TypeError):
+        return 0
+
+def g_cm3_a_kg_m3(g_cm3):
+    """
+    Convierte densidad de g/cm³ a kg/m³
+    1 g/cm³ = 1000 kg/m³
+    Args:
+        g_cm3 (float): Densidad en g/cm³
+    Returns:
+        float: Densidad en kg/m³
+    """
+    if g_cm3 is None:
+        return 0
+    try:
+        return float(g_cm3) * 1000.0
+    except (ValueError, TypeError):
+        return 0
+
+def kg_m3_a_g_cm3(kg_m3):
+    """
+    Convierte densidad de kg/m³ a g/cm³
+    1000 kg/m³ = 1 g/cm³
+    Args:
+        kg_m3 (float): Densidad en kg/m³
+    Returns:
+        float: Densidad en g/cm³
+    """
+    if kg_m3 is None:
+        return 0
+    try:
+        return float(kg_m3) / 1000.0
     except (ValueError, TypeError):
         return 0
 

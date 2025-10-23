@@ -22,7 +22,8 @@ import datetime
 from _AppMonitoreoCoriolis.models import BatchDetectado
 from _AppComplementos.models import Sistema
 from _AppMonitoreoCoriolis.views.utils import COLOMBIA_TZ
-
+from UTIL_LIB.densidad60Modelo import rho15_from_rhoobs_api1124
+from UTIL_LIB.conversiones import fahrenheit_a_celsius, g_cm3_a_kg_m3, kg_m3_a_g_cm3, celsius_a_fahrenheit, m3_a_gal
 
 def _header_footer(ticket_num: str, generado_por: str, generado_dt: datetime.datetime, logo_path: str):
     """Crea un callback para dibujar header y footer en cada página."""
@@ -125,17 +126,25 @@ class DescargarTicketBatchPDFView(LoginRequiredMixin, View):
         producto = "GLP"  # Valor quemado como solicitaste
         
         # Datos reales del batch
-        densidad_std = f"{batch.densidad_prom:.5f} g/cm³" if batch.densidad_prom is not None else "N/A"
-        temperatura_fluido = f"{batch.temperatura_coriolis_prom:.2f} °F" if batch.temperatura_coriolis_prom is not None else "N/A"
+        rho_obs = g_cm3_a_kg_m3(batch.densidad_prom)  # kg/m3
+        T_obs_C = batch.temperatura_coriolis_prom # °C
+        rho15, gamma60 = rho15_from_rhoobs_api1124(rho_obs, T_obs_C)
+        rho15_g_cm3 = kg_m3_a_g_cm3(rho15)
+
+        densidad_std = f"{rho15_g_cm3:.5f} g/cm³" if rho15_g_cm3 is not None else "N/A"
+        temperatura_fluido = f"{celsius_a_fahrenheit(batch.temperatura_coriolis_prom):.2f} °F" if celsius_a_fahrenheit(batch.temperatura_coriolis_prom) is not None else "N/A"
         presion_fluido = f"{batch.pressure_out_prom:.2f} psi" if batch.pressure_out_prom is not None else "N/A"
         masa_total = f"{batch.mass_total:.2f} kg" if batch.mass_total is not None else "N/A"
         densidad_flujo = f"{batch.densidad_prom:.5f} g/cm³" if batch.densidad_prom is not None else "N/A"
         
         # Usar volumen total directamente (ya está en galones)
         if batch.vol_total is not None:
-            volumen_estandar = f"{batch.vol_total:.2f} gal"
+            volumen_bruto = f"{batch.vol_total:.2f} gal"
         else:
-            volumen_estandar = "N/A"
+            volumen_bruto = "N/A"
+
+        volumen_estandar = m3_a_gal(batch.mass_total/rho15)
+        volumen_estandar_60f = f"{volumen_estandar:.5f} gal" if volumen_estandar is not None else "N/A"
         
         # Calcular duración del batch
         if batch.fecha_inicio and batch.fecha_fin:
@@ -233,8 +242,8 @@ class DescargarTicketBatchPDFView(LoginRequiredMixin, View):
             [Paragraph("Temperatura del fluido", style_label), Paragraph(temperatura_fluido, style_value),
              Paragraph("Densidad@flujo", style_label), Paragraph(densidad_flujo, style_value)],
             [Paragraph("Presión del fluido", style_label), Paragraph(presion_fluido, style_value),
-             Paragraph("Volumen bruto", style_label), Paragraph(volumen_estandar, style_value)],
-            [Paragraph("Volumen a 60°F", style_label), Paragraph("20.00 gal", style_value),
+             Paragraph("Volumen bruto", style_label), Paragraph(volumen_bruto, style_value)],
+            [Paragraph("Volumen a 60°F", style_label), Paragraph(volumen_estandar_60f, style_value),
              Paragraph("", style_label), Paragraph("", style_value)],
         ]
         content.append(make_card("Datos de operación", card2_rows, col_widths))
