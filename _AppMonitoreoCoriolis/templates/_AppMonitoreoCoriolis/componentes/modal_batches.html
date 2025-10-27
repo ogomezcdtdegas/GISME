@@ -93,11 +93,11 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Configurar fechas por defecto (últimos 7 días)
     const hoy = new Date();
-    const hace7Dias = new Date();
-    hace7Dias.setDate(hoy.getDate() - 7);
+    const hace1Dias = new Date();
+    hace1Dias.setDate(hoy.getDate() - 1);
     
     document.getElementById('fechaFinBatch').value = hoy.toISOString().split('T')[0];
-    document.getElementById('fechaInicioBatch').value = hace7Dias.toISOString().split('T')[0];
+    document.getElementById('fechaInicioBatch').value = hace1Dias.toISOString().split('T')[0];
     
     // ================================
     // FUNCIÓN COMÚN PARA LISTAR BATCHES

@@ -119,7 +119,7 @@ function mostrarDetalleBatch(data) {
         ${data.batch_info.num_ticket ? `<p><strong># Ticket:</strong> <span class="badge bg-success">${data.batch_info.num_ticket}</span></p>` : ''}
         <p><strong>Inicio:</strong> ${data.batch_info.fecha_inicio}</p>
         <p><strong>Fin:</strong> ${data.batch_info.fecha_fin}</p>
-        <p><strong>Duración:</strong> ${data.batch_info.duracion_minutos} minutos</p>
+        <p><strong>Duración:</strong> ${(data.batch_info.duracion_minutos !== null && data.batch_info.duracion_minutos !== undefined)? Math.trunc(data.batch_info.duracion_minutos * 100) / 100: 'N/A'} minutos</p>
         <div class="alert alert-info mt-2 mb-0" style="padding: 8px 12px; font-size: 0.85em;">
             <i class="bi bi-info-circle"></i> 
             <strong>Contexto extendido:</strong> La gráfica muestra 3 minutos antes y después del batch para mejor análisis.
@@ -130,9 +130,11 @@ function mostrarDetalleBatch(data) {
     
     // Mostrar estadísticas
     document.getElementById('estadisticasBatch').innerHTML = `
-        <p><strong>Volumen Total:</strong> ${data.batch_info.vol_total} kg</p>
-        <p><strong>Temp. Promedio:</strong> ${data.batch_info.temperatura_coriolis_prom_f ? data.batch_info.temperatura_coriolis_prom_f.toFixed(2) : 'N/A'}°F</p>
-        <p><strong>Densidad Promedio:</strong> ${data.batch_info.densidad_prom} g/cc</p>
+        <p><strong>Masa Total:</strong> ${(data.batch_info.mass_total_kg !== null && data.batch_info.mass_total_kg !== undefined)? Math.trunc(data.batch_info.mass_total_kg * 100) / 100: 'N/A'} kg</p>
+        <p><strong>Volumen Bruto:</strong> ${(data.batch_info.vol_total !== null && data.batch_info.vol_total !== undefined)? Math.trunc(data.batch_info.vol_total * 100) / 100: 'N/A'} m³</p>
+        <p><strong>Temp. Promedio:</strong> ${(data.batch_info.temperatura_coriolis_prom_f !== null && data.batch_info.temperatura_coriolis_prom_f !== undefined)? Math.trunc(data.batch_info.temperatura_coriolis_prom_f * 100) / 100: 'N/A'} °F</p>
+        <p><strong>Presión Promedio:</strong> ${(data.batch_info.presion_out_prom !== null && data.batch_info.presion_out_prom !== undefined)? Math.trunc(data.batch_info.presion_out_prom * 100) / 100: 'N/A'} psi</p>
+        <p><strong>Densidad Promedio:</strong> ${(data.batch_info.densidad_prom !== null && data.batch_info.densidad_prom !== undefined)? Math.trunc(data.batch_info.densidad_prom * 1000000) / 1000000: 'N/A'} g/cc</p>
         <p><strong>Total Registros:</strong> ${data.batch_info.total_registros}</p>
     `;
     

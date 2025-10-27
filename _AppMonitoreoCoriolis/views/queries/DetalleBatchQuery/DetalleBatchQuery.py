@@ -88,7 +88,9 @@ class DetalleBatchQueryView(APIView):
                     'sistema_tag': batch.systemId.tag,
                     'fecha_inicio': batch.fecha_inicio.astimezone(COLOMBIA_TZ).strftime('%d/%m/%Y %H:%M:%S'),
                     'fecha_fin': batch.fecha_fin.astimezone(COLOMBIA_TZ).strftime('%d/%m/%Y %H:%M:%S'),
+                    'mass_total_kg': batch.mass_total,
                     'vol_total': batch.vol_total,
+                    'presion_out_prom': batch.pressure_out_prom,
                     'temperatura_coriolis_prom_c': batch.temperatura_coriolis_prom,  # Original en °C
                     'temperatura_coriolis_prom_f': celsius_a_fahrenheit(batch.temperatura_coriolis_prom) if batch.temperatura_coriolis_prom is not None else None,  # Convertido a °F
                     'densidad_prom': batch.densidad_prom,
