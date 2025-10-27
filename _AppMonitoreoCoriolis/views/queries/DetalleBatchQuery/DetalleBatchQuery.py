@@ -78,6 +78,7 @@ class DetalleBatchQueryView(APIView):
                     'coriolis_temperature_c': dato.coriolis_temperature,  # Original en °C
                     'coriolis_temperature_f': temperatura_f,  # Convertido a °F
                     'density': dato.density,
+                    'pressure_out': dato.pressure_out,  # Presión de salida en psi
                     'dentro_batch': dentro_batch  # Indica si está dentro del batch real
                 })
             

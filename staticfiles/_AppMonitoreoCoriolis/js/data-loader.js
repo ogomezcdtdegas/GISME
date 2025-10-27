@@ -46,11 +46,11 @@ async function actualizarDisplaysConDatosReales() {
             document.getElementById('tabla-frecuencia').textContent = 
                 `${data.datos.frecuencia.valor.toFixed(3)}`;
 
-            document.getElementById('tabla-concSolido').textContent = 
+            /*document.getElementById('tabla-concSolido').textContent = 
                 `${data.datos.concSolido.valor.toFixed(3)}`;
 
             document.getElementById('tabla-corteAgua').textContent = 
-                `${data.datos.corteAgua.valor.toFixed(3)}`;
+                `${data.datos.corteAgua.valor.toFixed(3)}`;*/
 
             document.getElementById('tabla-signalGateway').textContent = 
                 `${data.datos.signalGateway.valor.toFixed(3)}`;
@@ -91,8 +91,8 @@ function mostrarDatosNoDisponibles() {
     document.getElementById('tabla-masTotal').textContent = 'Sin datos';
     document.getElementById('tabla-densidad').textContent = 'Sin datos';
     document.getElementById('tabla-frecuencia').textContent = 'Sin datos';
-    document.getElementById('tabla-concSolido').textContent = 'Sin datos';
-    document.getElementById('tabla-corteAgua').textContent = 'Sin datos';
+    /*document.getElementById('tabla-concSolido').textContent = 'Sin datos';
+    document.getElementById('tabla-corteAgua').textContent = 'Sin datos';*/
     document.getElementById('tabla-signalGateway').textContent = 'Sin datos';
     document.getElementById('tabla-tempGateway').textContent = 'Sin datos';
     

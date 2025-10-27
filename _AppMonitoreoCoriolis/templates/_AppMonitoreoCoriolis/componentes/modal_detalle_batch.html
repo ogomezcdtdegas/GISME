@@ -69,6 +69,12 @@
                         </label>
                     </div>
                     <div class="form-check form-check-inline">
+                        <input class="form-check-input" type="checkbox" id="showPressure">
+                        <label class="form-check-label" for="showPressure">
+                            Presión (psi)
+                        </label>
+                    </div>
+                    <div class="form-check form-check-inline">
                         <input class="form-check-input" type="checkbox" id="showDensity">
                         <label class="form-check-label" for="showDensity">
                             Densidad (g/cc)
@@ -238,11 +244,21 @@ function crearGraficoBatch(datos, limites) {
             hidden: true
         },
         {
+            label: 'Presión (psi)',
+            data: datos.map(d => d.pressure_out),
+            borderColor: '#fd7e14',
+            backgroundColor: '#fd7e1420',
+            yAxisID: 'y4',
+            tension: 0.4,
+            pointRadius: 2,
+            hidden: true
+        },
+        {
             label: 'Densidad (g/cc)',
             data: datos.map(d => d.density),
             borderColor: '#6f42c1',
             backgroundColor: '#6f42c120',
-            yAxisID: 'y4',
+            yAxisID: 'y5',
             tension: 0.4,
             pointRadius: 2,
             hidden: true
@@ -371,6 +387,19 @@ function crearGraficoBatch(datos, limites) {
                     position: 'right',
                     title: {
                         display: true,
+                        text: 'Presión (psi)'
+                    },
+                    grid: {
+                        drawOnChartArea: false,
+                        color: '#fd7e1440'
+                    },
+                    display: false
+                },
+                y5: {
+                    type: 'linear',
+                    position: 'right',
+                    title: {
+                        display: true,
                         text: 'Densidad (g/cc)'
                     },
                     grid: {
@@ -399,9 +428,9 @@ function crearGraficoBatch(datos, limites) {
 
 // Función para configurar eventos de los checkboxes
 function configurarEventosGraficoBatch() {
-    const checkboxes = ['showMassRate', 'showTotalMass', 'showTemperature', 'showDensity'];
-    const datasets = [0, 1, 2, 3]; // Índices de los datasets
-    const scales = ['y1', 'y2', 'y3', 'y4']; // Escalas correspondientes
+    const checkboxes = ['showMassRate', 'showTotalMass', 'showTemperature', 'showPressure', 'showDensity'];
+    const datasets = [0, 1, 2, 3, 4]; // Índices de los datasets
+    const scales = ['y1', 'y2', 'y3', 'y4', 'y5']; // Escalas correspondientes
     
     checkboxes.forEach((checkboxId, index) => {
         const checkbox = document.getElementById(checkboxId);
