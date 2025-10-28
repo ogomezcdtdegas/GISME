@@ -242,10 +242,10 @@ class DescargarTicketBatchPDFView(LoginRequiredMixin, View):
 
         # Tarjeta 2: Datos de operación (dos columnas)
         card2_rows = [
-            [Paragraph("Densidad@std", style_label), Paragraph(densidad_std, style_value),
+            [Paragraph("Densidad@60°F", style_label), Paragraph(densidad_std, style_value),
              Paragraph("Masa total", style_label), Paragraph(masa_total, style_value)],
             [Paragraph("Temperatura del fluido", style_label), Paragraph(temperatura_fluido, style_value),
-             Paragraph("Densidad@flujo", style_label), Paragraph(densidad_flujo, style_value)],
+             Paragraph("Densidad observada", style_label), Paragraph(densidad_flujo, style_value)],
             [Paragraph("Presión del fluido", style_label), Paragraph(presion_fluido, style_value),
              Paragraph("Volumen bruto", style_label), Paragraph(volumen_bruto, style_value)],
             [Paragraph("Volumen a 60°F", style_label), Paragraph(volumen_estandar_60f, style_value),

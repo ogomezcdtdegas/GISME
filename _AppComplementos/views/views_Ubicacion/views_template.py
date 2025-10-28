@@ -2,8 +2,9 @@ from repoGenerico.views_base import BaseListView
 from _AppComplementos.models import Ubicacion
 from _AppComplementos.serializers import UbicacionSerializer
 from _AppAuth.utils import get_user_role_context
+from _AppAdmin.mixins import ComplementosPermissionMixin
 
-class UbicacionListPagHTML(BaseListView):
+class UbicacionListPagHTML(ComplementosPermissionMixin, BaseListView):
     model = Ubicacion
     serializer_class = UbicacionSerializer
     template_name = "_AppComplementos/templates_ubicacion/index.html"

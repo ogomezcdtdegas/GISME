@@ -3,6 +3,7 @@ from repoGenerico.views_base import BaseRetrieveUpdateView
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
+from _AppAdmin.mixins import ComplementosPermissionMixin
 
 from .....models import Sistema
 from .....serializers import SistemaSerializer
@@ -15,7 +16,7 @@ from drf_spectacular.utils import extend_schema, extend_schema_view
     patch=extend_schema(tags=['Sistema']),
 )
 
-class EditarSistemaCommandView(BaseRetrieveUpdateView):
+class EditarSistemaCommandView(ComplementosPermissionMixin, BaseRetrieveUpdateView):
     """CBV Command para editar un sistema existente usando BaseRetrieveUpdateView"""
     model = Sistema
     serializer_class = SistemaSerializer

@@ -2,6 +2,7 @@ from rest_framework.permissions import IsAuthenticated
 from repoGenerico.views_base import BaseCreateView
 from rest_framework.response import Response
 from rest_framework import status
+from _AppAdmin.mixins import ComplementosPermissionMixin
 
 from .....models import Ubicacion
 from .....serializers import UbicacionSerializer
@@ -13,7 +14,7 @@ from drf_spectacular.utils import extend_schema, extend_schema_view
 )
 
 # 🔹 Crear
-class CreateUbicacionView(BaseCreateView):
+class CreateUbicacionView(ComplementosPermissionMixin, BaseCreateView):
     model = Ubicacion
     serializer_class = UbicacionSerializer
     permission_classes = [IsAuthenticated]

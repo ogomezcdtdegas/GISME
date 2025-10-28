@@ -1,7 +1,55 @@
 # Mixins para permisos de administración
 from rest_framework.response import Response
 from rest_framework import status
+from django.shortcuts import redirect
 from .utils import log_user_action, get_client_ip
+
+class ComplementosPermissionMixin:
+    """Mixin para verificar permisos de acceso a módulos de complementos (ubicaciones, sistemas)"""
+    
+    def check_complementos_permission(self, user, action='access'):
+        """
+        Verificar permisos para módulos de complementos
+        
+        Args:
+            user: Usuario actual
+            action: Tipo de acción ('access', 'create', 'update', 'delete')
+        
+        Returns:
+            tuple: (has_permission: bool, error_response: Response|None)
+        """
+        # Superuser siempre tiene acceso
+        if user.is_superuser:
+            return True, None
+            
+        if not hasattr(user, 'user_role') or not user.user_role:
+            return False, None  # Indicar que no tiene permisos
+        
+        user_role = user.user_role.role
+        
+        # Solo admin y admin_principal pueden acceder a complementos
+        if user_role in ['admin', 'admin_principal']:
+            return True, None
+        else:
+            return False, None  # Indicar que no tiene permisos
+    
+    def dispatch(self, request, *args, **kwargs):
+        """Override dispatch para verificar permisos antes de procesar"""
+        has_permission, _ = self.check_complementos_permission(request.user)
+        
+        if not has_permission:
+            # Si es una request que espera JSON (API), devolver error JSON
+            if request.content_type == 'application/json' or 'api' in request.path or request.headers.get('Accept', '').startswith('application/json'):
+                return Response({
+                    'success': False,
+                    'error': 'Su rol de usuario no tiene permisos para acceder a este módulo.'
+                }, status=status.HTTP_403_FORBIDDEN)
+            # Si es una vista de template, redirigir al home
+            else:
+                return redirect('/')
+        
+        return super().dispatch(request, *args, **kwargs)
+
 
 class SuperuserPermissionMixin:
     """Mixin para verificar que solo superusers puedan realizar ciertas acciones"""
@@ -48,13 +96,14 @@ class AdminPermissionMixin:
             action: Tipo de acción ('access', 'create', 'update', 'delete')
         
         Returns:
-            tuple: (has_permission: bool, error_response: Response|None)
+            tuple: (has_permission: bool, action_denied_reason: str|None)
         """
+        # Superuser siempre tiene acceso
+        if user.is_superuser:
+            return True, None
+            
         if not hasattr(user, 'user_role') or not user.user_role:
-            return False, Response({
-                'success': False,
-                'error': 'Usuario sin rol asignado'
-            }, status=status.HTTP_403_FORBIDDEN)
+            return False, 'Usuario sin rol asignado'
         
         user_role = user.user_role.role
         
@@ -63,30 +112,18 @@ class AdminPermissionMixin:
             if user_role in ['admin', 'admin_principal']:
                 return True, None
             else:
-                return False, Response({
-                    'success': False,
-                    'error': 'Su rol de usuario no tiene permisos para acceder al módulo de administración de usuarios.'
-                }, status=status.HTTP_403_FORBIDDEN)
+                return False, 'Su rol de usuario no tiene permisos para acceder al módulo de administración de usuarios.'
         
         # Verificar permisos de modificación (create, update, delete)
         if action in ['create', 'update', 'delete']:
             if user_role == 'admin_principal':
                 return True, None
             elif user_role == 'admin':
-                return False, Response({
-                    'success': False,
-                    'error': 'Solo AdministradorPrincipal puede realizar esta operación'
-                }, status=status.HTTP_403_FORBIDDEN)
+                return False, 'Solo AdministradorPrincipal puede realizar esta operación'
             else:
-                return False, Response({
-                    'success': False,
-                    'error': 'Su tipo de usuario no tiene permisos para realizar esta operación'
-                }, status=status.HTTP_403_FORBIDDEN)
+                return False, 'Su tipo de usuario no tiene permisos para realizar esta operación'
         
-        return False, Response({
-            'success': False,
-            'error': 'Acción no reconocida'
-        }, status=status.HTTP_400_BAD_REQUEST)
+        return False, 'Acción no reconocida'
     
     def dispatch(self, request, *args, **kwargs):
         """Override dispatch para verificar permisos antes de procesar"""
@@ -100,10 +137,18 @@ class AdminPermissionMixin:
         }
         
         action = action_map.get(request.method, 'access')
-        has_permission, error_response = self.check_admin_permission(request.user, action)
+        has_permission, error_message = self.check_admin_permission(request.user, action)
         
         if not has_permission:
-            return error_response
+            # Si es una request que espera JSON (API), devolver error JSON
+            if request.content_type == 'application/json' or 'api' in request.path or request.headers.get('Accept', '').startswith('application/json'):
+                return Response({
+                    'success': False,
+                    'error': error_message
+                }, status=status.HTTP_403_FORBIDDEN)
+            # Si es una vista de template, redirigir al home
+            else:
+                return redirect('/')
         
         return super().dispatch(request, *args, **kwargs)
 

@@ -3,6 +3,7 @@ from repoGenerico.views_base import BaseRetrieveUpdateView
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
+from _AppAdmin.mixins import ComplementosPermissionMixin
 
 from .....models import Ubicacion
 from .....serializers import UbicacionSerializer
@@ -16,7 +17,7 @@ from drf_spectacular.utils import extend_schema, extend_schema_view
 )
 
 # 🔹 Actualizar
-class UpdateUbicacionView(BaseRetrieveUpdateView):
+class UpdateUbicacionView(ComplementosPermissionMixin, BaseRetrieveUpdateView):
     model = Ubicacion
     serializer_class = UbicacionSerializer
     permission_classes = [IsAuthenticated]

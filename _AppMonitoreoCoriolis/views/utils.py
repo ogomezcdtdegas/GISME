@@ -27,4 +27,4 @@ def convertir_presion_con_span(valor_crudo, span_presion):
     """
     Convierte el valor crudo de presión usando el span del sistema.
     """
-    return valor_crudo / span_presion
+    return (valor_crudo / 4095) * span_presion

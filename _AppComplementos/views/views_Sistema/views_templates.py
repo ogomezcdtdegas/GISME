@@ -6,9 +6,10 @@ from repoGenerico.views_base import BaseRetrieveUpdateView
 from ...models import Sistema
 from ...serializers import SistemaSerializer
 from _AppAuth.utils import get_user_role_context
+from _AppAdmin.mixins import ComplementosPermissionMixin
 
 
-class SistemasIndexView(LoginRequiredMixin, TemplateView):
+class SistemasIndexView(ComplementosPermissionMixin, LoginRequiredMixin, TemplateView):
     """CBV Vista principal para gestión de sistemas"""
     template_name = '_AppComplementos/templates_sistema/index.html'
     

@@ -1,7 +1,9 @@
 from django.views.generic import TemplateView
+from django.contrib.auth.mixins import LoginRequiredMixin
 from _AppAuth.utils import get_admin_context
+from _AppAdmin.mixins import AdminPermissionMixin
 
-class AdminUserPaginatedHTML(TemplateView):
+class AdminUserPaginatedHTML(LoginRequiredMixin, AdminPermissionMixin, TemplateView):
     """Vista principal para administración de usuarios - Solo renderiza template, datos via AJAX"""
     template_name = "_AppAdmin/index.html"
 
