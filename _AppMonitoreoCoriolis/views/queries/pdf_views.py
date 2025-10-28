@@ -58,9 +58,9 @@ def _header_footer(ticket_num: str, generado_por: str, generado_dt: datetime.dat
         # Footer con generación y paginación
         c.setFont("Helvetica", 8)
         generado_str = generado_dt.strftime("%d/%m/%Y a las %H:%M")
-        footer_left = f"Generado el {generado_str} por {generado_por}"
+        footer_left = f"Ticket descargado el {generado_str} por {generado_por}"
         c.drawString(margin, margin - 8, footer_left)
-        c.drawString(margin, margin - 18, "GISME - Sistema de Gestión Integral de Medición de Energía")
+        c.drawString(margin, margin - 18, "GISME - Gestión Inteligente de Sistemas de Medición")
 
         page_text = f"Página {doc.page}"
         ptw = c.stringWidth(page_text, "Helvetica", 8)
@@ -89,7 +89,11 @@ class DescargarTicketBatchPDFView(LoginRequiredMixin, View):
             response['Content-Disposition'] = f'attachment; filename="ticket_batch_{batch_id}.pdf"'
             
             # Generar PDF usando la función build_pdf
-            self._build_pdf(response, batch, request.user.username)
+            #self._build_pdf(response, batch, request.user.username)
+
+            # ...en DescargarTicketBatchPDFView.get()
+            nombre_usuario = f"{request.user.first_name} {request.user.last_name}".strip() or request.user.username
+            self._build_pdf(response, batch, nombre_usuario)
             
             return response
             
@@ -101,7 +105,8 @@ class DescargarTicketBatchPDFView(LoginRequiredMixin, View):
         """Genera un PDF con tres tarjetas centradas (estilo ficha)."""
         
         generado_dt = datetime.datetime.now(COLOMBIA_TZ)
-        
+        generado_createAt = batch.created_at.astimezone(COLOMBIA_TZ)
+
         # Extraer datos del batch con conversión a zona horaria de Colombia
         ticket_num = str(batch.num_ticket)[:8]  # Usar los primeros 8 caracteres del ID como ticket
         
@@ -121,7 +126,7 @@ class DescargarTicketBatchPDFView(LoginRequiredMixin, View):
             hora_final = "N/A"
         
         # Datos del batch - Valores quemados y valores reales
-        localizacion = "Salgar, Cundinamarca"  # Valor quemado como solicitaste
+        localizacion = batch.systemId.ubicacion.nombre
         nombre_sistema = batch.systemId.tag if batch.systemId else "N/A"
         producto = "GLP"  # Valor quemado como solicitaste
         
@@ -131,11 +136,11 @@ class DescargarTicketBatchPDFView(LoginRequiredMixin, View):
         rho15, gamma60 = rho15_from_rhoobs_api1124(rho_obs, T_obs_C)
         rho15_g_cm3 = kg_m3_a_g_cm3(rho15)
 
-        densidad_std = f"{rho15_g_cm3:.5f} g/cm³" if rho15_g_cm3 is not None else "N/A"
+        densidad_std = f"{rho15_g_cm3:.4f} g/cm³" if rho15_g_cm3 is not None else "N/A"
         temperatura_fluido = f"{celsius_a_fahrenheit(batch.temperatura_coriolis_prom):.2f} °F" if celsius_a_fahrenheit(batch.temperatura_coriolis_prom) is not None else "N/A"
         presion_fluido = f"{batch.pressure_out_prom:.2f} psi" if batch.pressure_out_prom is not None else "N/A"
         masa_total = f"{batch.mass_total:.2f} kg" if batch.mass_total is not None else "N/A"
-        densidad_flujo = f"{batch.densidad_prom:.5f} g/cm³" if batch.densidad_prom is not None else "N/A"
+        densidad_flujo = f"{batch.densidad_prom:.4f} g/cm³" if batch.densidad_prom is not None else "N/A"
         
         # Usar volumen total directamente (ya está en galones)
         if batch.vol_total is not None:
@@ -144,7 +149,7 @@ class DescargarTicketBatchPDFView(LoginRequiredMixin, View):
             volumen_bruto = "N/A"
 
         volumen_estandar = m3_a_gal(batch.mass_total/rho15)
-        volumen_estandar_60f = f"{volumen_estandar:.5f} gal" if volumen_estandar is not None else "N/A"
+        volumen_estandar_60f = f"{volumen_estandar:.2f} gal" if volumen_estandar is not None else "N/A"
         
         # Calcular duración del batch
         if batch.fecha_inicio and batch.fecha_fin:
@@ -154,9 +159,9 @@ class DescargarTicketBatchPDFView(LoginRequiredMixin, View):
         else:
             duracion = "N/A"
             
-        identificacion_medidor = "Medidor #A-1234"  # Valor quemado como solicitaste
+        identificacion_medidor = batch.systemId.identificacion_medidor if batch.systemId and batch.systemId.identificacion_medidor else "N/A"
         total_registros = batch.total_registros if hasattr(batch, 'total_registros') and batch.total_registros else 0
-        logo_path = "colgasLogo.jpg"  # Path del logo
+        logo_path = "_AppMonitoreoCoriolis/views/queries/logo Colgas.png"  # Path del logo
         
         # Documento y estilos
         doc = SimpleDocTemplate(
@@ -227,7 +232,7 @@ class DescargarTicketBatchPDFView(LoginRequiredMixin, View):
         card1_rows = [
             [Paragraph("Localización", style_label), Paragraph(localizacion, style_value),
              Paragraph("Nombre del sistema", style_label), Paragraph(nombre_sistema, style_value)],
-            [Paragraph("Fecha de generación", style_label), Paragraph(generado_dt.strftime("%d/%m/%Y %H:%M"), style_value),
+            [Paragraph("Fecha de generación", style_label), Paragraph(generado_createAt.strftime("%d/%m/%Y %H:%M"), style_value),
              Paragraph("Producto", style_label), Paragraph(producto, style_value)],
             [Paragraph("Inicio de bache", style_label), Paragraph(f"{fecha} {hora_inicio}", style_value),
              Paragraph("Fin de bache", style_label), Paragraph(f"{fecha} {hora_final}", style_value)],

@@ -23,6 +23,11 @@
             </div>
 
             <div class="col-md-4">
+                <label for="identificacion_medidor" class="form-label">Identificación del Medidor:</label>
+                <input type="text" class="form-control" name="identificacion_medidor" id="identificacion_medidor" required>
+            </div>
+
+            <div class="col-md-4">
                 <label for="ubicacion" class="form-label">Ubicación:</label>
                 <select class="form-select" name="ubicacion" id="ubicacion" required>
                     <option value="">Seleccione una ubicación...</option>
@@ -82,6 +87,10 @@
                     <th style="cursor: pointer;" onclick="sortTable('sistema_id')">
                         MAC Gateway
                         <i class="bi bi-arrow-up-down ms-1" id="sistema_id-sort-icon"></i>
+                    </th>
+                    <th style="cursor: pointer;" onclick="sortTable('identificacion_medidor')">
+                        Identificación Medidor
+                        <i class="bi bi-arrow-up-down ms-1" id="identificacion_medidor-sort-icon"></i>
                     </th>
                     <th style="cursor: pointer;" onclick="sortTable('ubicacion_nombre')">
                         Ubicación 

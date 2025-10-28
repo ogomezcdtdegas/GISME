@@ -130,11 +130,12 @@ class SistemaManager {
         const data = {
             tag: formData.get('tag'),
             sistema_id: formData.get('sistema_id'),
+            identificacion_medidor: formData.get('identificacion_medidor'),
             ubicacion: formData.get('ubicacion')
         };
 
         // Validaciones
-        if (!data.tag || !data.sistema_id || !data.ubicacion) {
+        if (!data.tag || !data.sistema_id || !data.identificacion_medidor || !data.ubicacion) {
             this.showAlert('Todos los campos son obligatorios', 'error');
             return;
         }
@@ -210,6 +211,10 @@ class SistemaManager {
                     <input type="text" id="swal-sistema-id" class="form-control" value="${sistema.sistema_id}">
                 </div>
                 <div class="mb-3">
+                    <label for="swal-identificacion-medidor" class="form-label">Identificación del Medidor:</label>
+                    <input type="text" id="swal-identificacion-medidor" class="form-control" value="${sistema.identificacion_medidor || ''}">
+                </div>
+                <div class="mb-3">
                     <label for="swal-ubicacion" class="form-label">Ubicación:</label>
                     <select id="swal-ubicacion" class="form-control">
                         <option value="">Seleccione una ubicación...</option>
@@ -224,14 +229,15 @@ class SistemaManager {
             preConfirm: () => {
                 const tag = document.getElementById('swal-tag').value;
                 const sistemaId = document.getElementById('swal-sistema-id').value;
+                const identificacionMedidor = document.getElementById('swal-identificacion-medidor').value;
                 const ubicacion = document.getElementById('swal-ubicacion').value;
 
-                if (!tag || !sistemaId || !ubicacion) {
+                if (!tag || !sistemaId || !identificacionMedidor || !ubicacion) {
                     Swal.showValidationMessage('Todos los campos son obligatorios');
                     return false;
                 }
 
-                return { tag, sistema_id: sistemaId, ubicacion };
+                return { tag, sistema_id: sistemaId, identificacion_medidor: identificacionMedidor, ubicacion };
             }
         });
 
@@ -278,6 +284,7 @@ class SistemaManager {
             row.innerHTML = `
                 <td>${sistema.tag}</td>
                 <td>${sistema.sistema_id}</td>
+                <td>${sistema.identificacion_medidor || 'N/A'}</td>
                 <td>${sistema.ubicacion_nombre}</td>
                 <td>${sistema.ubicacion_coordenadas}</td>
                 <td>

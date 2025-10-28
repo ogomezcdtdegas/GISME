@@ -87,6 +87,8 @@ class DetalleBatchQueryView(APIView):
                 'batch_info': {
                     'id': batch.id,
                     'sistema_tag': batch.systemId.tag,
+                    'ubicación': batch.systemId.ubicacion.nombre if batch.systemId.ubicacion else "Sin ubicación",
+                    'identificador_medidor': batch.systemId.identificacion_medidor if batch.systemId.identificacion_medidor else "N/A",
                     'fecha_inicio': batch.fecha_inicio.astimezone(COLOMBIA_TZ).strftime('%d/%m/%Y %H:%M:%S'),
                     'fecha_fin': batch.fecha_fin.astimezone(COLOMBIA_TZ).strftime('%d/%m/%Y %H:%M:%S'),
                     'mass_total_kg': batch.mass_total,

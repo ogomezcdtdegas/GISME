@@ -17,6 +17,7 @@ class Ubicacion(BaseModel):
 class Sistema(BaseModel):
     tag = models.CharField(max_length=50, unique=True, verbose_name="Tag")
     sistema_id = models.CharField(max_length=50, unique=True, verbose_name="ID Sistema")
+    identificacion_medidor = models.CharField(max_length=100, verbose_name="Identificación del Medidor", blank=True, null=True)
     ubicacion = models.ForeignKey(Ubicacion, on_delete=models.CASCADE, related_name='sistemas', verbose_name="Ubicación")
 
     class Meta:

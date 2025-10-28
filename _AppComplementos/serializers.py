@@ -56,10 +56,11 @@ class SistemaSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Sistema
-        fields = ["id", "tag", "sistema_id", "ubicacion", "ubicacion_nombre", "ubicacion_lat", "ubicacion_lng", "ubicacion_coordenadas", "created_at"]
+        fields = ["id", "tag", "sistema_id", "identificacion_medidor", "ubicacion", "ubicacion_nombre", "ubicacion_lat", "ubicacion_lng", "ubicacion_coordenadas", "created_at"]
         extra_kwargs = {
             'tag': {'validators': []},  # Desactivar validadores automáticos
             'sistema_id': {'validators': []},  # Desactivar validadores automáticos
+            'identificacion_medidor': {'validators': []},  # Desactivar validadores automáticos
         }
     
     def get_ubicacion_coordenadas(self, obj):
@@ -105,6 +106,23 @@ class SistemaSerializer(serializers.ModelSerializer):
         
         if queryset.exists():
             raise serializers.ValidationError("Ya existe un sistema con este MAC Gateway.")
+        
+        return value
+    
+    def validate_identificacion_medidor(self, value):
+        """Validar que la identificación del medidor no esté vacía y sea única"""
+        if not value or not value.strip():
+            raise serializers.ValidationError("La Identificación del Medidor es obligatoria.")
+        
+        value = value.strip()
+        
+        # Validar unicidad de la identificacion_medidor
+        queryset = Sistema.objects.filter(identificacion_medidor=value)
+        if self.instance:
+            queryset = queryset.exclude(pk=self.instance.pk)
+        
+        if queryset.exists():
+            raise serializers.ValidationError("Ya existe un sistema con esta Identificación del Medidor.")
         
         return value
 '''xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx'''
