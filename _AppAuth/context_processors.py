@@ -20,6 +20,8 @@ def user_role_context(request):
             'is_supervisor': user_role == 'supervisor',
             'is_admin': user_role == 'admin',
             'is_admin_principal': user_role == 'admin_principal',
+            'is_superuser': request.user.is_superuser,
+            'can_delete_records': request.user.is_superuser,
         }
     
     return {
@@ -31,4 +33,6 @@ def user_role_context(request):
         'is_supervisor': False,
         'is_admin': False,
         'is_admin_principal': False,
+        'is_superuser': False,
+        'can_delete_records': False,
     }

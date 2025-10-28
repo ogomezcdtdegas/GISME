@@ -3,6 +3,39 @@ from rest_framework.response import Response
 from rest_framework import status
 from .utils import log_user_action, get_client_ip
 
+class SuperuserPermissionMixin:
+    """Mixin para verificar que solo superusers puedan realizar ciertas acciones"""
+    
+    def check_superuser_permission(self, user, action='delete'):
+        """
+        Verificar permisos de superuser para acciones críticas
+        
+        Args:
+            user: Usuario actual
+            action: Tipo de acción ('delete', 'critical')
+        
+        Returns:
+            tuple: (has_permission: bool, error_response: Response|None)
+        """
+        if not user.is_superuser:
+            return False, Response({
+                'success': False,
+                'error': 'Solo superusuarios pueden realizar esta operación'
+            }, status=status.HTTP_403_FORBIDDEN)
+        
+        return True, None
+    
+    def dispatch(self, request, *args, **kwargs):
+        """Override dispatch para verificar permisos de superuser antes de procesar"""
+        if request.method == 'DELETE':
+            has_permission, error_response = self.check_superuser_permission(request.user)
+            
+            if not has_permission:
+                return error_response
+        
+        return super().dispatch(request, *args, **kwargs)
+
+
 class AdminPermissionMixin:
     """Mixin para verificar permisos de administración de usuarios"""
     

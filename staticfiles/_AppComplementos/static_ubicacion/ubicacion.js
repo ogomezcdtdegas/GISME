@@ -249,9 +249,10 @@ class UbicacionManager {
                     <button class="btn btn-sm btn-warning me-1" onclick="ubicacionManager.editUbicacion('${ubicacion.id}')">
                         <i class="bi bi-pencil"></i>
                     </button>
+                    ${window.IS_SUPERUSER ? `
                     <button class="btn btn-sm btn-danger" onclick="ubicacionManager.deleteUbicacion('${ubicacion.id}')">
                         <i class="bi bi-trash"></i>
-                    </button>
+                    </button>` : ''}
                 </td>
             `;
             tbody.appendChild(row);

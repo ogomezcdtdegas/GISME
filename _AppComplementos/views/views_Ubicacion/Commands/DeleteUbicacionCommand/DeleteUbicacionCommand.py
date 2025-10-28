@@ -1,6 +1,7 @@
 from rest_framework.permissions import IsAuthenticated
 from repoGenerico.views_base import BaseDeleteView
 from .....models import Ubicacion
+from _AppAdmin.mixins import SuperuserPermissionMixin
 
 from drf_spectacular.utils import extend_schema, extend_schema_view
 
@@ -9,8 +10,8 @@ from drf_spectacular.utils import extend_schema, extend_schema_view
 )
 
 # 🔹 Eliminar
-class DeleteUbicacionView(BaseDeleteView):
-    """CBV Command para eliminar una ubicación usando BaseDeleteView"""
+class DeleteUbicacionView(SuperuserPermissionMixin, BaseDeleteView):
+    """CBV Command para eliminar una ubicación usando BaseDeleteView - Solo Superusers"""
     model = Ubicacion
     permission_classes = [IsAuthenticated]
     
