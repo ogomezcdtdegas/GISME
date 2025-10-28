@@ -86,7 +86,7 @@ class DescargarTicketBatchPDFView(LoginRequiredMixin, View):
             
             # Crear respuesta HTTP para PDF
             response = HttpResponse(content_type='application/pdf')
-            response['Content-Disposition'] = f'attachment; filename="ticket_batch_{batch_id}.pdf"'
+            response['Content-Disposition'] = f'attachment; filename="ticket_#_{batch.num_ticket}_{batch.systemId.ubicacion.nombre}.pdf"'
             
             # Generar PDF usando la función build_pdf
             #self._build_pdf(response, batch, request.user.username)
