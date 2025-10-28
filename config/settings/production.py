@@ -6,7 +6,7 @@ DEBUG = False
 ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS_PROD', 'tudominio.com').split(',')
 SESSION_COOKIE_AGE = 1800
 
-'''
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -26,5 +26,5 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
-
+'''
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
