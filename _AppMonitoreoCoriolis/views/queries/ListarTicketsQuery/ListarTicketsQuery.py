@@ -50,6 +50,7 @@ class ListarTicketsQueryView(APIView):
                     'perfil_lim_sup': round(batch.perfil_lim_sup_caudal, 2) if batch.perfil_lim_sup_caudal else '-',
                     'perfil_vol_min': round(batch.perfil_vol_minimo, 2) if batch.perfil_vol_minimo else '-',
                     'total_registros': batch.total_registros or 0,
+                    'time_finished_batch': round(batch.time_finished_batch, 1) if batch.time_finished_batch else '-'
                 })
             
             logger.info(f"Listando {len(batches_data)} batches con ticket para sistema {sistema_id}")

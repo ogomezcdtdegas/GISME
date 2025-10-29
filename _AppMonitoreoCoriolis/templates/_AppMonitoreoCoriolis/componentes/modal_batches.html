@@ -355,6 +355,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             <th>Temp. Prom. (°F)</th>
                             <th>Densidad Prom.</th>
                             <th>Vol. Mín. (kg)</th>
+                            <th>Tiempo Cierre (min)</th>
                             <th>Registros</th>
                             <th>Detalle</th>
                         </tr>
@@ -378,6 +379,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <td>${batch.temperatura_coriolis_prom}</td>
                     <td>${batch.densidad_prom}</td>
                     <td><small>${batch.perfil_vol_min || '-'}</small></td>
+                    <td><span class="badge bg-secondary">${batch.time_finished_batch || '-'}</span></td>
                     <td>${batch.total_registros}</td>
                     <td>
                         <button class="btn btn-info btn-sm" onclick="verDetalleBatch('${batch.id}')">
@@ -435,6 +437,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             <th>Temp. Prom. (°F)</th>
                             <th>Densidad Prom.</th>
                             <th>Vol. Mín. (kg)</th>
+                            <th>Tiempo Cierre (min)</th>
                             <th>Registros</th>
                             <th>Detalle</th>
                         </tr>
@@ -458,6 +461,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <td>${batch.temperatura_prom}</td>
                     <td>${batch.densidad_prom}</td>
                     <td><small>${batch.perfil_vol_min || '-'}</small></td>
+                    <td><span class="badge bg-secondary">${batch.time_finished_batch || '-'}</span></td>
                     <td>${batch.total_registros}</td>
                     <td>
                         <button class="btn btn-info btn-sm" onclick="verDetalleBatch('${batch.id}')">

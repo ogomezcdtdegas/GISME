@@ -128,7 +128,8 @@ class DetectarBatchesCommandView(APIView):
                         perfil_lim_sup_caudal=lim_sup,
                         perfil_vol_minimo=vol_minimo,
                         duracion_minutos=batch_data['duracion_minutos'],
-                        total_registros=batch_data['total_registros']
+                        total_registros=batch_data['total_registros'],
+                        time_finished_batch=time_finished_batch
                     )
                 except IntegrityError:
                     # El batch ya existe (por el hash único), buscar el existente

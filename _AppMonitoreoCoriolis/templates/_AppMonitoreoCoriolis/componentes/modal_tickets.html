@@ -169,6 +169,7 @@ document.addEventListener('DOMContentLoaded', function() {
                             <th>Temp. Prom. (°F)</th>
                             <th>Densidad Prom.</th>
                             <th>Vol. Mín. (kg)</th>
+                            <th>Tiempo Cierre (min)</th>
                             <th>Registros</th>
                             <th>Detalle</th>
                         </tr>
@@ -192,6 +193,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <td>${ticket.temperatura_prom}</td>
                     <td>${ticket.densidad_prom}</td>
                     <td><small>${ticket.perfil_vol_min || '-'}</small></td>
+                    <td><span class="badge bg-secondary">${ticket.time_finished_batch || '-'}</span></td>
                     <td>${ticket.total_registros}</td>
                     <td>
                         <button class="btn btn-info btn-sm" onclick="verDetalleBatch('${ticket.id}')">
