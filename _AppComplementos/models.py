@@ -45,6 +45,11 @@ class ConfiguracionCoeficientes(BaseModel):
     lim_sup_caudal_masico = models.FloatField(verbose_name="Límite Superior Caudal Másico", default=1000000.0)
     vol_masico_ini_batch = models.FloatField(verbose_name="Volumen Másico Total para confirmación de bath", default=0.0)
     num_ticket = models.IntegerField(verbose_name="Número de Ticket", default=1)
+    time_finished_batch = models.FloatField(
+        verbose_name="Tiempo de espera para cierre de batch (minutos)",
+        default=2.0,
+        help_text="Minutos que deben pasar en cero para confirmar cierre de batch"
+    )
 
     class Meta:
         verbose_name = "Configuración de Coeficientes"

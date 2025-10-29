@@ -38,6 +38,7 @@ class CreateOrUpdateCoeficientesCommandView(APIView):
             lim_sup_caudal_masico = request.data.get('lim_sup_caudal_masico', 1000000.0)
             vol_masico_ini_batch = request.data.get('vol_masico_ini_batch', 0.0)
             num_ticket = request.data.get('num_ticket', 1)
+            time_finished_batch = request.data.get('time_finished_batch', 2.0)
 
             # Validaciones básicas
             if not system_id:
@@ -91,7 +92,8 @@ class CreateOrUpdateCoeficientesCommandView(APIView):
                     'lim_inf_caudal_masico': float(lim_inf_caudal_masico),
                     'lim_sup_caudal_masico': float(lim_sup_caudal_masico),
                     'vol_masico_ini_batch': float(vol_masico_ini_batch),
-                    'num_ticket': int(num_ticket)
+                    'num_ticket': int(num_ticket),
+                    'time_finished_batch': float(time_finished_batch)
                 }
             )
 
@@ -107,6 +109,7 @@ class CreateOrUpdateCoeficientesCommandView(APIView):
                 coeficientes.lim_sup_caudal_masico = float(lim_sup_caudal_masico)
                 coeficientes.vol_masico_ini_batch = float(vol_masico_ini_batch)
                 coeficientes.num_ticket = int(num_ticket)
+                coeficientes.time_finished_batch = float(time_finished_batch)
                 coeficientes.save()
 
             # Registrar la acción en el log universal
@@ -115,7 +118,7 @@ class CreateOrUpdateCoeficientesCommandView(APIView):
                 user=request.user,
                 action=action,
                 affected_type='sistema',  # Tipo de registro afectado
-                affected_value=f'{sistema.tag} - Coeficientes de corrección: {{MT: {coeficientes.mt}, BT: {coeficientes.bt}, MP: {coeficientes.mp}, BP: {coeficientes.bp}, Zero: {coeficientes.zero_presion}, Span: {coeficientes.span_presion}, LimInf: {coeficientes.lim_inf_caudal_masico}, LimSup: {coeficientes.lim_sup_caudal_masico}, VolBatch: {coeficientes.vol_masico_ini_batch}, Ticket: {coeficientes.num_ticket}}}',
+                affected_value=f'{sistema.tag} - Coeficientes de corrección: {{MT: {coeficientes.mt}, BT: {coeficientes.bt}, MP: {coeficientes.mp}, BP: {coeficientes.bp}, Zero: {coeficientes.zero_presion}, Span: {coeficientes.span_presion}, LimInf: {coeficientes.lim_inf_caudal_masico}, LimSup: {coeficientes.lim_sup_caudal_masico}, VolBatch: {coeficientes.vol_masico_ini_batch}, Ticket: {coeficientes.num_ticket}, TimeBatch: {coeficientes.time_finished_batch}}}',
                 affected_id=str(sistema.id),  # ID del sistema afectado
                 ip_address=get_client_ip(request)
             )
@@ -135,7 +138,8 @@ class CreateOrUpdateCoeficientesCommandView(APIView):
                     "lim_inf_caudal_masico": coeficientes.lim_inf_caudal_masico,
                     "lim_sup_caudal_masico": coeficientes.lim_sup_caudal_masico,
                     "vol_masico_ini_batch": coeficientes.vol_masico_ini_batch,
-                    "num_ticket": coeficientes.num_ticket
+                    "num_ticket": coeficientes.num_ticket,
+                    "time_finished_batch": coeficientes.time_finished_batch
                 }
             }, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
 

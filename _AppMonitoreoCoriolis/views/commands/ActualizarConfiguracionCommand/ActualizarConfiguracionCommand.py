@@ -29,7 +29,7 @@ class ActualizarConfiguracionCommandView(APIView):
                     'mt': 1.0, 'bt': 0.0, 'mp': 1.0, 'bp': 0.0,
                     'zero_presion': 0.0, 'span_presion': 1.0,
                     'lim_inf_caudal_masico': 0.0, 'lim_sup_caudal_masico': 1000000.0,
-                    'vol_masico_ini_batch': 0.0, 'num_ticket': 1
+                    'vol_masico_ini_batch': 0.0, 'num_ticket': 1, 'time_finished_batch': 2.0
                 }
             )
             
@@ -54,7 +54,7 @@ class ActualizarConfiguracionCommandView(APIView):
             campos_actualizables = [
                 'mt', 'bt', 'mp', 'bp', 'zero_presion', 'span_presion',
                 'lim_inf_caudal_masico', 'lim_sup_caudal_masico', 
-                'vol_masico_ini_batch', 'num_ticket'
+                'vol_masico_ini_batch', 'num_ticket', 'time_finished_batch'
             ]
             
             for campo in campos_actualizables:
@@ -78,7 +78,8 @@ class ActualizarConfiguracionCommandView(APIView):
                     'lim_inf_caudal_masico': config.lim_inf_caudal_masico,
                     'lim_sup_caudal_masico': config.lim_sup_caudal_masico,
                     'vol_masico_ini_batch': config.vol_masico_ini_batch,
-                    'num_ticket': config.num_ticket
+                    'num_ticket': config.num_ticket,
+                    'time_finished_batch': config.time_finished_batch
                 }
             })
             

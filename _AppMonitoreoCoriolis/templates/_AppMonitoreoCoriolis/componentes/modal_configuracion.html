@@ -87,6 +87,11 @@
               <input type="number" class="form-control" id="volMasicoIniBatch" name="volMasicoIniBatch" step="any" placeholder="0.0" min="0">
               <small class="form-text text-muted">kg</small>
             </div>
+            <div class="col-md-4">
+              <label for="timeFinishedBatch" class="form-label">Tiempo para cierre de batch:</label>
+              <input type="number" class="form-control" id="timeFinishedBatch" name="timeFinishedBatch" step="0.1" placeholder="2.0" min="0.1">
+              <small class="form-text text-muted">minutos</small>
+            </div>
           </div>
           <!-- Configuración de Batch -->
           <div class="row mb-4">
@@ -173,6 +178,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('limSupCaudalMasico').value = data.data.lim_sup_caudal_masico || '1000000.0';
                 document.getElementById('volMasicoIniBatch').value = data.data.vol_masico_ini_batch || '0.0';
                 document.getElementById('numberTicket').value = data.data.num_ticket || '1';
+                document.getElementById('timeFinishedBatch').value = data.data.time_finished_batch || '2.0';
                 
                 if (!data.exists) {
                     console.info('Coeficientes no configurados. Mostrando valores por defecto.');
@@ -216,6 +222,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('limSupCaudalMasico').value = '1000000.0';
         document.getElementById('volMasicoIniBatch').value = '0.0';
         document.getElementById('numberTicket').value = '1';
+        document.getElementById('timeFinishedBatch').value = '2.0';
     }
 
     function actualizarCoeficientes() {
@@ -240,17 +247,18 @@ document.addEventListener('DOMContentLoaded', function() {
         const limSupCaudalMasico = parseFloat(document.getElementById('limSupCaudalMasico').value);
         const volMasicoIniBatch = parseFloat(document.getElementById('volMasicoIniBatch').value);
         const numTicket = parseInt(document.getElementById('numberTicket').value);
+        const timeFinishedBatch = parseFloat(document.getElementById('timeFinishedBatch').value);
 
         // Validar que todos los valores son números válidos
         if (isNaN(mt) || isNaN(bt) || isNaN(mp) || isNaN(bp) || isNaN(zeroPresion) || isNaN(spanPresion) ||
-            isNaN(limInfCaudalMasico) || isNaN(limSupCaudalMasico) || isNaN(volMasicoIniBatch) || isNaN(numTicket)) {
+            isNaN(limInfCaudalMasico) || isNaN(limSupCaudalMasico) || isNaN(volMasicoIniBatch) || isNaN(numTicket) || isNaN(timeFinishedBatch)) {
             alert('Error: Todos los valores deben ser números válidos');
             return;
         }
         
         // Validaciones adicionales
-        if (limInfCaudalMasico < 0 || limSupCaudalMasico < 0 || volMasicoIniBatch < 0 || numTicket < 1) {
-            alert('Error: Los valores de configuración no pueden ser negativos y el número de ticket debe ser mayor a 0');
+        if (limInfCaudalMasico < 0 || limSupCaudalMasico < 0 || volMasicoIniBatch < 0 || numTicket < 1 || timeFinishedBatch < 0.1) {
+            alert('Error: Los valores de configuración no pueden ser negativos, el número de ticket debe ser mayor a 0 y el tiempo de cierre debe ser mayor a 0.1 minutos');
             return;
         }
         
@@ -270,7 +278,8 @@ document.addEventListener('DOMContentLoaded', function() {
             lim_inf_caudal_masico: limInfCaudalMasico,
             lim_sup_caudal_masico: limSupCaudalMasico,
             vol_masico_ini_batch: volMasicoIniBatch,
-            num_ticket: numTicket
+            num_ticket: numTicket,
+            time_finished_batch: timeFinishedBatch
         };
 
         console.log('Actualizando coeficientes:', coeficientes);
