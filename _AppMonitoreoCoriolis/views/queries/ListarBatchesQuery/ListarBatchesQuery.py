@@ -9,6 +9,7 @@ from rest_framework.permissions import IsAuthenticated
 from _AppComplementos.models import Sistema
 from _AppMonitoreoCoriolis.models import BatchDetectado
 from _AppMonitoreoCoriolis.views.utils import COLOMBIA_TZ
+from UTIL_LIB.conversiones import celsius_a_fahrenheit
 
 # Configurar logging
 logger = logging.getLogger(__name__)
@@ -78,8 +79,8 @@ class ListarBatchesQueryView(APIView):
                     'fecha_inicio': batch.fecha_inicio.astimezone(COLOMBIA_TZ).strftime('%Y-%m-%d %H:%M:%S'),
                     'fecha_fin': batch.fecha_fin.astimezone(COLOMBIA_TZ).strftime('%Y-%m-%d %H:%M:%S'),
                     'duracion_minutos': round((batch.fecha_fin - batch.fecha_inicio).total_seconds() / 60, 2),
-                    'vol_total': round(batch.vol_total, 2) if batch.vol_total else 0,
-                    'temperatura_prom': round(batch.temperatura_coriolis_prom, 2) if batch.temperatura_coriolis_prom else 0,
+                    'mas_total': round(batch.mass_total, 2) if batch.mass_total else 0,
+                    'temperatura_prom': round(celsius_a_fahrenheit(batch.temperatura_coriolis_prom), 2) if batch.temperatura_coriolis_prom else 0,
                     'densidad_prom': round(batch.densidad_prom, 10) if batch.densidad_prom else 0,
                     'perfil_lim_inf': round(batch.perfil_lim_inf_caudal, 2) if batch.perfil_lim_inf_caudal else '-',
                     'perfil_lim_sup': round(batch.perfil_lim_sup_caudal, 2) if batch.perfil_lim_sup_caudal else '-',

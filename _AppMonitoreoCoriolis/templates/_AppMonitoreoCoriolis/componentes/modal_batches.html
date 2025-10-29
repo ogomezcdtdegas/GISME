@@ -350,8 +350,8 @@ document.addEventListener('DOMContentLoaded', function() {
                             <th>Inicio</th>
                             <th>Fin</th>
                             <th>Duración</th>
-                            <th>Vol. Total (kg)</th>
-                            <th>Temp. Prom. (°C)</th>
+                            <th>Masa Total (kg)</th>
+                            <th>Temp. Prom. (°F)</th>
                             <th>Densidad Prom.</th>
                             <th>Vol. Mín. (kg)</th>
                             <th>Registros</th>
@@ -373,7 +373,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <td><small>${batch.fecha_inicio}</small></td>
                     <td><small>${batch.fecha_fin}</small></td>
                     <td><small>${batch.duracion_minutos} min</small></td>
-                    <td><strong>${batch.vol_total}</strong></td>
+                    <td><strong>${batch.mas_total}</strong></td>
                     <td>${batch.temperatura_coriolis_prom}</td>
                     <td>${batch.densidad_prom}</td>
                     <td><small>${batch.perfil_vol_min || '-'}</small></td>
@@ -430,8 +430,8 @@ document.addEventListener('DOMContentLoaded', function() {
                             <th>Inicio</th>
                             <th>Fin</th>
                             <th>Duración</th>
-                            <th>Vol. Total (kg)</th>
-                            <th>Temp. Prom. (°C)</th>
+                            <th>Masa Total (kg)</th>
+                            <th>Temp. Prom. (°F)</th>
                             <th>Densidad Prom.</th>
                             <th>Vol. Mín. (kg)</th>
                             <th>Registros</th>
@@ -453,7 +453,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <td><small>${batch.fecha_inicio}</small></td>
                     <td><small>${batch.fecha_fin}</small></td>
                     <td><small>${batch.duracion_minutos} min</small></td>
-                    <td><strong>${batch.vol_total}</strong></td>
+                    <td><strong>${batch.mas_total}</strong></td>
                     <td>${batch.temperatura_prom}</td>
                     <td>${batch.densidad_prom}</td>
                     <td><small>${batch.perfil_vol_min || '-'}</small></td>
