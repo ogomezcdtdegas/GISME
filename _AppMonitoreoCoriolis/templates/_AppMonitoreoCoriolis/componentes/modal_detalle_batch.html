@@ -157,9 +157,29 @@ function mostrarDetalleBatch(data) {
     // Configurar eventos de los checkboxes
     configurarEventosGraficoBatch();
     
-    // Mostrar el modal
-    const modal = new bootstrap.Modal(document.getElementById('modalDetalleBatch'));
-    modal.show();
+    // Cerrar otros modales antes de mostrar el detalle
+    const modalTickets = document.getElementById('modalListarTickets');
+    const modalBatches = document.getElementById('modalBuscarBatches');
+    
+    if (modalTickets) {
+        const bsModalTickets = bootstrap.Modal.getInstance(modalTickets);
+        if (bsModalTickets) {
+            bsModalTickets.hide();
+        }
+    }
+    
+    if (modalBatches) {
+        const bsModalBatches = bootstrap.Modal.getInstance(modalBatches);
+        if (bsModalBatches) {
+            bsModalBatches.hide();
+        }
+    }
+    
+    // Mostrar el modal de detalle después de un pequeño delay para que se cierren los otros modales
+    setTimeout(() => {
+        const modal = new bootstrap.Modal(document.getElementById('modalDetalleBatch'));
+        modal.show();
+    }, 300);
 }
 
 // Función para crear el gráfico del batch

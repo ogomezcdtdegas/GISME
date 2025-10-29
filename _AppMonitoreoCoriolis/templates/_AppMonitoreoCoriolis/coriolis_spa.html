@@ -244,6 +244,9 @@ let SISTEMA_ACTUAL;
                             <button class="btn btn-primary btn-sm" onclick="abrirModalBatches()">
                                 <i class="bi bi-search"></i> Buscar Batches
                             </button>
+                            <button class="btn btn-success btn-sm" onclick="abrirModalTickets()">
+                                <i class="bi bi-ticket"></i> Ver Tickets
+                            </button>
                             {% endif %}
                             <!--<button class="btn btn-danger btn-sm" onclick="descargarReportePDF()">
                                 <i class="bi bi-file-earmark-pdf"></i> Descargar Reporte PDF
@@ -433,6 +436,9 @@ let SISTEMA_ACTUAL;
 <!-- Modal de Búsqueda de Batches -->
 {% include '_AppMonitoreoCoriolis/componentes/modal_batches.html' %}
 
+<!-- Modal de Tickets -->
+{% include '_AppMonitoreoCoriolis/componentes/modal_tickets.html' %}
+
 {% endblock %}
 
 {% block extra_js %}
@@ -460,4 +466,12 @@ let SISTEMA_ACTUAL;
 <script src="{% static '_AppMonitoreoCoriolis/js/time-control.js' %}?v=2.4"></script>
 <script src="{% static '_AppMonitoreoCoriolis/js/pdf-generator.js' %}?v=2.2"></script>
 <script src="{% static '_AppMonitoreoCoriolis/js/main.js' %}?v=2.5"></script>
+
+<script>
+// Función global para abrir el modal de tickets
+function abrirModalTickets() {
+    const modal = new bootstrap.Modal(document.getElementById('modalListarTickets'));
+    modal.show();
+}
+</script>
 {% endblock %}
