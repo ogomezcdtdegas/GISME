@@ -1,5 +1,5 @@
-console.log("🚀 main.js cargado.");
+//console.log("🚀 main.js cargado.");
 
 document.addEventListener("DOMContentLoaded", function () {
-    console.log("🔄 Scripts inicializados.");
+    //console.log("🔄 Scripts inicializados.");
 });

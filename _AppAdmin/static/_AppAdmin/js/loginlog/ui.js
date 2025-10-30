@@ -10,7 +10,7 @@
 export function renderLoginLogs(logs) {
     const tbody = document.getElementById('loginLogsTableBody');
     if (!tbody) {
-        console.error('❌ No se encontró el elemento loginLogsTableBody');
+        //console.error('❌ No se encontró el elemento loginLogsTableBody');
         return;
     }
 

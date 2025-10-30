@@ -14,7 +14,7 @@ async function makeAPIRequest(url, options = {}) {
     };
 
     try {
-        console.log('🌐 API Request:', url, options);
+        //console.log('🌐 API Request:', url, options);
         
         const response = await fetch(url, {
             ...options,
@@ -26,7 +26,7 @@ async function makeAPIRequest(url, options = {}) {
         try {
             data = await response.json();
         } catch (jsonError) {
-            console.error('❌ Error parsing JSON:', jsonError);
+            //console.error('❌ Error parsing JSON:', jsonError);
             data = { success: false, error: `HTTP ${response.status}: ${response.statusText}` };
         }
 
@@ -39,11 +39,11 @@ async function makeAPIRequest(url, options = {}) {
             }
         }
 
-        console.log('📦 API Response:', data);
+        //console.log('📦 API Response:', data);
         return data;
         
     } catch (error) {
-        console.error('❌ API Error:', error);
+        //console.error('❌ API Error:', error);
         return { success: false, error: error.message };
     }
 }
@@ -105,4 +105,4 @@ window.AdminAPI = {
     }
 };
 
-console.log('✅ AdminAPI cargado');
+//console.log('✅ AdminAPI cargado');

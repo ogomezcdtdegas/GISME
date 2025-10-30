@@ -19,7 +19,7 @@ export async function loadLoginLogs(page = currentPage, email = currentEmail, pe
     
     // Evitar múltiples llamadas simultáneas
     if (isLoading) {
-        console.log('⏳ Carga ya en progreso, ignorando nueva solicitud');
+        //console.log('⏳ Carga ya en progreso, ignorando nueva solicitud');
         return;
     }
     
@@ -45,7 +45,7 @@ export async function loadLoginLogs(page = currentPage, email = currentEmail, pe
         updateRecordsInfo(data);
         
     } catch (error) {
-        console.error('Error loading login logs:', error);
+        //console.error('Error loading login logs:', error);
         showError('Error al cargar los registros de login');
     } finally {
         isLoading = false; // Liberar la bandera independientemente del resultado

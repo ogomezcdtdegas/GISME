@@ -16,7 +16,7 @@ function initializeLoginLogs() {
     // Cargar datos iniciales
     loadLoginLogs();
     
-    console.log('✅ Login Logs initialized');
+    //console.log('✅ Login Logs initialized');
 }
 
 // Inicializar cuando el DOM esté listo

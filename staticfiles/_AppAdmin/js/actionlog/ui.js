@@ -10,7 +10,7 @@
 export function renderActionLogs(logs) {
     const tbody = document.getElementById('actionLogsTableBody');
     if (!tbody) {
-        console.error('❌ No se encontró el elemento actionLogsTableBody');
+        //console.error('❌ No se encontró el elemento actionLogsTableBody');
         return;
     }
 
@@ -189,7 +189,7 @@ function formatDateTime(dateTimeString) {
             second: '2-digit'
         });
     } catch (error) {
-        console.error('Error formatting date:', error);
+        //console.error('Error formatting date:', error);
         return dateTimeString;
     }
 }

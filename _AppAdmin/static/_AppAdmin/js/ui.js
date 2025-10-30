@@ -7,7 +7,7 @@ function getAdminPermissions() {
         try {
             return JSON.parse(permissionsScript.textContent);
         } catch (e) {
-            console.error('Error parsing permissions:', e);
+            //console.error('Error parsing permissions:', e);
             return {};
         }
     }
@@ -195,4 +195,4 @@ window.AdminUI = {
     }
 };
 
-console.log('✅ AdminUI cargado');
+//console.log('✅ AdminUI cargado');

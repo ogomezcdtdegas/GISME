@@ -70,7 +70,7 @@ export const UbicacionAPI = {
             const response = await BaseAPI.get(ENDPOINTS.UBICACION.POR_ID(id));
             return response;
         } catch (error) {
-            console.error('Error al obtener ubicación:', error);
+            //console.error('Error al obtener ubicación:', error);
             return null;
         }
     },

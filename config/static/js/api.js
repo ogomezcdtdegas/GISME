@@ -1,4 +1,4 @@
-console.log("📡 api.js cargado.");
+//console.log("📡 api.js cargado.");
 
 // Función para obtener el CSRF Token
 window.getCSRFToken = function () {
@@ -11,4 +11,4 @@ window.getCSRFToken = function () {
     });
     return csrfToken;
 };
-console.log("✅ CSRF Token function registrada.");
+//console.log("✅ CSRF Token function registrada.");

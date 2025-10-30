@@ -15,9 +15,9 @@ export const AdminUserService = {
             params.search = search.trim();
         }
         
-        console.log('🎯 AdminUserService llamando BaseAPI.get con:', ENDPOINTS.ADMIN_USERS.LISTAR, params);
+        //console.log('🎯 AdminUserService llamando BaseAPI.get con:', ENDPOINTS.ADMIN_USERS.LISTAR, params);
         const result = await BaseAPI.get(ENDPOINTS.ADMIN_USERS.LISTAR, params);
-        console.log('🔍 BaseAPI.get retornó:', result);
+        //console.log('🔍 BaseAPI.get retornó:', result);
         return result;
     },
 
@@ -31,7 +31,7 @@ export const AdminUserService = {
             const response = await BaseAPI.get(ENDPOINTS.ADMIN_USERS.POR_ID(id));
             return response;
         } catch (error) {
-            console.error('Error al obtener usuario:', error);
+            //console.error('Error al obtener usuario:', error);
             return null;
         }
     },
@@ -40,7 +40,7 @@ export const AdminUserService = {
         try {
             return await BaseAPI.post(ENDPOINTS.ADMIN_USERS.CREAR, userData);
         } catch (error) {
-            console.error('Error al crear usuario:', error);
+            //console.error('Error al crear usuario:', error);
             return { success: false, error: error.message };
         }
     },
@@ -49,7 +49,7 @@ export const AdminUserService = {
         try {
             return await BaseAPI.put(ENDPOINTS.ADMIN_USERS.ACTUALIZAR(id), userData);
         } catch (error) {
-            console.error('Error al actualizar usuario:', error);
+            //console.error('Error al actualizar usuario:', error);
             return { success: false, error: error.message };
         }
     },
@@ -58,7 +58,7 @@ export const AdminUserService = {
         try {
             return await BaseAPI.delete(ENDPOINTS.ADMIN_USERS.ELIMINAR(id));
         } catch (error) {
-            console.error('Error al eliminar usuario:', error);
+            //console.error('Error al eliminar usuario:', error);
             return { success: false, error: error.message };
         }
     }

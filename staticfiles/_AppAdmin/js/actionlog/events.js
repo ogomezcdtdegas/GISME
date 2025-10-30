@@ -24,7 +24,7 @@ export async function loadActionLogs(page = currentPage, searchQuery = currentSe
     
     // Evitar múltiples llamadas simultáneas
     if (isLoading) {
-        console.log('⏳ Carga ya en progreso, ignorando nueva solicitud');
+        //console.log('⏳ Carga ya en progreso, ignorando nueva solicitud');
         return;
     }
     
@@ -53,7 +53,7 @@ export async function loadActionLogs(page = currentPage, searchQuery = currentSe
         updateRecordsInfo(data);
         
     } catch (error) {
-        console.error('Error loading action logs:', error);
+        //console.error('Error loading action logs:', error);
         showError('Error al cargar los registros de acciones');
     } finally {
         isLoading = false; // Liberar la bandera independientemente del resultado

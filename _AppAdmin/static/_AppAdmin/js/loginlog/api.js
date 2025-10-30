@@ -37,7 +37,7 @@ export async function fetchLoginLogs(page = 1, email = '', perPage = 10) {
         
         return await response.json();
     } catch (error) {
-        console.error('Error fetching login logs:', error);
+        //console.error('Error fetching login logs:', error);
         throw error;
     }
 }

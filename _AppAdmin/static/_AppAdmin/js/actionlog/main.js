@@ -17,7 +17,7 @@ function initializeActionLogs() {
     // Cargar datos iniciales
     loadActionLogs();
     
-    console.log('✅ Action Logs initialized');
+    //console.log('✅ Action Logs initialized');
 }
 
 // Inicializar cuando el DOM esté listo

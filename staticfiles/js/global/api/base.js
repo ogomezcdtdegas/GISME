@@ -22,7 +22,7 @@ export const BaseAPI = {
             const contentType = response.headers.get('content-type');
             if (!contentType || !contentType.includes('application/json')) {
                 const textResponse = await response.text();
-                console.error('Respuesta no es JSON:', textResponse.substring(0, 200));
+                //console.error('Respuesta no es JSON:', textResponse.substring(0, 200));
                 return {
                     success: false,
                     error: "El servidor devolvió una respuesta inválida"
@@ -41,7 +41,7 @@ export const BaseAPI = {
 
             return data;
         } catch (error) {
-            console.error("❌ Error en la solicitud:", error);
+            //console.error("❌ Error en la solicitud:", error);
             return { 
                 success: false, 
                 error: "Error de conexión con el servidor" 

@@ -54,7 +54,7 @@ export async function fetchActionLogs(page = 1, searchQuery = '', action = '', a
         
         return await response.json();
     } catch (error) {
-        console.error('Error fetching action logs:', error);
+        //console.error('Error fetching action logs:', error);
         throw error;
     }
 }

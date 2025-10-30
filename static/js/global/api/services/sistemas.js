@@ -68,7 +68,7 @@ export const SistemaAPI = {
             const response = await BaseAPI.get(ENDPOINTS.SISTEMA.POR_ID(id));
             return response;
         } catch (error) {
-            console.error('Error al obtener sistema:', error);
+            //console.error('Error al obtener sistema:', error);
             return null;
         }
     },
@@ -91,7 +91,7 @@ export const SistemaAPI = {
             // pero podemos implementar una pre-validación aquí si es necesario
             return { isValid: true };
         } catch (error) {
-            console.error('Error validando duplicado:', error);
+            //console.error('Error validando duplicado:', error);
             return { isValid: false, error: error.message };
         }
     }

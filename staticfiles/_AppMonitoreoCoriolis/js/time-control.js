@@ -280,7 +280,7 @@ function inicializarModoTiempoRealTemperatura() {
         // Configurar actualización automática para temperatura
         intervalActualizacionTemperatura = setInterval(function() {
             if (modoTiempoRealTemperatura) {
-                console.log('⚡ Auto-actualizando datos de temperatura...');
+                //console.log('⚡ Auto-actualizando datos de temperatura...');
                 cargarDatosHistoricosTemperatura(sistemaId);
             }
         }, CONFIG.INTERVALOS.ACTUALIZACION_GRAFICOS);
