@@ -6,7 +6,7 @@
 async function actualizarDisplaysConDatosReales() {
     const sistemaId = obtenerSistemaActual();
     if (!sistemaId) {
-        console.warn('No se detectó un sistema específico en la URL');
+        //console.warn('No se detectó un sistema específico en la URL');
         return;
     }
     
@@ -144,17 +144,17 @@ async function cargarUltimos3DiasDinamico(sistemaId) {
             
             return true;
         } else {
-            console.error('❌ Error cargando datos de últimos 3 días:', data.error);
+            //console.error('❌ Error cargando datos de últimos 3 días:', data.error);
             renderGraficosVacios('Error: ' + data.error);
             return false;
         }
     } catch (error) {
-        console.error('❌ Error en la petición de últimos 3 días:', error);
-        console.error('❌ Detalles del error:', {
+        //console.error('❌ Error en la petición de últimos 3 días:', error);
+        /*console.error('❌ Detalles del error:', {
             message: error.message,
             stack: error.stack,
             sistemaId: sistemaId
-        });
+        });*/
         renderGraficosVacios('Error de conexión: ' + error.message);
         return false;
     }
@@ -292,12 +292,12 @@ async function cargarUltimosDiasPresion(sistemaId) {
             
             return true;
         } else {
-            console.error('❌ Error cargando datos de presión:', data.error);
+            //console.error('❌ Error cargando datos de presión:', data.error);
             renderGraficoPresionVacio('Error: ' + data.error);
             return false;
         }
     } catch (error) {
-        console.error('❌ Error en la petición de datos de presión:', error);
+        //console.error('❌ Error en la petición de datos de presión:', error);
         renderGraficoPresionVacio('Error de conexión');
         return false;
     }
@@ -324,15 +324,15 @@ async function cargarDatosHistoricosPresion(sistemaId, fechaInicio, fechaFin) {
             // Actualizar indicador de modo
             actualizarIndicadorModoPresion(false, fechaInicio, fechaFin);
                 
-            console.log('✅ Datos históricos de presión cargados:', {
+            /*console.log('✅ Datos históricos de presión cargados:', {
                 presion: data.total_registros
-            });
+            });*/
         } else {
-            console.error('❌ Error cargando datos históricos de presión:', data.error);
+            //console.error('❌ Error cargando datos históricos de presión:', data.error);
             renderGraficoPresionVacio('Error: ' + data.error);
         }
     } catch (error) {
-        console.error('❌ Error en la petición de datos históricos de presión:', error);
+        //console.error('❌ Error en la petición de datos históricos de presión:', error);
         renderGraficoPresionVacio('Error de conexión');
     }
 }
@@ -363,7 +363,7 @@ function exportarDatosPresion() {
     // Abrir en nueva ventana para descargar
     window.open(url, '_blank');
     
-    console.log('📥 Descargando datos de presión para el período:', fechaInicio, 'al', fechaFin);
+    //console.log('📥 Descargando datos de presión para el período:', fechaInicio, 'al', fechaFin);
 }
 
 // ====================================================================
@@ -427,17 +427,17 @@ async function cargarDatosHistoricosTemperatura(sistemaId, fechaInicio = null, f
                 actualizarIndicadorModoTemperatura(true);
             }
                 
-            console.log('✅ Datos históricos de temperatura cargados:', {
+            /*console.log('✅ Datos históricos de temperatura cargados:', {
                 coriolis: data.coriolis_temperature.total_registros,
                 diagnostic: data.diagnostic_temperature.total_registros,
                 redundant: data.redundant_temperature.total_registros
-            });
+            });*/
         } else {
-            console.error('❌ Error cargando datos históricos de temperatura:', data.error);
+            //console.error('❌ Error cargando datos históricos de temperatura:', data.error);
             renderGraficosTemperaturaVacios('Error: ' + data.error);
         }
     } catch (error) {
-        console.error('❌ Error en la petición de datos históricos de temperatura:', error);
+        //console.error('❌ Error en la petición de datos históricos de temperatura:', error);
         renderGraficosTemperaturaVacios('Error de conexión');
     }
 }
@@ -468,7 +468,7 @@ function exportarDatosTemperatura() {
     // Abrir en nueva ventana para descargar
     window.open(url, '_blank');
     
-    console.log('📥 Descargando datos de temperatura para el período:', fechaInicio, 'al', fechaFin);
+    //console.log('📥 Descargando datos de temperatura para el período:', fechaInicio, 'al', fechaFin);
 }
 
 // ====================================================================
@@ -482,7 +482,7 @@ let trendChart = null;
 async function cargarDatosTendencias() {
     const sistemaId = obtenerSistemaActual();
     if (!sistemaId) {
-        console.warn('No se detectó un sistema específico para cargar tendencias');
+        //console.warn('No se detectó un sistema específico para cargar tendencias');
         return;
     }
     
@@ -495,19 +495,19 @@ async function cargarDatosTendencias() {
             const info = data.ventana_tiempo ? 
                 `${data.total_registros} registros (${data.ventana_tiempo.inicio} - ${data.ventana_tiempo.fin})` : 
                 `${data.total_registros} registros`;
-            console.log('✅ Datos de tendencias cargados:', info);
+            //console.log('✅ Datos de tendencias cargados:', info);
             
             // Mostrar info de ventana de tiempo si está disponible
             if (data.ventana_tiempo) {
-                console.log(`📅 Ventana de tiempo: ${data.ventana_tiempo.inicio} - ${data.ventana_tiempo.fin}`);
-                console.log(`⏰ Último dato: ${data.ventana_tiempo.ultimo_dato}`);
+                //console.log(`📅 Ventana de tiempo: ${data.ventana_tiempo.inicio} - ${data.ventana_tiempo.fin}`);
+                //console.log(`⏰ Último dato: ${data.ventana_tiempo.ultimo_dato}`);
             }
         } else {
-            console.error('❌ Error obteniendo datos de tendencias:', data.error);
+            //console.error('❌ Error obteniendo datos de tendencias:', data.error);
             mostrarErrorTendencias(data.error);
         }
     } catch (error) {
-        console.error('❌ Error en la petición de tendencias:', error);
+        //console.error('❌ Error en la petición de tendencias:', error);
         mostrarErrorTendencias('Error de conexión');
     }
 }
@@ -515,53 +515,53 @@ async function cargarDatosTendencias() {
 // Función para renderizar el gráfico de tendencias
 function renderGraficoTendencias(data, intentos = 0) {
     // Debug: información detallada del estado del DOM
-    console.log(`🔍 Debug renderGraficoTendencias - Intento ${intentos + 1}/5:`);
+    //console.log(`🔍 Debug renderGraficoTendencias - Intento ${intentos + 1}/5:`);
     
     // Verificar que la vista de monitoreo esté visible
     const monitoringView = document.getElementById('sistema-monitoring-view');
-    console.log(`   - Vista monitoreo encontrada: ${!!monitoringView}`);
+    //console.log(`   - Vista monitoreo encontrada: ${!!monitoringView}`);
     if (monitoringView) {
-        console.log(`   - Vista monitoreo hidden class: ${monitoringView.classList.contains('hidden')}`);
-        console.log(`   - Vista monitoreo display style: ${monitoringView.style.display}`);
-        console.log(`   - Vista monitoreo computed display: ${window.getComputedStyle(monitoringView).display}`);
+        //console.log(`   - Vista monitoreo hidden class: ${monitoringView.classList.contains('hidden')}`);
+        //console.log(`   - Vista monitoreo display style: ${monitoringView.style.display}`);
+        //console.log(`   - Vista monitoreo computed display: ${window.getComputedStyle(monitoringView).display}`);
     }
     
     if (!monitoringView || monitoringView.classList.contains('hidden') || monitoringView.style.display === 'none') {
         if (intentos < 5) {
-            console.warn(`⏳ Vista de monitoreo no visible aún - reintentando (${intentos + 1}/5) en 500ms...`);
+            //console.warn(`⏳ Vista de monitoreo no visible aún - reintentando (${intentos + 1}/5) en 500ms...`);
             setTimeout(() => renderGraficoTendencias(data, intentos + 1), 500);
         } else {
-            console.error('❌ Vista de monitoreo no está visible después de 5 intentos. No se puede crear el gráfico.');
+            //console.error('❌ Vista de monitoreo no está visible después de 5 intentos. No se puede crear el gráfico.');
         }
         return;
     }
     
     // Debug: información del canvas
     const ctx = document.getElementById('trendChart');
-    console.log(`   - Canvas encontrado: ${!!ctx}`);
+    //console.log(`   - Canvas encontrado: ${!!ctx}`);
     
     // Debug adicional: buscar en todo el DOM
     const allCanvas = document.querySelectorAll('canvas');
-    console.log(`   - Total canvas en DOM: ${allCanvas.length}`);
+    //console.log(`   - Total canvas en DOM: ${allCanvas.length}`);
     allCanvas.forEach((canvas, index) => {
-        console.log(`     Canvas ${index}: id="${canvas.id}" display="${window.getComputedStyle(canvas).display}"`);
+        //console.log(`     Canvas ${index}: id="${canvas.id}" display="${window.getComputedStyle(canvas).display}"`);
     });
     
     // Debug: verificar contenedor del canvas
     const chartContainer = document.querySelector('.chart-container');
-    console.log(`   - Contenedor .chart-container encontrado: ${!!chartContainer}`);
+    //console.log(`   - Contenedor .chart-container encontrado: ${!!chartContainer}`);
     if (chartContainer) {
-        console.log(`     - Contenedor display: ${window.getComputedStyle(chartContainer).display}`);
-        console.log(`     - Contenedor innerHTML: ${chartContainer.innerHTML.substring(0, 100)}...`);
+        //console.log(`     - Contenedor display: ${window.getComputedStyle(chartContainer).display}`);
+        //console.log(`     - Contenedor innerHTML: ${chartContainer.innerHTML.substring(0, 100)}...`);
     }
     
     if (!ctx) {
         if (intentos < 5) {
-            console.warn(`❌ Canvas trendChart no encontrado - reintentando (${intentos + 1}/5) en 500ms...`);
+            //console.warn(`❌ Canvas trendChart no encontrado - reintentando (${intentos + 1}/5) en 500ms...`);
             // Reintentar después de 500ms para dar tiempo a que el DOM se cargue
             setTimeout(() => renderGraficoTendencias(data, intentos + 1), 500);
         } else {
-            console.error('❌ Canvas trendChart no encontrado después de 5 intentos. Verificar que el elemento existe en el DOM.');
+            //console.error('❌ Canvas trendChart no encontrado después de 5 intentos. Verificar que el elemento existe en el DOM.');
         }
         return;
     }
@@ -570,15 +570,15 @@ function renderGraficoTendencias(data, intentos = 0) {
     const canvasRect = ctx.getBoundingClientRect();
     if (canvasRect.width === 0 || canvasRect.height === 0) {
         if (intentos < 5) {
-            console.warn(`⏳ Canvas sin dimensiones válidas (${canvasRect.width}x${canvasRect.height}) - reintentando (${intentos + 1}/5) en 500ms...`);
+            //console.warn(`⏳ Canvas sin dimensiones válidas (${canvasRect.width}x${canvasRect.height}) - reintentando (${intentos + 1}/5) en 500ms...`);
             setTimeout(() => renderGraficoTendencias(data, intentos + 1), 500);
         } else {
-            console.error('❌ Canvas sin dimensiones válidas después de 5 intentos.');
+            //console.error('❌ Canvas sin dimensiones válidas después de 5 intentos.');
         }
         return;
     }
     
-    console.log(`✅ Canvas trendChart encontrado y listo (${canvasRect.width}x${canvasRect.height})`);
+    //console.log(`✅ Canvas trendChart encontrado y listo (${canvasRect.width}x${canvasRect.height})`);
     
     // 🔄 PRESERVAR el estado de visibilidad de los datasets existentes
     let estadoVisibilidad = {};
@@ -588,7 +588,7 @@ function renderGraficoTendencias(data, intentos = 0) {
             const meta = trendChart.getDatasetMeta(index);
             const isVisible = meta && meta.visible !== false; // Por defecto visible
             estadoVisibilidad[dataset.label] = isVisible;
-            console.log(`📊 Estado preservado: ${dataset.label} = ${isVisible ? 'visible' : 'oculto'}`);
+            //console.log(`📊 Estado preservado: ${dataset.label} = ${isVisible ? 'visible' : 'oculto'}`);
         });
     }
     
@@ -618,7 +618,7 @@ function renderGraficoTendencias(data, intentos = 0) {
                 hidden: shouldBeHidden // Aplicar el estado preservado
             });
             
-            console.log(`➕ Dataset agregado: ${label}, oculto: ${shouldBeHidden}`);
+            //console.log(`➕ Dataset agregado: ${label}, oculto: ${shouldBeHidden}`);
         }
     });
     
@@ -634,7 +634,7 @@ function renderGraficoTendencias(data, intentos = 0) {
         trendChart.data.datasets = datasets;
         trendChart.update('none'); // 'none' = sin animación para mejor rendimiento
         
-        console.log('🔄 Gráfico de tendencias actualizado con', datasets.length, 'variables (preservando selecciones)');
+        //console.log('🔄 Gráfico de tendencias actualizado con', datasets.length, 'variables (preservando selecciones)');
         return;
     }
     
@@ -695,7 +695,7 @@ function renderGraficoTendencias(data, intentos = 0) {
         }
     });
     
-    console.log('✅ Gráfico de tendencias creado inicialmente con', datasets.length, 'variables');
+    //console.log('✅ Gráfico de tendencias creado inicialmente con', datasets.length, 'variables');
 }
 
 // Función para mostrar error en el gráfico de tendencias

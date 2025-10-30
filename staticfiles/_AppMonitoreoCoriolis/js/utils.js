@@ -42,6 +42,6 @@ function obtenerSistemaActual() {
         return match[1];
     }
     
-    console.warn('⚠️ No se pudo obtener ID del sistema desde contexto Django ni URL');
+    //console.warn('⚠️ No se pudo obtener ID del sistema desde contexto Django ni URL');
     return null;
 }
