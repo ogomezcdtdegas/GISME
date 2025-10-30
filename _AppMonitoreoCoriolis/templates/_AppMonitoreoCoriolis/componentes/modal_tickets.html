@@ -106,7 +106,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 return false;
             }
         } catch (error) {
-            console.error('Error al cargar tickets:', error);
+            //console.error('Error al cargar tickets:', error);
             alert('Error de conexión al cargar tickets');
             listaTickets.innerHTML = '<div class="alert alert-danger">Error de conexión</div>';
             return false;
@@ -245,7 +245,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Función global para ver detalle de ticket
 function verDetalleTicket(ticketId) {
-    console.log('Ver detalle del ticket:', ticketId);
+    //console.log('Ver detalle del ticket:', ticketId);
     // Aquí puedes implementar la lógica para mostrar el detalle del ticket
     alert(`Funcionalidad de detalle para el ticket ${ticketId} - Por implementar`);
 }

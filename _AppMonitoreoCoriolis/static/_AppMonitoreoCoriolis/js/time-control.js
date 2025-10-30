@@ -28,7 +28,7 @@ function inicializarModoTiempoReal() {
     // Actualizar indicador de modo
     actualizarIndicadorModo(true);
     
-    console.log(CONFIG.TEXTOS.CONSOLE_MODO_TIEMPO_REAL);
+    //console.log(CONFIG.TEXTOS.CONSOLE_MODO_TIEMPO_REAL);
 }
 
 // Función para actualizar indicador de modo
@@ -132,7 +132,7 @@ function inicializarModoTiempoRealPresion() {
     const sistemaId = obtenerSistemaActual();
     if (!sistemaId) return;
     
-    console.log('🔄 Iniciando modo tiempo real presión');
+    //console.log('🔄 Iniciando modo tiempo real presión');
     modoTiempoRealPresion = true;
     
     // Cargar datos iniciales
@@ -145,7 +145,7 @@ function inicializarModoTiempoRealPresion() {
     
     intervalActualizacionPresion = setInterval(async () => {
         if (modoTiempoRealPresion) {
-            console.log('🔄 Actualizando gráfico de presión automáticamente...');
+            //console.log('🔄 Actualizando gráfico de presión automáticamente...');
             await cargarUltimosDiasPresion(sistemaId);
         }
     }, CONFIG.INTERVALOS.ACTUALIZACION_GRAFICOS);
@@ -153,7 +153,7 @@ function inicializarModoTiempoRealPresion() {
     // Actualizar indicador de modo
     actualizarIndicadorModoPresion(true);
     
-    console.log(CONFIG.TEXTOS.CONSOLE_MODO_TIEMPO_REAL);
+    //console.log(CONFIG.TEXTOS.CONSOLE_MODO_TIEMPO_REAL);
 }
 
 // Función para actualizar indicador de modo de presión
@@ -180,7 +180,7 @@ function actualizarIndicadorModoPresion(esTiempoReal, fechaInicio = null, fechaF
 
 // Función para cambiar a modo filtrado de presión
 function cambiarAModoFiltradoPresion() {
-    console.log('⏸️ Cambiando presión a modo filtrado');
+    //console.log('⏸️ Cambiando presión a modo filtrado');
     modoTiempoRealPresion = false;
     
     // Detener actualizaciones automáticas
@@ -199,7 +199,7 @@ function cambiarAModoFiltradoPresion() {
 
 // Función para resetear presión a modo tiempo real
 function resetearPresionATiempoReal() {
-    console.log('▶️ Reseteando presión a modo tiempo real');
+    //console.log('▶️ Reseteando presión a modo tiempo real');
     
     // Resetear fechas a valores por defecto
     const fechaFin = new Date();
@@ -224,7 +224,7 @@ async function buscarHistoricoPresion() {
         return;
     }
     
-    console.log('🔍 Buscando histórico de presión con filtros...');
+    //console.log('🔍 Buscando histórico de presión con filtros...');
     
     const fechaInicio = document.getElementById('fechaInicioPresion').value;
     const fechaFin = document.getElementById('fechaFinPresion').value;
@@ -254,7 +254,7 @@ function configurarEventosModalPresion() {
         btnReset.onclick = resetearPresionATiempoReal;
     }
     
-    console.log('🔧 Eventos del modal de presión configurados');
+    //console.log('🔧 Eventos del modal de presión configurados');
 }
 
 // ====================================================================
@@ -263,7 +263,7 @@ function configurarEventosModalPresion() {
 
 // Función para inicializar modo tiempo real de temperatura
 function inicializarModoTiempoRealTemperatura() {
-    console.log('🌡️ Inicializando modo tiempo real para temperatura');
+    //console.log('🌡️ Inicializando modo tiempo real para temperatura');
     
     modoTiempoRealTemperatura = true;
     
@@ -285,7 +285,7 @@ function inicializarModoTiempoRealTemperatura() {
             }
         }, CONFIG.INTERVALOS.ACTUALIZACION_GRAFICOS);
         
-        console.log(CONFIG.TEXTOS.CONSOLE_MODO_TIEMPO_REAL);
+        //console.log(CONFIG.TEXTOS.CONSOLE_MODO_TIEMPO_REAL);
     }
     
     // Actualizar indicador
@@ -317,7 +317,7 @@ function actualizarIndicadorModoTemperatura(esTiempoReal, fechaInicio = null, fe
 
 // Función para cambiar a modo filtrado de temperatura
 function cambiarAModoFiltradoTemperatura() {
-    console.log('⏸️ Cambiando temperatura a modo filtrado');
+    //console.log('⏸️ Cambiando temperatura a modo filtrado');
     
     modoTiempoRealTemperatura = false;
     
@@ -325,13 +325,13 @@ function cambiarAModoFiltradoTemperatura() {
     if (intervalActualizacionTemperatura) {
         clearInterval(intervalActualizacionTemperatura);
         intervalActualizacionTemperatura = null;
-        console.log('⏹️ Detenida la actualización automática de temperatura');
+        //console.log('⏹️ Detenida la actualización automática de temperatura');
     }
 }
 
 // Función para resetear temperatura a modo tiempo real
 function resetearTemperaturaATiempoReal() {
-    console.log('▶️ Reseteando temperatura a modo tiempo real');
+    //console.log('▶️ Reseteando temperatura a modo tiempo real');
     
     // Resetear fechas a valores por defecto
     const fechaFin = new Date();
@@ -356,7 +356,7 @@ async function buscarHistoricoTemperatura() {
         return;
     }
     
-    console.log('🔍 Buscando histórico de temperatura con filtros...');
+    //console.log('🔍 Buscando histórico de temperatura con filtros...');
     
     const fechaInicio = document.getElementById('fechaInicioTemperatura').value;
     const fechaFin = document.getElementById('fechaFinTemperatura').value;
@@ -386,5 +386,5 @@ function configurarEventosModalTemperatura() {
         btnReset.onclick = resetearTemperaturaATiempoReal;
     }
     
-    console.log('🔧 Eventos del modal de temperatura configurados');
+    //console.log('🔧 Eventos del modal de temperatura configurados');
 }

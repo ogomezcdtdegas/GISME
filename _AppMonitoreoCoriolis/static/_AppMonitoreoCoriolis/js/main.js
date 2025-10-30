@@ -33,7 +33,7 @@ async function abrirModal(sensorId) {
         // Configurar eventos del modal
         configurarEventosModal();
         
-        console.log(`✅ Modal de flujo abierto para sistema: ${sistemaId}`);
+        //console.log(`✅ Modal de flujo abierto para sistema: ${sistemaId}`);
         
     } else if (sensorId === 'sensor3') {
         // Modal de presión
@@ -76,7 +76,7 @@ async function abrirModalPresion() {
     // Configurar eventos del modal
     configurarEventosModalPresion();
     
-    console.log(`✅ Modal de presión abierto para sistema: ${sistemaId}`);
+    //console.log(`✅ Modal de presión abierto para sistema: ${sistemaId}`);
 }
 
 // Función para abrir modal de temperatura (sensor2)
@@ -105,21 +105,21 @@ async function abrirModalTemperatura() {
     // Configurar eventos del modal
     configurarEventosModalTemperatura();
     
-    console.log(`✅ Modal de temperatura abierto para sistema: ${sistemaId}`);
+    //console.log(`✅ Modal de temperatura abierto para sistema: ${sistemaId}`);
 }
 
 // Función para mostrar la vista de monitoreo
 function mostrarVistaMonitoreo() {
-    console.log('📊 Mostrando vista de monitoreo específica');
+    //console.log('📊 Mostrando vista de monitoreo específica');
     
     // Ocultar vista de selector
     const selectorView = document.getElementById('sistema-selector-view');
     if (selectorView) {
         selectorView.classList.add('hidden');
         selectorView.style.display = 'none';
-        console.log('✅ Vista selector ocultada');
+        //console.log('✅ Vista selector ocultada');
     } else {
-        console.warn('⚠️ No se encontró elemento sistema-selector-view');
+        //console.warn('⚠️ No se encontró elemento sistema-selector-view');
     }
     
     // Mostrar vista de monitoreo
@@ -127,11 +127,11 @@ function mostrarVistaMonitoreo() {
     if (monitoringView) {
         monitoringView.classList.remove('hidden');
         monitoringView.style.display = 'block';
-        console.log('✅ Vista monitoreo mostrada');
+        //console.log('✅ Vista monitoreo mostrada');
         
         // Inicializar tendencias después de mostrar la vista
         setTimeout(() => {
-            console.log('🔄 Inicializando gráfico de tendencias...');
+            //console.log('🔄 Inicializando gráfico de tendencias...');
             if (typeof cargarDatosTendencias === 'function') {
                 cargarDatosTendencias();
             }
@@ -171,19 +171,19 @@ function mostrarVistaMonitoreo() {
 
 // Función para mostrar la vista de selector
 function mostrarVistaSelector() {
-    console.log('📋 Mostrando vista de selección de sistemas');
+    //console.log('📋 Mostrando vista de selección de sistemas');
     
     // Limpiar intervalos activos
     if (tiempoRealInterval) {
         clearInterval(tiempoRealInterval);
         tiempoRealInterval = null;
-        console.log('🛑 Intervalo de tiempo real detenido');
+        //console.log('🛑 Intervalo de tiempo real detenido');
     }
     
     if (tendenciasInterval) {
         clearInterval(tendenciasInterval);
         tendenciasInterval = null;
-        console.log('🛑 Intervalo de tendencias detenido');
+        //console.log('🛑 Intervalo de tendencias detenido');
     }
     
     // Mostrar vista de selector
@@ -191,7 +191,7 @@ function mostrarVistaSelector() {
     if (selectorView) {
         selectorView.classList.remove('hidden');
         selectorView.style.display = 'block';
-        console.log('✅ Vista selector mostrada');
+        //console.log('✅ Vista selector mostrada');
     } else {
         console.warn('⚠️ No se encontró elemento sistema-selector-view');
     }
@@ -201,22 +201,22 @@ function mostrarVistaSelector() {
     if (monitoringView) {
         monitoringView.classList.add('hidden');
         monitoringView.style.display = 'none';
-        console.log('✅ Vista monitoreo ocultada');
+        //console.log('✅ Vista monitoreo ocultada');
     } else {
-        console.warn('⚠️ No se encontró elemento sistema-monitoring-view');
+        //console.warn('⚠️ No se encontró elemento sistema-monitoring-view');
     }
 }
 
 // Función alias para compatibilidad con botones existentes
 function showSelectorView() {
-    console.log('🔄 Cambiando a vista de selector (showSelectorView)');
+    //console.log('🔄 Cambiando a vista de selector (showSelectorView)');
     mostrarVistaSelector();
     
     // También detener actualizaciones automáticas cuando volvemos al selector
     if (tiempoRealInterval) {
         clearInterval(tiempoRealInterval);
         tiempoRealInterval = null;
-        console.log('⏸️ Actualizaciones automáticas pausadas');
+        //console.log('⏸️ Actualizaciones automáticas pausadas');
     }
 }
 
@@ -224,7 +224,7 @@ function showSelectorView() {
 window.addEventListener('beforeunload', function() {
     if (tiempoRealInterval) {
         clearInterval(tiempoRealInterval);
-        console.log('🧹 Intervals limpiados al salir de la página');
+        //console.log('🧹 Intervals limpiados al salir de la página');
     }
 });
 
@@ -269,13 +269,13 @@ document.addEventListener('DOMContentLoaded', function() {
         if (tendenciasInterval) clearInterval(tendenciasInterval);
         tendenciasInterval = setInterval(() => {
             cargarDatosTendencias();
-            console.log('🔄 Tendencias actualizadas automáticamente');
+            //console.log('🔄 Tendencias actualizadas automáticamente');
         }, CONFIG.INTERVALOS.ACTUALIZACION_TENDENCIAS);
         
-        console.log(CONFIG.TEXTOS.CONSOLE_ACTUALIZACION);
-        console.log(`📊 Gráfico de tendencias configurado para actualización automática cada ${CONFIG.INTERVALOS.ACTUALIZACION_TENDENCIAS/1000} segundos`);
+        //console.log(CONFIG.TEXTOS.CONSOLE_ACTUALIZACION);
+        //console.log(`📊 Gráfico de tendencias configurado para actualización automática cada ${CONFIG.INTERVALOS.ACTUALIZACION_TENDENCIAS/1000} segundos`);
     } else {
-        console.warn('⚠️ No se detectó un sistema específico - mostrar tabla de selección');
+        //console.warn('⚠️ No se detectó un sistema específico - mostrar tabla de selección');
         // Mostrar la vista de selección de sistemas
         mostrarVistaSelector();
         // Fallback a datos simulados para vista general
@@ -283,4 +283,4 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-console.log('✅ Sistema de monitoreo Coriolis con datos REALES cargado');
+//console.log('✅ Sistema de monitoreo Coriolis con datos REALES cargado');

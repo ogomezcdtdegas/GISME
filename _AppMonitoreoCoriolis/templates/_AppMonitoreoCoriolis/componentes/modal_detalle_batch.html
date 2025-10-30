@@ -108,7 +108,7 @@ if (typeof window.chartjs_plugin_annotation !== 'undefined') {
 } else if (typeof ChartAnnotation !== 'undefined') {
     Chart.register(ChartAnnotation);
 } else {
-    console.warn('Plugin de anotaciones de Chart.js no está disponible');
+    //console.warn('Plugin de anotaciones de Chart.js no está disponible');
 }
 
 let batchChart = null;
@@ -566,7 +566,7 @@ async function asignarTicketBatch() {
             alert('Error al asignar ticket: ' + data.error);
         }
     } catch (error) {
-        console.error('Error al asignar ticket:', error);
+        //console.error('Error al asignar ticket:', error);
         alert('Error de conexión al asignar ticket');
     } finally {
         // Restaurar el botón (si existe)
@@ -602,10 +602,10 @@ function getCSRFToken() {
     
     // Validar que el token tenga el formato correcto (debería tener 64 caracteres)
     if (token && token.length !== 64) {
-        console.warn('⚠️ Token CSRF con longitud incorrecta:', token.length, 'caracteres. Esperados: 64');
+        //console.warn('⚠️ Token CSRF con longitud incorrecta:', token.length, 'caracteres. Esperados: 64');
     }
     
-    console.log('🔐 Token CSRF obtenido:', token ? `✅ Válido (${token.length} chars)` : '❌ No encontrado');
+    //console.log('🔐 Token CSRF obtenido:', token ? `✅ Válido (${token.length} chars)` : '❌ No encontrado');
     return token || '';
 }
 </script>

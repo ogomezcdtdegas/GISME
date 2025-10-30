@@ -149,7 +149,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 return false;
             }
         } catch (error) {
-            console.error('Error al listar batches:', error);
+            //console.error('Error al listar batches:', error);
             alert('Error de conexión al listar batches');
             return false;
         }
@@ -222,7 +222,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
-            console.log(`✅ Detección completada: ${dataDeteccion.batches_detectados} batches encontrados`);
+            //console.log(`✅ Detección completada: ${dataDeteccion.batches_detectados} batches encontrados`);
             
             // PASO 2: Cambiar spinner para listado
             document.getElementById('spinnerText').textContent = 'Cargando batches detectados...';
@@ -232,10 +232,10 @@ document.addEventListener('DOMContentLoaded', function() {
             
         } catch (error) {
             if (error.name === 'AbortError') {
-                console.log('Búsqueda de batches cancelada por el usuario');
+                //console.log('Búsqueda de batches cancelada por el usuario');
                 return;
             }
-            console.error('Error al buscar batches:', error);
+            //console.error('Error al buscar batches:', error);
             alert('Error de conexión al buscar batches');
         } finally {
             spinnerBatches.style.display = 'none';
@@ -251,7 +251,7 @@ document.addEventListener('DOMContentLoaded', function() {
     btnListarBatches.addEventListener('click', async function() {
         // Si hay una búsqueda en curso, aborta
         if (buscarBatchesController) {
-            console.log('Cancelando búsqueda en curso...');
+            //console.log('Cancelando búsqueda en curso...');
             buscarBatchesController.abort();
             buscarBatchesController = null;
         }
@@ -288,7 +288,7 @@ document.addEventListener('DOMContentLoaded', function() {
             // Usar la función común para listar
             await listarBatchesDetectados();
         } catch (error) {
-            console.error('Error al listar batches:', error);
+            //console.error('Error al listar batches:', error);
             alert('Error de conexión al listar batches');
         } finally {
             spinnerBatches.style.display = 'none';
@@ -483,7 +483,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     function mostrarConfiguracion(config) {
         if (!config) {
-            console.warn('No se recibió configuración para mostrar');
+            //console.warn('No se recibió configuración para mostrar');
             document.getElementById('configuracionUtilizada').style.display = 'none';
             return;
         }
@@ -494,7 +494,7 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('volMinBatch').textContent = config.vol_minimo_batch || 'N/A';
             document.getElementById('configuracionUtilizada').style.display = 'block';
         } catch (error) {
-            console.error('Error al mostrar configuración:', error);
+            //console.error('Error al mostrar configuración:', error);
             document.getElementById('configuracionUtilizada').style.display = 'none';
         }
     }
@@ -523,10 +523,10 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Validar que el token tenga el formato correcto (debería tener 64 caracteres)
         if (token && token.length !== 64) {
-            console.warn('⚠️ Token CSRF con longitud incorrecta:', token.length, 'caracteres. Esperados: 64');
+            //console.warn('⚠️ Token CSRF con longitud incorrecta:', token.length, 'caracteres. Esperados: 64');
         }
         
-        console.log('🔐 Token CSRF obtenido:', token ? `✅ Válido (${token.length} chars)` : '❌ No encontrado');
+        //console.log('🔐 Token CSRF obtenido:', token ? `✅ Válido (${token.length} chars)` : '❌ No encontrado');
         return token || '';
     }
 });
@@ -549,7 +549,7 @@ async function verDetalleBatch(batchId) {
             alert('Error al cargar detalle: ' + data.error);
         }
     } catch (error) {
-        console.error('Error al cargar detalle del batch:', error);
+        //console.error('Error al cargar detalle del batch:', error);
         alert('Error de conexión al cargar detalle del batch');
     }
 }

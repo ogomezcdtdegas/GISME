@@ -141,13 +141,13 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     function cargarCoeficientesActuales() {
-        console.log('Cargando coeficientes actuales...');
+        //console.log('Cargando coeficientes actuales...');
         
         // Obtener el ID del sistema desde la URL
         const sistemaId = obtenerSistemaIdDesdeURL();
         
         if (!sistemaId) {
-            console.warn('No se encontró ID del sistema actual. Usando valores por defecto.');
+            //console.warn('No se encontró ID del sistema actual. Usando valores por defecto.');
             cargarValoresPorDefecto();
             return;
         }
@@ -181,15 +181,15 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('timeFinishedBatch').value = data.data.time_finished_batch || '2.0';
                 
                 if (!data.exists) {
-                    console.info('Coeficientes no configurados. Mostrando valores por defecto.');
+                    //console.info('Coeficientes no configurados. Mostrando valores por defecto.');
                 }
             } else {
-                console.warn('Error al cargar coeficientes:', data.error);
+                //console.warn('Error al cargar coeficientes:', data.error);
                 cargarValoresPorDefecto();
             }
         })
         .catch(error => {
-            console.error('Error de conexión al cargar coeficientes:', error);
+            //console.error('Error de conexión al cargar coeficientes:', error);
             cargarValoresPorDefecto();
         });
     }
@@ -201,11 +201,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const sistemaMatch = urlPath.match(/\/sistema\/([a-f0-9-]{36})\//);
         
         if (sistemaMatch && sistemaMatch[1]) {
-            console.log('ID del sistema obtenido desde URL:', sistemaMatch[1]);
+            //console.log('ID del sistema obtenido desde URL:', sistemaMatch[1]);
             return sistemaMatch[1];
         }
         
-        console.warn('No se pudo extraer el ID del sistema desde la URL:', urlPath);
+        //console.warn('No se pudo extraer el ID del sistema desde la URL:', urlPath);
         return null;
     }
 
@@ -282,7 +282,7 @@ document.addEventListener('DOMContentLoaded', function() {
             time_finished_batch: timeFinishedBatch
         };
 
-        console.log('Actualizando coeficientes:', coeficientes);
+        //console.log('Actualizando coeficientes:', coeficientes);
 
         // Mostrar indicador de carga
         btnActualizar.disabled = true;
@@ -309,7 +309,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         })
         .catch(error => {
-            console.error('Error:', error);
+            //console.error('Error:', error);
             alert('Error de conexión al actualizar coeficientes');
         })
         .finally(() => {
@@ -344,10 +344,10 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Validar que el token tenga el formato correcto (debería tener 64 caracteres)
         if (token && token.length !== 64) {
-            console.warn('⚠️ Token CSRF con longitud incorrecta:', token.length, 'caracteres. Esperados: 64');
+            //console.warn('⚠️ Token CSRF con longitud incorrecta:', token.length, 'caracteres. Esperados: 64');
         }
         
-        console.log('🔐 Token CSRF obtenido:', token ? `✅ Válido (${token.length} chars)` : '❌ No encontrado');
+        //console.log('🔐 Token CSRF obtenido:', token ? `✅ Válido (${token.length} chars)` : '❌ No encontrado');
         return token || '';
     }
 
@@ -372,7 +372,7 @@ document.addEventListener('DOMContentLoaded', function() {
             button.style.cursor = 'not-allowed';
         });
         
-        console.log('✅ Modo solo lectura aplicado para rol Supervisor');
+        //console.log('✅ Modo solo lectura aplicado para rol Supervisor');
     }
 });
 </script>

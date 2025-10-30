@@ -148,7 +148,7 @@ function renderGraficoFlujoMasico(datosMasico) {
 function renderGraficoPresion(datosPresion) {
     // Destruir gráfico existente si existe
     if (window.chartPresion) {
-        console.log('🗑️ Destruyendo gráfico de presión existente');
+        //console.log('🗑️ Destruyendo gráfico de presión existente');
         window.chartPresion.destroy();
         window.chartPresion = null;
     }
@@ -240,7 +240,7 @@ function renderGraficosTemperatura(data) {
 function renderGraficoTemperaturaCoriolis(datosCoriolis) {
     // Destruir gráfico existente si existe
     if (window.chartTemperaturaCoriolis) {
-        console.log('🗑️ Destruyendo gráfico de temperatura Coriolis existente');
+        //console.log('🗑️ Destruyendo gráfico de temperatura Coriolis existente');
         window.chartTemperaturaCoriolis.destroy();
         window.chartTemperaturaCoriolis = null;
     }
@@ -257,7 +257,7 @@ function renderGraficoTemperaturaCoriolis(datosCoriolis) {
 function renderGraficoTemperaturaDiagnostic(datosDiagnostic) {
     // Destruir gráfico existente si existe
     if (window.chartTemperatureDiagnostic) {
-        console.log('🗑️ Destruyendo gráfico de temperatura diagnóstico existente');
+        //console.log('🗑️ Destruyendo gráfico de temperatura diagnóstico existente');
         window.chartTemperatureDiagnostic.destroy();
         window.chartTemperatureDiagnostic = null;
     }
@@ -274,7 +274,7 @@ function renderGraficoTemperaturaDiagnostic(datosDiagnostic) {
 function renderGraficoTemperaturaRedundant(datosRedundant) {
     // Destruir gráfico existente si existe
     if (window.chartTemperaturaRedundant) {
-        console.log('🗑️ Destruyendo gráfico de temperatura redundante existente');
+        //console.log('🗑️ Destruyendo gráfico de temperatura redundante existente');
         window.chartTemperaturaRedundant.destroy();
         window.chartTemperaturaRedundant = null;
     }

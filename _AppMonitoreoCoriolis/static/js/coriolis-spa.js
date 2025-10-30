@@ -68,7 +68,7 @@ const CoriolisSPA = {
             this.sistemasData = data.results || data;
             this.filteredSistemas = [...this.sistemasData];
             
-            console.log('Sistemas cargados:', this.sistemasData.length);
+            //console.log('Sistemas cargados:', this.sistemasData.length);
             
         } catch (error) {
             console.error('Error cargando sistemas:', error);
@@ -521,7 +521,7 @@ function filterSistemas() {
 
 // Inicializar cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('🚀 Iniciando Coriolis SPA');
+    //console.log('🚀 Iniciando Coriolis SPA');
     
     // Hacer el SPA disponible globalmente
     window.CoriolisSPA = CoriolisSPA;
