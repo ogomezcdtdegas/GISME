@@ -55,10 +55,10 @@ class UbicacionManager {
 
     async loadUbicaciones() {
         try {
-            console.log('🔄 Cargando ubicaciones...');
+            //console.log('🔄 Cargando ubicaciones...');
             const response = await this.apiService.list({ page_size: 100 }); // Cargar muchas para mostrar todas
             
-            console.log('📦 Respuesta recibida:', response);
+            //console.log('📦 Respuesta recibida:', response);
             
             // La respuesta puede venir directamente con results o envuelta en success
             if (response && (response.results || response.data?.results)) {
@@ -66,20 +66,20 @@ class UbicacionManager {
                 this.filteredData = [...this.ubicaciones];
                 this.updateTable();
                 this.updatePagination();
-                console.log('✅ Ubicaciones cargadas exitosamente:', this.ubicaciones.length);
+                //console.log('✅ Ubicaciones cargadas exitosamente:', this.ubicaciones.length);
             } else if (response.success && response.data) {
                 // Si viene en formato success/data
                 this.ubicaciones = response.data.results || response.data;
                 this.filteredData = [...this.ubicaciones];
                 this.updateTable();
                 this.updatePagination();
-                console.log('✅ Ubicaciones cargadas exitosamente:', this.ubicaciones.length);
+                //console.log('✅ Ubicaciones cargadas exitosamente:', this.ubicaciones.length);
             } else {
-                console.error('❌ Estructura de respuesta inesperada:', response);
+                //console.error('❌ Estructura de respuesta inesperada:', response);
                 this.showAlert('Error al cargar ubicaciones: Respuesta inesperada', 'error');
             }
         } catch (error) {
-            console.error('❌ Error al cargar ubicaciones:', error);
+            //console.error('❌ Error al cargar ubicaciones:', error);
             this.showAlert('Error al cargar ubicaciones', 'error');
         }
     }
@@ -111,7 +111,7 @@ class UbicacionManager {
         }
 
         try {
-            console.log('📤 Enviando datos:', data);
+            //console.log('📤 Enviando datos:', data);
             const response = await this.apiService.create(data);
             
             if (response.success) {
@@ -119,11 +119,11 @@ class UbicacionManager {
                 e.target.reset();
                 await this.loadUbicaciones();
             } else {
-                console.error('❌ Error del servidor:', response.error);
+                //console.error('❌ Error del servidor:', response.error);
                 this.showAlert('Error al crear ubicación: ' + response.error, 'error');
             }
         } catch (error) {
-            console.error('❌ Error al crear ubicación:', error);
+            //console.error('❌ Error al crear ubicación:', error);
             this.showAlert('Error al crear ubicación', 'error');
         }
     }
@@ -150,7 +150,7 @@ class UbicacionManager {
                     this.showAlert('Error al eliminar ubicación: ' + response.error, 'error');
                 }
             } catch (error) {
-                console.error('Error al eliminar:', error);
+                //console.error('Error al eliminar:', error);
                 this.showAlert('Error al eliminar ubicación', 'error');
             }
         }
@@ -214,7 +214,7 @@ class UbicacionManager {
                     this.showAlert('Error al actualizar ubicación: ' + response.error, 'error');
                 }
             } catch (error) {
-                console.error('Error al actualizar:', error);
+                //console.error('Error al actualizar:', error);
                 this.showAlert('Error al actualizar ubicación', 'error');
             }
         }

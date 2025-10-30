@@ -51,29 +51,29 @@ class SistemaManager {
 
     async loadUbicaciones() {
         try {
-            console.log('🔄 Cargando ubicaciones para el selector...');
-            console.log('📍 Servicio ubicaciones disponible:', this.ubicacionAPI);
+            //console.log('🔄 Cargando ubicaciones para el selector...');
+            //console.log('📍 Servicio ubicaciones disponible:', this.ubicacionAPI);
             
             // Usar el método list() con page_size grande (mismo que usa ubicacion.js)
             const response = await this.ubicacionAPI.list({ page: 1, page_size: 1000 });
-            console.log('📦 Respuesta completa de ubicaciones:', response);
+            //console.log('📦 Respuesta completa de ubicaciones:', response);
             
             if (response && response.success && response.data && response.data.results) {
                 this.ubicaciones = response.data.results;
-                console.log('📍 Ubicaciones extraídas:', this.ubicaciones);
+                //console.log('📍 Ubicaciones extraídas:', this.ubicaciones);
                 this.populateUbicacionSelect();
-                console.log('✅ Ubicaciones cargadas para selector:', this.ubicaciones.length);
+                //console.log('✅ Ubicaciones cargadas para selector:', this.ubicaciones.length);
             } else if (response && response.results) {
                 this.ubicaciones = response.results;
-                console.log('📍 Ubicaciones extraídas (directo):', this.ubicaciones);
+                //console.log('📍 Ubicaciones extraídas (directo):', this.ubicaciones);
                 this.populateUbicacionSelect();
-                console.log('✅ Ubicaciones cargadas para selector:', this.ubicaciones.length);
+                //console.log('✅ Ubicaciones cargadas para selector:', this.ubicaciones.length);
             } else {
-                console.error('❌ Error al cargar ubicaciones para selector - respuesta:', response);
+                //console.error('❌ Error al cargar ubicaciones para selector - respuesta:', response);
                 this.showAlert('Error al cargar ubicaciones: No se encontraron datos', 'error');
             }
         } catch (error) {
-            console.error('❌ Error al cargar ubicaciones:', error);
+            //console.error('❌ Error al cargar ubicaciones:', error);
             this.showAlert('Error al cargar ubicaciones: ' + error.message, 'error');
         }
     }
@@ -96,29 +96,29 @@ class SistemaManager {
 
     async loadSistemas() {
         try {
-            console.log('🔄 Cargando sistemas...');
+            //console.log('🔄 Cargando sistemas...');
             const response = await this.sistemaAPI.list({ page_size: 100 });
             
-            console.log('📦 Respuesta recibida:', response);
+            //console.log('📦 Respuesta recibida:', response);
             
             if (response && (response.results || response.data?.results)) {
                 this.sistemas = response.results || response.data.results;
                 this.filteredData = [...this.sistemas];
                 this.updateTable();
                 this.updatePagination();
-                console.log('✅ Sistemas cargados exitosamente:', this.sistemas.length);
+                //console.log('✅ Sistemas cargados exitosamente:', this.sistemas.length);
             } else if (response.success && response.data) {
                 this.sistemas = response.data.results || response.data;
                 this.filteredData = [...this.sistemas];
                 this.updateTable();
                 this.updatePagination();
-                console.log('✅ Sistemas cargados exitosamente:', this.sistemas.length);
+                //console.log('✅ Sistemas cargados exitosamente:', this.sistemas.length);
             } else {
-                console.error('❌ Estructura de respuesta inesperada:', response);
+                //console.error('❌ Estructura de respuesta inesperada:', response);
                 this.showAlert('Error al cargar sistemas: Respuesta inesperada', 'error');
             }
         } catch (error) {
-            console.error('❌ Error al cargar sistemas:', error);
+            //console.error('❌ Error al cargar sistemas:', error);
             this.showAlert('Error al cargar sistemas', 'error');
         }
     }
@@ -141,7 +141,7 @@ class SistemaManager {
         }
 
         try {
-            console.log('📤 Enviando datos:', data);
+            //console.log('📤 Enviando datos:', data);
             const response = await this.sistemaAPI.create(data);
             
             if (response.success) {
@@ -155,7 +155,7 @@ class SistemaManager {
                 this.showAlert(errorMsg, 'error');
             }
         } catch (error) {
-            console.error('❌ Error al crear sistema:', error);
+            //console.error('❌ Error al crear sistema:', error);
             this.showAlert('Error de conexión con el servidor', 'error');
         }
     }
@@ -179,12 +179,12 @@ class SistemaManager {
                     this.showAlert('Sistema eliminado exitosamente', 'success');
                     await this.loadSistemas();
                 } else {
-                    console.error('❌ Error del servidor:', response);
+                    //console.error('❌ Error del servidor:', response);
                     const errorMsg = response.error || 'Error al eliminar sistema';
                     this.showAlert(errorMsg, 'error');
                 }
             } catch (error) {
-                console.error('Error al eliminar:', error);
+                //console.error('Error al eliminar:', error);
                 this.showAlert('Error de conexión con el servidor', 'error');
             }
         }
@@ -248,13 +248,13 @@ class SistemaManager {
                     this.showAlert('Sistema actualizado exitosamente', 'success');
                     await this.loadSistemas();
                 } else {
-                    console.error('❌ Error del servidor:', response);
+                    //console.error('❌ Error del servidor:', response);
                     // Mostrar error específico del backend
                     const errorMsg = response.error || 'Error al actualizar sistema';
                     this.showAlert(errorMsg, 'error');
                 }
             } catch (error) {
-                console.error('Error al actualizar:', error);
+                //console.error('Error al actualizar:', error);
                 this.showAlert('Error de conexión con el servidor', 'error');
             }
         }
