@@ -237,6 +237,22 @@ document.addEventListener('DOMContentLoaded', function() {
         cargarTodosLosTickets();
     });
     
+    // Manejar foco para accesibilidad - eliminar advertencias aria-hidden
+    modalTickets.addEventListener('hidden.bs.modal', function() {
+        // Quitar foco de cualquier elemento dentro del modal cuando se cierra
+        if (document.activeElement && modalTickets.contains(document.activeElement)) {
+            document.activeElement.blur();
+        }
+    });
+    
+    modalTickets.addEventListener('hide.bs.modal', function() {
+        // Antes de ocultar el modal, quitar foco de elementos internos
+        const focusedElement = document.activeElement;
+        if (focusedElement && modalTickets.contains(focusedElement)) {
+            focusedElement.blur();
+        }
+    });
+    
     // Función para obtener CSRF token
     function getCSRFToken() {
         return document.querySelector('[name=csrfmiddlewaretoken]')?.value;

@@ -85,3 +85,25 @@
     </div>
   </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Manejar el evento cuando el modal se cierra para evitar advertencias de aria-hidden
+    const presionModal = document.getElementById('presionModal');
+    if (presionModal) {
+        presionModal.addEventListener('hidden.bs.modal', function () {
+            // Quitar el foco de cualquier elemento que pueda estar enfocado
+            if (document.activeElement) {
+                document.activeElement.blur();
+            }
+        });
+        
+        presionModal.addEventListener('hide.bs.modal', function () {
+            // Quitar el foco antes de que el modal se cierre
+            if (document.activeElement) {
+                document.activeElement.blur();
+            }
+        });
+    }
+});
+</script>

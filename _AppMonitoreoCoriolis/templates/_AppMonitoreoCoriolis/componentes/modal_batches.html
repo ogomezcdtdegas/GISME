@@ -80,6 +80,24 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Manejar el evento cuando el modal se cierra para evitar advertencias de aria-hidden
+    const modalBuscarBatches = document.getElementById('modalBuscarBatches');
+    if (modalBuscarBatches) {
+        modalBuscarBatches.addEventListener('hidden.bs.modal', function () {
+            // Quitar el foco de cualquier elemento que pueda estar enfocado
+            if (document.activeElement) {
+                document.activeElement.blur();
+            }
+        });
+        
+        modalBuscarBatches.addEventListener('hide.bs.modal', function () {
+            // Quitar el foco antes de que el modal se cierre
+            if (document.activeElement) {
+                document.activeElement.blur();
+            }
+        });
+    }
+
     const modalBatches = document.getElementById('modalBuscarBatches');
     const btnBuscarBatches = document.getElementById('btnBuscarBatches');
     const btnListarBatches = document.getElementById('btnListarBatches');

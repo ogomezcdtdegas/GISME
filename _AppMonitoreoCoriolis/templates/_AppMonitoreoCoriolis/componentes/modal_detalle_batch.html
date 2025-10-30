@@ -102,6 +102,26 @@
 </div>
 
 <script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Manejar el evento cuando el modal se cierra para evitar advertencias de aria-hidden
+    const modalDetalleBatch = document.getElementById('modalDetalleBatch');
+    if (modalDetalleBatch) {
+        modalDetalleBatch.addEventListener('hidden.bs.modal', function () {
+            // Quitar el foco de cualquier elemento que pueda estar enfocado
+            if (document.activeElement) {
+                document.activeElement.blur();
+            }
+        });
+        
+        modalDetalleBatch.addEventListener('hide.bs.modal', function () {
+            // Quitar el foco antes de que el modal se cierre
+            if (document.activeElement) {
+                document.activeElement.blur();
+            }
+        });
+    }
+});
+
 // Registrar el plugin de anotaciones
 if (typeof window.chartjs_plugin_annotation !== 'undefined') {
     Chart.register(window.chartjs_plugin_annotation.default || window.chartjs_plugin_annotation);

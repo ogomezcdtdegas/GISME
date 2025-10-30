@@ -126,9 +126,26 @@
 <script>
 // Script para manejar la funcionalidad del modal de configuración
 document.addEventListener('DOMContentLoaded', function() {
+    // Manejar el evento cuando el modal se cierra para evitar advertencias de aria-hidden
     const modal = document.getElementById('modalConfiguracionSistema');
     const btnActualizar = document.getElementById('btnActualizarCoeficientes');
     const form = document.getElementById('formConfiguracionSistema');
+    
+    if (modal) {
+        modal.addEventListener('hidden.bs.modal', function () {
+            // Quitar el foco de cualquier elemento que pueda estar enfocado
+            if (document.activeElement) {
+                document.activeElement.blur();
+            }
+        });
+        
+        modal.addEventListener('hide.bs.modal', function () {
+            // Quitar el foco antes de que el modal se cierre
+            if (document.activeElement) {
+                document.activeElement.blur();
+            }
+        });
+    }
 
     // Cargar valores actuales al abrir el modal
     modal.addEventListener('show.bs.modal', function () {
