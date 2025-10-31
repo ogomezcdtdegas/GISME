@@ -108,8 +108,8 @@ class MSALAuthMiddleware(MiddlewareMixin):
         # Validar tenant
         tid = claims.get(TID_CLAIM)
         if hasattr(settings, 'AZURE_TENANT_ID') and tid != settings.AZURE_TENANT_ID:
-            log.warning("Tenant ID no coincide: esperado %s, recibido %s", 
-                       settings.AZURE_TENANT_ID, tid)
+            '''log.warning("Tenant ID no coincide: esperado %s, recibido %s", 
+                       settings.AZURE_TENANT_ID, tid)'''
             return
 
         # Encontrar email del usuario
