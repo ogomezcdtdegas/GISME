@@ -247,7 +247,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const sistemaId = window.SISTEMA_ACTUAL ? window.SISTEMA_ACTUAL.id : null;
         
         if (!sistemaId) {
-            mostrarError('No se encontró el ID del sistema actual');
+            showErrorAlert('No se encontró el ID del sistema actual');
             return;
         }
 
@@ -269,18 +269,18 @@ document.addEventListener('DOMContentLoaded', function() {
         // Validar que todos los valores son números válidos
         if (isNaN(mt) || isNaN(bt) || isNaN(mp) || isNaN(bp) || isNaN(zeroPresion) || isNaN(spanPresion) ||
             isNaN(limInfCaudalMasico) || isNaN(limSupCaudalMasico) || isNaN(volMasicoIniBatch) || isNaN(numTicket) || isNaN(timeFinishedBatch)) {
-            mostrarError('Todos los valores deben ser números válidos');
+            showErrorAlert('Todos los valores deben ser números válidos');
             return;
         }
         
         // Validaciones adicionales
         if (limInfCaudalMasico < 0 || limSupCaudalMasico < 0 || volMasicoIniBatch < 0 || numTicket < 1 || timeFinishedBatch < 0.1) {
-            mostrarError('Los valores de configuración no pueden ser negativos, el número de ticket debe ser mayor a 0 y el tiempo de cierre debe ser mayor a 0.1 minutos');
+            showErrorAlert('Los valores de configuración no pueden ser negativos, el número de ticket debe ser mayor a 0 y el tiempo de cierre debe ser mayor a 0.1 minutos');
             return;
         }
         
         if (limInfCaudalMasico >= limSupCaudalMasico) {
-            alert('Error: El límite inferior debe ser menor que el límite superior');
+            showErrorAlert('Error: El límite inferior debe ser menor que el límite superior');
             return;
         }
 
@@ -326,20 +326,20 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(data => {
             if (data.success) {
                 // Mostrar mensaje de éxito con SweetAlert2
-                mostrarExito(data.message || 'Coeficientes actualizados correctamente');
+                showSuccessAlert(data.message || 'Coeficientes actualizados correctamente');
                 // Cerrar modal
                 bootstrap.Modal.getInstance(modal).hide();
             } else {
-                mostrarError('Error al actualizar coeficientes: ' + (data.error || 'Error desconocido'));
+                showErrorAlert('Error al actualizar coeficientes: ' + (data.error || 'Error desconocido'));
             }
         })
         .catch(error => {
             //console.error('Error:', error);
             // Verificar si es error de permisos
             if (error.message.includes('permisos') || error.message.includes('administrador')) {
-                mostrarErrorPermisos(error.message);
+                showPermissionDeniedAlert(error.message);
             } else {
-                mostrarErrorConexion(error.message || 'Error de conexión al actualizar coeficientes');
+                showErrorAlert(error.message || 'Error de conexión al actualizar coeficientes');
             }
         })
         .finally(() => {
