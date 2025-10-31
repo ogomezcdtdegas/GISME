@@ -3,6 +3,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.exceptions import PermissionDenied
 from django.shortcuts import redirect
+from django.http import JsonResponse
 from .utils import log_user_action, get_client_ip
 
 class ComplementosPermissionMixin:
@@ -49,6 +50,40 @@ class ComplementosPermissionMixin:
         if not has_permission:
             raise PermissionDenied("No tiene permisos para esta acción. Contacte al administrador.")
     
+    def dispatch(self, request, *args, **kwargs):
+        """
+        Override dispatch para verificar permisos antes de procesar - 
+        Similar al AdminPermissionMixin pero para complementos
+        """
+        # Verificar permisos de complementos
+        has_permission, _ = self.check_complementos_permission(request.user)
+        
+        if not has_permission:
+            # Detectar si es una petición AJAX/API
+            is_ajax = (
+                request.headers.get('X-Requested-With') == 'XMLHttpRequest' or
+                request.content_type == 'application/json' or
+                'api' in request.path.lower() or
+                request.headers.get('Accept', '').startswith('application/json') or
+                request.headers.get('Content-Type', '').startswith('application/json')
+            )
+            
+            if is_ajax:
+                # Para peticiones AJAX/API, devolver JSON response usando Django JsonResponse
+                return JsonResponse({
+                    'success': False,
+                    'error': 'No tiene permisos para esta acción. Contacte al administrador.'
+                }, status=403)
+            
+            # Para vistas normales (GET requests), redirigir al home
+            if request.method == 'GET' and hasattr(self, 'template_name'):
+                return redirect('/')
+            
+            # Para otros casos, usar PermissionDenied
+            raise PermissionDenied("No tiene permisos para acceder a esta sección. Contacte al administrador.")
+        
+        return super().dispatch(request, *args, **kwargs)
+
     def handle_exception(self, exc):
         """
         Override del método handle_exception de DRF para manejar PermissionDenied personalizada
@@ -61,20 +96,20 @@ class ComplementosPermissionMixin:
                 'api' in request.path or 
                 request.headers.get('Accept', '').startswith('application/json')
             ):
-                return Response({
+                return JsonResponse({
                     'success': False,
                     'error': str(exc)
-                }, status=status.HTTP_403_FORBIDDEN)
+                }, status=403)
         
         # Para otras excepciones, usar el manejo estándar de DRF
         if hasattr(super(), 'handle_exception'):
             return super().handle_exception(exc)
         else:
             # Si no hay método padre, manejar básicamente
-            return Response({
+            return JsonResponse({
                 'success': False,
                 'error': str(exc)
-            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            }, status=500)
 
 
 class SuperuserPermissionMixin:
@@ -89,13 +124,13 @@ class SuperuserPermissionMixin:
             action: Tipo de acción ('delete', 'critical')
         
         Returns:
-            tuple: (has_permission: bool, error_response: Response|None)
+            tuple: (has_permission: bool, error_response: JsonResponse|None)
         """
         if not user.is_superuser:
-            return False, Response({
+            return False, JsonResponse({
                 'success': False,
                 'error': 'Solo superusuarios pueden realizar esta operación'
-            }, status=status.HTTP_403_FORBIDDEN)
+            }, status=403)
         
         return True, None
     
@@ -168,10 +203,10 @@ class AdminPermissionMixin:
         if not has_permission:
             # Si es una request que espera JSON (API), devolver error JSON
             if request.content_type == 'application/json' or 'api' in request.path or request.headers.get('Accept', '').startswith('application/json'):
-                return Response({
+                return JsonResponse({
                     'success': False,
                     'error': error_message
-                }, status=status.HTTP_403_FORBIDDEN)
+                }, status=403)
             # Si es una vista de template, redirigir al home
             else:
                 return redirect('/')

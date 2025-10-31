@@ -575,6 +575,14 @@ async function asignarTicketBatch() {
         // Cerrar loading
         hideLoadingAlert();
         
+        // Verificar si hay error de permisos
+        if (response.status === 403) {
+            const data = await response.json();
+            const errorMsg = data.error || 'No tiene permisos para esta acción. Contacte al administrador.';
+            showPermissionDeniedAlert(errorMsg);
+            return;
+        }
+        
         const data = await response.json();
         
         if (response.ok && data.success) {

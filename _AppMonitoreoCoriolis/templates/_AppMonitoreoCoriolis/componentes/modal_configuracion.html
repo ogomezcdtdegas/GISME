@@ -318,8 +318,15 @@ document.addEventListener('DOMContentLoaded', function() {
             // Verificar si hay error de permisos
             if (response.status === 403) {
                 return response.json().then(data => {
-                    throw new Error(data.error || 'No tiene permisos para esta acción. Contacte al administrador.');
+                    // Lanzar error específico para permisos
+                    const errorMsg = data.error || 'No tiene permisos para esta acción. Contacte al administrador.';
+                    const permissionError = new Error(errorMsg);
+                    permissionError.isPermissionError = true;
+                    throw permissionError;
                 });
+            }
+            if (!response.ok) {
+                throw new Error(`Error ${response.status}: ${response.statusText}`);
             }
             return response.json();
         })
@@ -336,7 +343,7 @@ document.addEventListener('DOMContentLoaded', function() {
         .catch(error => {
             //console.error('Error:', error);
             // Verificar si es error de permisos
-            if (error.message.includes('permisos') || error.message.includes('administrador')) {
+            if (error.isPermissionError || error.message.includes('permisos') || error.message.includes('administrador')) {
                 showPermissionDeniedAlert(error.message);
             } else {
                 showErrorAlert(error.message || 'Error de conexión al actualizar coeficientes');
