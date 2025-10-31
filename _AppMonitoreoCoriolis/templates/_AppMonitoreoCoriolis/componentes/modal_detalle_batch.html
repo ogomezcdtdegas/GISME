@@ -523,7 +523,7 @@ function actualizarEstadoBotonTicket(numTicket) {
 // Función para asignar ticket al batch
 async function asignarTicketBatch() {
     if (!datosActualesBatch || !datosActualesBatch.batch_info) {
-        alert('Error: No hay datos del batch disponibles');
+        showErrorAlert('Error', 'No hay datos del batch disponibles');
         return;
     }
     
@@ -532,21 +532,37 @@ async function asignarTicketBatch() {
     
     // Verificar si ya tiene ticket asignado - NO permitir reasignación
     if (batchNumTicket) {
-        alert(`Este batch ya tiene el ticket #${batchNumTicket} asignado. No se puede reasignar.`);
+        showWarningAlert(
+            'Ticket ya asignado', 
+            `Este batch ya tiene el ticket #${batchNumTicket} asignado. No se puede reasignar.`
+        );
+        return;
+    }
+    
+    // Mostrar confirmación antes de asignar
+    const confirmResult = await showConfirmAlert(
+        'Confirmar asignación de ticket',
+        '¿Está seguro que desea asignar un ticket a este batch?',
+        {
+            confirmButtonText: 'Sí, asignar',
+            cancelButtonText: 'Cancelar'
+        }
+    );
+    
+    if (!confirmResult.isConfirmed) {
         return;
     }
     
     try {
-        // Deshabilitar el botón mientras se procesa (verificar que existe)
+        // Verificar que el botón existe (permisos)
         const btn = document.getElementById('btnAsignarTicket');
         if (!btn) {
-            alert('Error: No tiene permisos para asignar tickets');
+            showPermissionDeniedAlert('No tiene permisos para asignar tickets');
             return;
         }
         
-        const textoOriginal = btn.innerHTML;
-        btn.disabled = true;
-        btn.innerHTML = '<i class="bi bi-hourglass-split"></i> Asignando...';
+        // Mostrar loading
+        showLoadingAlert('Asignando ticket...', 'Por favor espere mientras se procesa la asignación');
         
         const response = await fetch(`/monitoreo/api/asignar-ticket-batch/${batchId}/`, {
             method: 'POST',
@@ -556,10 +572,17 @@ async function asignarTicketBatch() {
             }
         });
         
+        // Cerrar loading
+        hideLoadingAlert();
+        
         const data = await response.json();
         
-        if (data.success) {
-            alert(`¡Ticket #${data.data.ticket_asignado} asignado exitosamente al batch!`);
+        if (response.ok && data.success) {
+            // Mostrar éxito con SweetAlert2
+            await showSuccessAlert(
+                'Ticket asignado exitosamente',
+                `¡Ticket #${data.data.ticket_asignado} asignado correctamente al batch!`
+            );
             
             // Actualizar la información del batch en el modal
             datosActualesBatch.batch_info.num_ticket = data.data.ticket_asignado;
@@ -570,7 +593,7 @@ async function asignarTicketBatch() {
                 <p><strong># Ticket:</strong> <span class="badge bg-success">${data.data.ticket_asignado}</span></p>
                 <p><strong>Inicio:</strong> ${datosActualesBatch.batch_info.fecha_inicio}</p>
                 <p><strong>Fin:</strong> ${datosActualesBatch.batch_info.fecha_fin}</p>
-                <p><strong>Duración:</strong> ${datosActualesBatch.batch_info.duracion_minutos} minutos</p>
+                <p><strong>Duración:</strong> ${(datosActualesBatch.batch_info.duracion_minutos !== null && datosActualesBatch.batch_info.duracion_minutos !== undefined) ? Math.trunc(datosActualesBatch.batch_info.duracion_minutos * 100) / 100 : 'N/A'} minutos</p>
                 <div class="alert alert-info mt-2 mb-0" style="padding: 8px 12px; font-size: 0.85em;">
                     <i class="bi bi-info-circle"></i> 
                     <strong>Contexto extendido:</strong> La gráfica muestra 3 minutos antes y después del batch para mejor análisis.
@@ -583,18 +606,21 @@ async function asignarTicketBatch() {
             actualizarEstadoBotonTicket(data.data.ticket_asignado);
             
         } else {
-            alert('Error al asignar ticket: ' + data.error);
+            // Mostrar error con SweetAlert2
+            showErrorAlert(
+                'Error al asignar ticket',
+                data.error || 'Ha ocurrido un error inesperado'
+            );
         }
     } catch (error) {
-        //console.error('Error al asignar ticket:', error);
-        alert('Error de conexión al asignar ticket');
-    } finally {
-        // Restaurar el botón (si existe)
-        const btn = document.getElementById('btnAsignarTicket');
-        if (btn) {
-            btn.disabled = false;
-            btn.innerHTML = textoOriginal;
-        }
+        // Cerrar loading si está abierto
+        hideLoadingAlert();
+        
+        console.error('Error al asignar ticket:', error);
+        showErrorAlert(
+            'Error de conexión',
+            'No se pudo conectar con el servidor. Verifique su conexión a internet.'
+        );
     }
 }
 
