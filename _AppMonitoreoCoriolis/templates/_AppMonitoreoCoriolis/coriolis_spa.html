@@ -17,6 +17,8 @@
 <!-- Chart.js Annotation Plugin -->
 <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 {% endblock %}
 
 {% block content %}
@@ -472,6 +474,54 @@ let SISTEMA_ACTUAL;
 function abrirModalTickets() {
     const modal = new bootstrap.Modal(document.getElementById('modalListarTickets'));
     modal.show();
+}
+
+// ====================================================================
+// FUNCIONES HELPER PARA SWEETALERT2
+// ====================================================================
+
+// Función para mostrar errores de permisos
+function mostrarErrorPermisos(mensaje = 'No tiene permisos para esta acción. Contacte al administrador.') {
+    Swal.fire({
+        icon: 'warning',
+        title: 'Acceso Denegado',
+        text: mensaje,
+        confirmButtonText: 'Aceptar',
+        confirmButtonColor: '#ffc107'
+    });
+}
+
+// Función para mostrar mensajes de éxito
+function mostrarExito(mensaje = 'Operación completada exitosamente') {
+    Swal.fire({
+        icon: 'success',
+        title: 'Éxito',
+        text: mensaje,
+        confirmButtonText: 'OK',
+        confirmButtonColor: '#28a745'
+    });
+}
+
+// Función para mostrar errores generales
+function mostrarError(mensaje = 'Ha ocurrido un error inesperado') {
+    Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: mensaje,
+        confirmButtonText: 'Aceptar',
+        confirmButtonColor: '#dc3545'
+    });
+}
+
+// Función para mostrar errores de conexión
+function mostrarErrorConexion(mensaje = 'Error de conexión. Verifique su red e intente nuevamente.') {
+    Swal.fire({
+        icon: 'error',
+        title: 'Error de Conexión',
+        text: mensaje,
+        confirmButtonText: 'Aceptar',
+        confirmButtonColor: '#dc3545'
+    });
 }
 </script>
 {% endblock %}

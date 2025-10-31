@@ -1,6 +1,7 @@
 # Mixins para permisos de administración
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.exceptions import PermissionDenied
 from django.shortcuts import redirect
 from .utils import log_user_action, get_client_ip
 
@@ -33,22 +34,47 @@ class ComplementosPermissionMixin:
         else:
             return False, None  # Indicar que no tiene permisos
     
-    def dispatch(self, request, *args, **kwargs):
-        """Override dispatch para verificar permisos antes de procesar"""
+    def check_permissions(self, request):
+        """
+        Override del método check_permissions de DRF para agregar verificación del mixin
+        Se ejecuta después de las permission_classes estándar
+        """
+        # Primero ejecutar permisos estándar de DRF
+        if hasattr(super(), 'check_permissions'):
+            super().check_permissions(request)
+        
+        # Luego verificar permisos del mixin
         has_permission, _ = self.check_complementos_permission(request.user)
         
         if not has_permission:
-            # Si es una request que espera JSON (API), devolver error JSON
-            if request.content_type == 'application/json' or 'api' in request.path or request.headers.get('Accept', '').startswith('application/json'):
+            raise PermissionDenied("No tiene permisos para esta acción. Contacte al administrador.")
+    
+    def handle_exception(self, exc):
+        """
+        Override del método handle_exception de DRF para manejar PermissionDenied personalizada
+        """
+        if isinstance(exc, PermissionDenied):
+            # Determinar si es una request de API
+            request = getattr(self, 'request', None)
+            if request and (
+                request.content_type == 'application/json' or 
+                'api' in request.path or 
+                request.headers.get('Accept', '').startswith('application/json')
+            ):
                 return Response({
                     'success': False,
-                    'error': 'Su rol de usuario no tiene permisos para acceder a este módulo.'
+                    'error': str(exc)
                 }, status=status.HTTP_403_FORBIDDEN)
-            # Si es una vista de template, redirigir al home
-            else:
-                return redirect('/')
         
-        return super().dispatch(request, *args, **kwargs)
+        # Para otras excepciones, usar el manejo estándar de DRF
+        if hasattr(super(), 'handle_exception'):
+            return super().handle_exception(exc)
+        else:
+            # Si no hay método padre, manejar básicamente
+            return Response({
+                'success': False,
+                'error': str(exc)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class SuperuserPermissionMixin:

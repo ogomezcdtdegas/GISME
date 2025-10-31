@@ -6,11 +6,12 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from _AppComplementos.models import ConfiguracionCoeficientes
 from _AppMonitoreoCoriolis.models import BatchDetectado
+from _AppAdmin.mixins import ComplementosPermissionMixin
 
 # Configurar logging
 logger = logging.getLogger(__name__)
 
-class AsignarTicketBatchCommandView(APIView):
+class AsignarTicketBatchCommandView(ComplementosPermissionMixin,APIView):
     """
     CBV Command para asignar un ticket a un batch específico
     Toma el número actual de ticket de configuración, lo asigna al batch

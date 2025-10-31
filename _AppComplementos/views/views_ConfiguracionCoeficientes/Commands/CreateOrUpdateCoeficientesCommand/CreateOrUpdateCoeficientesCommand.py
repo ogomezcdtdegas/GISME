@@ -2,8 +2,10 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404
 from django.db import models
+from _AppAdmin.mixins import ComplementosPermissionMixin
 
 from .....models import ConfiguracionCoeficientes, Sistema
 from _AppAdmin.utils import log_user_action, get_client_ip
@@ -14,7 +16,7 @@ from drf_spectacular.utils import extend_schema, extend_schema_view
     post=extend_schema(tags=['ConfiguracionCoeficientes']),
 )
 
-class CreateOrUpdateCoeficientesCommandView(APIView):
+class CreateOrUpdateCoeficientesCommandView(ComplementosPermissionMixin, APIView):
     """CBV Command para crear o actualizar coeficientes de corrección para un sistema"""
     permission_classes = [IsAuthenticated]
 

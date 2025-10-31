@@ -247,7 +247,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const sistemaId = window.SISTEMA_ACTUAL ? window.SISTEMA_ACTUAL.id : null;
         
         if (!sistemaId) {
-            alert('Error: No se encontró el ID del sistema actual');
+            mostrarError('No se encontró el ID del sistema actual');
             return;
         }
 
@@ -269,13 +269,13 @@ document.addEventListener('DOMContentLoaded', function() {
         // Validar que todos los valores son números válidos
         if (isNaN(mt) || isNaN(bt) || isNaN(mp) || isNaN(bp) || isNaN(zeroPresion) || isNaN(spanPresion) ||
             isNaN(limInfCaudalMasico) || isNaN(limSupCaudalMasico) || isNaN(volMasicoIniBatch) || isNaN(numTicket) || isNaN(timeFinishedBatch)) {
-            alert('Error: Todos los valores deben ser números válidos');
+            mostrarError('Todos los valores deben ser números válidos');
             return;
         }
         
         // Validaciones adicionales
         if (limInfCaudalMasico < 0 || limSupCaudalMasico < 0 || volMasicoIniBatch < 0 || numTicket < 1 || timeFinishedBatch < 0.1) {
-            alert('Error: Los valores de configuración no pueden ser negativos, el número de ticket debe ser mayor a 0 y el tiempo de cierre debe ser mayor a 0.1 minutos');
+            mostrarError('Los valores de configuración no pueden ser negativos, el número de ticket debe ser mayor a 0 y el tiempo de cierre debe ser mayor a 0.1 minutos');
             return;
         }
         
@@ -314,20 +314,33 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             body: JSON.stringify(coeficientes)
         })
-        .then(response => response.json())
+        .then(response => {
+            // Verificar si hay error de permisos
+            if (response.status === 403) {
+                return response.json().then(data => {
+                    throw new Error(data.error || 'No tiene permisos para esta acción. Contacte al administrador.');
+                });
+            }
+            return response.json();
+        })
         .then(data => {
             if (data.success) {
-                // Mostrar mensaje de éxito
-                alert(data.message || 'Coeficientes actualizados correctamente');
+                // Mostrar mensaje de éxito con SweetAlert2
+                mostrarExito(data.message || 'Coeficientes actualizados correctamente');
                 // Cerrar modal
                 bootstrap.Modal.getInstance(modal).hide();
             } else {
-                alert('Error al actualizar coeficientes: ' + (data.error || 'Error desconocido'));
+                mostrarError('Error al actualizar coeficientes: ' + (data.error || 'Error desconocido'));
             }
         })
         .catch(error => {
             //console.error('Error:', error);
-            alert('Error de conexión al actualizar coeficientes');
+            // Verificar si es error de permisos
+            if (error.message.includes('permisos') || error.message.includes('administrador')) {
+                mostrarErrorPermisos(error.message);
+            } else {
+                mostrarErrorConexion(error.message || 'Error de conexión al actualizar coeficientes');
+            }
         })
         .finally(() => {
             // Restaurar botón
