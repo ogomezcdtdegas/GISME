@@ -1,0 +1,125 @@
+/* === PALETA DE COLORES SUAVES === */
+:root {
+    /* Colores principales más vibrantes como en la imagen original */
+    --primary-soft: #007bff;
+    --secondary-soft: #6c757d;
+    --success-soft: #28a745;
+    --warning-soft: #ffc107;
+    --danger-soft: #dc3545;
+    --info-soft: #17a2b8;
+    --light-soft: #f8f9fa;
+    --dark-soft: #343a40;
+    
+    /* Fondos más saturados */
+    --bg-success: #d1ecf1;
+    --bg-warning: #fff3cd;
+    --bg-danger: #f8d7da;
+    --bg-info: #d1ecf1;
+    --bg-light: #ffffff;
+    
+    /* Textos más contrastantes */
+    --text-success: #155724;
+    --text-warning: #856404;
+    --text-danger: #721c24;
+    --text-info: #0c5460;
+    --text-muted: #6c757d;
+}
+
+/* === OVERRIDE DE COLORES BOOTSTRAP === */
+.text-success {
+    color: var(--success-soft) !important;
+}
+
+.text-warning {
+    color: var(--warning-soft) !important;
+}
+
+.text-danger {
+    color: var(--danger-soft) !important;
+}
+
+.text-primary {
+    color: var(--primary-soft) !important;
+}
+
+.text-info {
+    color: var(--info-soft) !important;
+}
+
+/* === BADGES SUAVES === */
+.badge.bg-success {
+    background-color: var(--bg-success) !important;
+    color: var(--text-success) !important;
+}
+
+.badge.bg-warning {
+    background-color: var(--bg-warning) !important;
+    color: var(--text-warning) !important;
+}
+
+.badge.bg-danger {
+    background-color: var(--bg-danger) !important;
+    color: var(--text-danger) !important;
+}
+
+/* === BOTONES SUAVES === */
+.btn-success {
+    background-color: var(--success-soft) !important;
+    border-color: var(--success-soft) !important;
+    color: white !important;
+}
+
+.btn-warning {
+    background-color: var(--warning-soft) !important;
+    border-color: var(--warning-soft) !important;
+    color: black !important;
+}
+
+.btn-danger {
+    background-color: var(--danger-soft) !important;
+    border-color: var(--danger-soft) !important;
+    color: white !important;
+}
+
+.btn-primary {
+    background-color: var(--primary-soft) !important;
+    border-color: var(--primary-soft) !important;
+    color: white !important;
+}
+
+/* === ALERTAS SUAVES === */
+.alert-success {
+    background-color: var(--bg-success) !important;
+    border-color: var(--success-soft) !important;
+    color: var(--text-success) !important;
+}
+
+.alert-warning {
+    background-color: var(--bg-warning) !important;
+    border-color: var(--warning-soft) !important;
+    color: var(--text-warning) !important;
+}
+
+.alert-danger {
+    background-color: var(--bg-danger) !important;
+    border-color: var(--danger-soft) !important;
+    color: var(--text-danger) !important;
+}
+
+/* === EFECTOS HOVER SUAVES === */
+.btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transition: all 0.2s ease;
+}
+
+/* === CARDS CON SOMBRAS SUAVES === */
+.card {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border: 1px solid #e0e0e0;
+}
+
+.card:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+    transition: box-shadow 0.3s ease;
+}
