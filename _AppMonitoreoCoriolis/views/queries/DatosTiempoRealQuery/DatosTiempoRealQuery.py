@@ -39,8 +39,9 @@ class DatosTiempoRealQueryView(APIView):
             fecha_colombia = ultimo_dato.created_at_iot.astimezone(COLOMBIA_TZ)
             
             # Aplicar corrección a Temperatura de Salida (redundant_temperature)
-            temp_salida = ultimo_dato.redundant_temperature
+            temp_salida = celsius_a_fahrenheit(ultimo_dato.redundant_temperature)
             temp_salida_corr = mt * float(temp_salida) + bt if temp_salida is not None else None
+            temp_salida_corrCalc = int(temp_salida_corr * 1000) / 1000
             
             # Aplicar corrección a Presión (pressure_out)
             presion = ultimo_dato.pressure_out
@@ -49,6 +50,7 @@ class DatosTiempoRealQueryView(APIView):
                 valor_convertido = convertir_presion_con_span(presion, span_presion)
                 # 2. Aplicar corrección mx+b
                 presion_corr = mp * valor_convertido + bp
+                presion_corrCalc = int(presion_corr * 1000) / 1000
             else:
                 presion_corr = None
             
@@ -64,7 +66,7 @@ class DatosTiempoRealQueryView(APIView):
                         'unidad': 'kg/min'
                     },
                     'temperaturaRedundante': {
-                        'valor': celsius_a_fahrenheit(temp_salida_corr) if temp_salida_corr is not None else None,
+                        'valor': temp_salida_corrCalc if temp_salida_corrCalc is not None else None,
                         'unidad': '°F'
                     },
                     'temperaturaDiagnostico': {
@@ -76,7 +78,7 @@ class DatosTiempoRealQueryView(APIView):
                         'unidad': '°F'
                     },
                     'presion': {
-                        'valor': float(presion_corr) if presion_corr is not None else 0,
+                        'valor': float(presion_corrCalc) if presion_corrCalc is not None else 0,
                         'unidad': 'PSI'
                     },
                     'volTotal': {

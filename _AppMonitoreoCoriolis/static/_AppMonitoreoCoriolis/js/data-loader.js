@@ -26,10 +26,10 @@ async function actualizarDisplaysConDatosReales() {
                 `${data.datos.temperatura.valor.toFixed(2)} ${data.datos.temperatura.unidad}`;
 
             document.getElementById('display-sensor3').textContent = 
-                `${data.datos.presion.valor.toFixed(2)} ${data.datos.presion.unidad}`;
+                `${data.datos.presion.valor} ${data.datos.presion.unidad}`;
 
             document.getElementById('display-sensor5').textContent = 
-                `${data.datos.temperaturaRedundante.valor.toFixed(2)} ${data.datos.temperaturaRedundante.unidad}`;
+                `${data.datos.temperaturaRedundante.valor} ${data.datos.temperaturaRedundante.unidad}`;
 
             document.getElementById('display-sensor6').textContent = 
                 `${data.datos.temperaturaDiagnostico.valor.toFixed(2)} ${data.datos.temperaturaDiagnostico.unidad}`;
