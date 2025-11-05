@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Registro de Acciones de Usuarios - GISME{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Mensajes de éxito/error -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- Verificar si el usuario tiene acceso denegado -->
+    {% if not access_denied %}
+    <!-- Tabla de logs de acciones -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-lg">
+                <div class="card-header text-white d-flex justify-content-between align-items-center" style="background-color: #343a40;">
+                    <h4 class="mb-0 fw-normal">
+                        <i class="bi bi-clipboard-check"></i> Registro de Acciones de Usuarios
+                    </h4>
+                </div>
+                
+                <!-- Barra de búsqueda y controles -->
+                <div class="card-body pb-0">
+                    <!-- Contenedor para título y selector de registros por página -->
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="mb-0">Historial de Acciones</h6>
+                        <div>
+                            <label for="recordsPerPage" class="me-2">Mostrar</label>
+                            <select id="recordsPerPage" class="form-select d-inline-block w-auto">
+                                <option value="5">5</option>
+                                <option value="10" selected>10</option>
+                                <option value="20">20</option>
+                                <option value="50">50</option>
+                            </select>
+                            <label>registros por página</label>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <div class="input-group">
+                                <span class="input-group-text">
+                                    <i class="bi bi-search"></i>
+                                </span>
+                                <input type="text" id="searchInput" class="form-control" placeholder="Búsqueda general..." autocomplete="off">
+                                <button class="btn btn-outline-secondary" type="button" id="clearSearch">
+                                    <i class="bi bi-x-lg"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <select id="actionFilter" class="form-select">
+                                <option value="">Todas las acciones</option>
+                                <option value="crear">Crear</option>
+                                <option value="editar">Editar</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <select id="typeFilter" class="form-select">
+                                <option value="">Todos los tipos</option>
+                                <option value="ubicacion">Ubicación</option>
+                                <option value="sistema">Sistema</option>
+                                <option value="usuario">Usuario</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <button class="btn btn-outline-secondary w-100" type="button" id="clearFilters">
+                                <i class="bi bi-arrow-clockwise"></i> Limpiar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card-body pt-0">
+                    <!-- Tabla de logs que se llenará dinámicamente -->
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0" id="actionLogsTable">
+                            <thead style="background-color: #f8f9fa;">
+                                <tr>
+                                    <th>Usuario</th>
+                                    <th>Acción</th>
+                                    <th>Fecha y Hora</th>
+                                    <th>Registro Afectado</th>
+                                </tr>
+                            </thead>
+                            <tbody id="actionLogsTableBody">
+                                <!-- Los logs se cargarán dinámicamente aquí -->
+                                <tr>
+                                    <td colspan="4" class="text-center">
+                                        <div class="spinner-border spinner-border-sm" role="status">
+                                            <span class="visually-hidden">Cargando...</span>
+                                        </div>
+                                        Cargando acciones...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Controles de paginación -->
+                    <div class="d-flex justify-content-between align-items-center mt-3">
+                        <div>
+                            <small class="text-muted" id="recordsInfo">Cargando...</small>
+                        </div>
+                        <nav>
+                            <ul class="pagination pagination-sm mb-0">
+                                <!-- La paginación se generará dinámicamente -->
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Componente de acceso denegado -->
+{% include '_AppAdmin/componentes/modal_access_denied.html' %}
+
+{% endblock %}
+
+{% block extra_js %}
+<!-- Scripts modulares de ActionLog -->
+<script type="module" src="{% static '_AppAdmin/js/actionlog/main.js' %}"></script>
+{% endblock %}

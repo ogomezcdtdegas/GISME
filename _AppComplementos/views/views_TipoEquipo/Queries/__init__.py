@@ -1,1 +1,0 @@
-from .GetAllTipoEquipoPagQuery import TipoEquipoPaginatedAPI, TipoEquipoPaginatedHTML

@@ -1,1 +1,0 @@
-from .DeleteTipoCriticidadRelacionCommand import DeleteTipoCriticidadRelacionCommand

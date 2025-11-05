@@ -1,0 +1,63 @@
+<!-- ====================================================================
+     COMPONENTE: Modal de Mapa
+     Descripción: Modal para mostrar la ubicación del sistema en mapa
+     Uso: {percent include '_AppMonitoreoCoriolis/componentes/modal_mapa.html' percent}
+====================================================================== -->
+
+<div class="modal fade" id="mapModal" tabindex="-1" aria-labelledby="mapModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="mapModalLabel">
+                    <i class="bi bi-geo-alt"></i> Ubicación del Sistema
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <strong>Sistema:</strong>
+                        <div id="modal-sistema-info">-</div>
+                    </div>
+                    <div class="col-md-4">
+                        <strong>Ubicación:</strong>
+                        <div id="modal-ubicacion-info">-</div>
+                    </div>
+                    <div class="col-md-4">
+                        <strong>Coordenadas:</strong>
+                        <div id="modal-coordenadas-info">-</div>
+                    </div>
+                </div>
+                <div id="map" style="height: 400px;"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" onclick="copyCoordinates()">
+                    <i class="bi bi-clipboard"></i> Copiar Coordenadas
+                </button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Manejar el evento cuando el modal se cierra para evitar advertencias de aria-hidden
+    const mapModal = document.getElementById('mapModal');
+    if (mapModal) {
+        mapModal.addEventListener('hidden.bs.modal', function () {
+            // Quitar el foco de cualquier elemento que pueda estar enfocado
+            if (document.activeElement) {
+                document.activeElement.blur();
+            }
+        });
+        
+        mapModal.addEventListener('hide.bs.modal', function () {
+            // Quitar el foco antes de que el modal se cierre
+            if (document.activeElement) {
+                document.activeElement.blur();
+            }
+        });
+    }
+});
+</script>

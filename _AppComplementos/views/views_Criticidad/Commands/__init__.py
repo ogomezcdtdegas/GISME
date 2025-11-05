@@ -1,2 +1,0 @@
-from .CreateCriticidadCommand import CreateCriticidadCommand
-from .UpdateCriticidadCommand import UpdateCriticidadCommand

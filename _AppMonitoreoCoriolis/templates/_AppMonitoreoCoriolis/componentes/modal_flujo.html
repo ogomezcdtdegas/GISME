@@ -1,0 +1,132 @@
+<!-- ====================================================================
+     COMPONENTE: Modal Histórico de Flujo
+     Descripción: Modal con gráficos de flujo volumétrico y másico
+     Uso: {percent include '_AppMonitoreoCoriolis/componentes/modal_flujo.html' percent}
+====================================================================== -->
+
+<div class="modal fade" id="historicoModal" tabindex="-1" aria-labelledby="historicoModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="historicoModalLabel">
+          <i class="bi bi-graph-up"></i> Histórico de Flujo
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <!-- Controles superiores -->
+        <div class="row mb-3">
+          <div class="col-12 col-lg-8 mb-2 mb-lg-0">
+            <div class="d-flex flex-column flex-lg-row align-items-start align-items-lg-center gap-2 gap-lg-3">
+              <label class="mb-1 mb-lg-0"><strong>Rango de fecha y hora:</strong></label>
+              
+              <div class="d-flex flex-column gap-2 w-100">
+                <input type="datetime-local" id="fechaInicio" class="form-control" style="max-width: 250px; width: 100%;">
+                <span class="text-muted small">hasta:</span>
+                <input type="datetime-local" id="fechaFin" class="form-control" style="max-width: 250px; width: 100%;">
+                <button id="buscarHistoricoFlujo" class="btn btn-outline-success align-self-start">
+                  <i class="bi bi-search"></i> Buscar
+                </button>
+              </div>
+            </div>
+          </div>
+          
+          <div class="col-12 col-lg-4">
+            <div class="d-flex flex-column flex-sm-row justify-content-start justify-content-lg-end gap-2">
+              <button id="volverTiempoReal" type="button" class="btn btn-outline-warning btn-sm" onclick="resetearAModoTiempoReal()">
+                <i class="bi bi-arrow-clockwise"></i> Volver a Tiempo Real
+              </button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Indicador de modo dinámico -->
+        <div class="alert alert-info mb-3 d-flex align-items-center">
+          <i class="bi bi-info-circle me-2"></i>
+          <span id="modo-indicador">
+            <strong>Modo Tiempo Real:</strong> 
+            <span class="badge bg-success me-2">●</span>
+            Los gráficos se actualizan automáticamente cada 10 segundos mostrando los últimos 3 días.
+          </span>
+        </div>
+        
+        <!-- Instrucciones de uso -->
+        <div class="alert alert-secondary">
+          <i class="bi bi-clock-history"></i>
+          <strong>Información:</strong> 
+          Los gráficos muestran los datos de flujo volumétrico (m³/h) y másico (kg/h) para el período seleccionado.
+          <strong>Hover</strong> sobre los puntos para ver detalles. <span id="info-periodo">Últimos 3 días - Se actualiza automáticamente</span>
+        </div>
+        
+        <!-- Dos gráficos lado a lado -->
+        <div class="row">
+          <!-- Flujo Volumétrico -->
+          <div class="col-12 col-xl-6">
+            <div class="card mb-3">
+              <div class="card-header bg-primary text-white d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-2">
+                <h6 class="mb-0"><i class="bi bi-graph-up"></i> Flujo Volumétrico <sub>@ flujo</sub></h6>
+                <span id="contador-volumetrico" class="badge bg-light text-primary">0 registros</span>
+              </div>
+              <div class="card-body">
+                <div style="height: 350px; position: relative;">
+                  <canvas id="graficaFlujoVolumetrico"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Flujo Másico -->
+          <div class="col-12 col-xl-6">
+            <div class="card mb-3">
+              <div class="card-header bg-success text-white d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center gap-2">
+                <h6 class="mb-0"><i class="bi bi-graph-up"></i> Flujo Másico</h6>
+                <span id="contador-masico" class="badge bg-light text-success">0 registros</span>
+              </div>
+              <div class="card-body">
+                <div style="height: 350px; position: relative;">
+                  <canvas id="graficaFlujoMasico"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Información adicional -->
+        <div class="row mt-3">
+          <div class="col-12">
+            <div class="alert alert-secondary">
+              <i class="bi bi-clock-history"></i>
+              <strong>Información:</strong> Los gráficos muestran los datos de flujo volumétrico (m³/h) y flujo másico (kg/h) para el período seleccionado.
+              <span id="info-periodo"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Manejar el evento cuando el modal se cierra para evitar advertencias de aria-hidden
+    const historicoModal = document.getElementById('historicoModal');
+    if (historicoModal) {
+        historicoModal.addEventListener('hidden.bs.modal', function () {
+            // Quitar el foco de cualquier elemento que pueda estar enfocado
+            if (document.activeElement) {
+                document.activeElement.blur();
+            }
+        });
+        
+        historicoModal.addEventListener('hide.bs.modal', function () {
+            // Quitar el foco antes de que el modal se cierre
+            if (document.activeElement) {
+                document.activeElement.blur();
+            }
+        });
+    }
+});
+</script>

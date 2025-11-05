@@ -1,10 +1,7 @@
 from django.urls import path
+from django.views.generic import TemplateView
 
-from .views.views_Equipo.Commands import CreateEquipoCommand, UpdateEquipoCommand
-from .views.views_Equipo.Queries import GetAllEquipoPagQuery
-
+# URLs para páginas estáticas de _AppHome
 urlpatterns = [
-    path('', GetAllEquipoPagQuery.allEquiposPag.as_view(), name='allEquiposPag'),  # 📌 Listar equipos con paginación
-    path('crear-equipo/', CreateEquipoCommand.crearEquipo.as_view(), name='crearEquipo'),  # 📌 Crear equipo
-    path('editar-equipo/<uuid:obj_id>/', UpdateEquipoCommand.editarEquipo.as_view(), name='editarEquipo'), # 📌 Editar equipo
+    path('', TemplateView.as_view(template_name='_AppHome/index.html'), name='home_index'),  # Página principal estática
 ]

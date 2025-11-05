@@ -13,17 +13,22 @@
             {% csrf_token %}
 
             <div class="col-md-4">
-                <label for="tag" class="form-label">Tag</label>
+                <label for="tag" class="form-label">Nombre:</label>
                 <input type="text" class="form-control" name="tag" id="tag" required>
             </div>
 
             <div class="col-md-4">
-                <label for="sistema_id" class="form-label">ID Sistema</label>
+                <label for="sistema_id" class="form-label">MAC Gateway:</label>
                 <input type="text" class="form-control" name="sistema_id" id="sistema_id" required>
             </div>
 
             <div class="col-md-4">
-                <label for="ubicacion" class="form-label">Ubicación</label>
+                <label for="identificacion_medidor" class="form-label">Identificación del Medidor:</label>
+                <input type="text" class="form-control" name="identificacion_medidor" id="identificacion_medidor" required>
+            </div>
+
+            <div class="col-md-4">
+                <label for="ubicacion" class="form-label">Ubicación:</label>
                 <select class="form-select" name="ubicacion" id="ubicacion" required>
                     <option value="">Seleccione una ubicación...</option>
                     <!-- Las opciones se cargan dinámicamente -->
@@ -76,12 +81,16 @@
             <thead class="table-dark">
                 <tr>
                     <th style="cursor: pointer;" onclick="sortTable('tag')">
-                        Tag 
+                        Nombre 
                         <i class="bi bi-arrow-up-down ms-1" id="tag-sort-icon"></i>
                     </th>
                     <th style="cursor: pointer;" onclick="sortTable('sistema_id')">
-                        ID Sistema 
+                        MAC Gateway
                         <i class="bi bi-arrow-up-down ms-1" id="sistema_id-sort-icon"></i>
+                    </th>
+                    <th style="cursor: pointer;" onclick="sortTable('identificacion_medidor')">
+                        Identificación Medidor
+                        <i class="bi bi-arrow-up-down ms-1" id="identificacion_medidor-sort-icon"></i>
                     </th>
                     <th style="cursor: pointer;" onclick="sortTable('ubicacion_nombre')">
                         Ubicación 
@@ -105,6 +114,12 @@
 {% endblock %}
 
 {% block extra_js %}
+<script>
+// Variables globales para permisos
+window.IS_SUPERUSER = "{{ is_superuser|yesno:'true,false' }}" === "true";
+window.CAN_DELETE_RECORDS = "{{ can_delete_records|yesno:'true,false' }}" === "true";
+</script>
+
 <script type="module" src="{% static '_AppComplementos/static_sistema/sistema.js' %}"></script>
 
 <script>

@@ -1,1 +1,0 @@
-from .DeleteCriticidadCommand import DeleteCriticidadCommand

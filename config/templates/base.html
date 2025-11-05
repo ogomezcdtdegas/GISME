@@ -9,6 +9,8 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
 
+    <link rel="icon" type="image/x-icon" href="{% static 'img/favicon.ico' %}">
+
     <title>{% block title %}GISME{% endblock %}</title>
 
     <!-- Bootstrap CSS -->
@@ -34,51 +36,32 @@
         <h4 class="text-center">GISME</h4>
         <hr>
 
-        <a href="{% url 'allEquiposPag' %}" class="{% if active_section == 'home' %}active{% endif %}"><i class="bi bi-house-door"></i> Home</a>
+        <a href="{% url 'home_index' %}" class="{% if active_section == 'home' %}active{% endif %}"><i class="bi bi-house-door"></i> Home</a>
 
         <!-- Menú Administración -->
+        {% if can_access_admin %}
         <a href="#" id="toggleAdministracion" data-bs-toggle="collapse" data-bs-target="#administracionSubmenu" aria-expanded="{% if active_section == 'admin' %}true{% else %}false{% endif %}" aria-controls="administracionSubmenu"><i class="bi bi-gear"></i> Administración <i class="bi bi-chevron-down float-end"></i></a>
         <div class="submenu collapse {% if active_section == 'admin' %}show{% endif %}" id="administracionSubmenu">
-            <a href="{% url 'crear_usuario' %}" class="{% if active_section == 'admin' %}active{% endif %}"><i class="bi bi-person-plus"></i> Crear Usuario</a>
+            <a href="{% url '_AppAdmin:crear_usuario' %}" class="{% if active_section == 'admin' %}active{% endif %}"><i class="bi bi-person-plus"></i>Gestión de Usuario</a>
+            <a href="{% url '_AppAdmin:login_log_template' %}" class="{% if active_section == 'admin' %}active{% endif %}"><i class="bi bi-door-open"></i>Registro Login de Usuarios</a>
+            <a href="{% url '_AppAdmin:action_log_template' %}" class="{% if active_section == 'admin_actionlog' %}active{% endif %}"><i class="bi bi-clipboard-check"></i>Transacciones/Actividades</a>
         </div>
+        {% endif %}
         
         <!-- Monitoreo y Medición de Sistemas -->
         <a href="#" id="toggleMonitoreo" data-bs-toggle="collapse" data-bs-target="#monitoreoSubmenu" aria-expanded="{% if active_section == 'monitoreo_coriolis' %}true{% else %}false{% endif %}" aria-controls="monitoreoSubmenu"><i class="bi bi-activity"></i> Monitoreo y Medición de Sistemas <i class="bi bi-chevron-down float-end"></i></a>
         <div class="submenu collapse {% if active_section == 'monitoreo_coriolis' %}show{% endif %}" id="monitoreoSubmenu">
             <a href="{% url 'monitoreo_coriolis' %}" class="{% if active_section == 'monitoreo_coriolis' %}active{% endif %}"><i class="bi bi-diagram-3"></i> Monitoreo Coriolis</a>
         </div>
-        
-        <!--
-        <a href="{% url 'calc1' %}" class="{% if active_section == 'calc1' %}active{% endif %}"><i class="bi bi-calculator"></i> App Calc1</a>
-        <a href="{% url 'calcular_incertidumbre' %}" class="{% if active_section == 'calc2' %}active{% endif %}"><i class="bi bi-bar-chart"></i> App Calc2</a>
-        -->
-        
-        <!-- Menú desplegable -->
-        <a href="#" id="toggleHerramientas" data-bs-toggle="collapse" data-bs-target="#herramientasSubmenu" aria-expanded="{% if active_section in 'fluxpro_propiedadesGas fluxpro_velocidadSonido fluxpro_caudalMedLineal' %}true{% else %}false{% endif %}" aria-controls="herramientasSubmenu"><i class="bi bi-grid"></i> Herramientas <i class="bi bi-chevron-down float-end"></i></a>
-        <div class="submenu collapse {% if active_section in 'fluxpro_propiedadesGas fluxpro_velocidadSonido fluxpro_caudalMedLineal' %}show{% endif %}" id="herramientasSubmenu">
-            <a href="{% url 'fluxpro' %}" class="{% if active_section == 'fluxpro_propiedadesGas' %}active{% endif %}"><i class="bi bi-calculator"></i>FluxPro [Prop. del Gas]</a>
-            <a href="{% url 'fluxproVel' %}" class="{% if active_section == 'fluxpro_velocidadSonido' %}active{% endif %}"><i class="bi bi-calculator"></i>FluxPro [Vel. del Sonido]</a>
 
-            <a href="#" id="toggleCalculoCaudal" class="submenu-toggle">
-                <i class="bi bi-moisture"></i> FluxPro [Cálculo de Caudal] <i class="bi bi-chevron-down float-end"></i>
-            </a>
-            <div class="submenu {% if active_section in 'fluxpro_caudalMedLineal' %}show{% endif %}" id="calculoCaudalSubmenu" style="display: none; padding-left: 20px;">
-                <a href="#"><i class="bi bi-graph-up"></i> Medidor Diferencial</a>
-                <a href="{% url 'fluxproCaudLineal' %}" class="{% if active_section == 'fluxpro_caudalMedLineal' %}active{% endif %}"><i class="bi bi-graph-down"></i> Medidor Lineal</a>
-            </div>
-        </div>
-
-        <!-- Menú desplegable -->
-        <a href="#" id="toggleComplementos" data-bs-toggle="collapse" data-bs-target="#complementosSubmenu" aria-expanded="{% if active_section == 'complementos_criticidad' or active_section == 'complementos_tipocriticidad' or active_section == 'complementos_producto' or active_section == 'complementos_tipoequipo' or active_section == 'complementos_tecnologia' or active_section == 'complementos_ubicacion' or active_section == 'complementos_sistema' %}true{% else %}false{% endif %}" aria-controls="complementosSubmenu"><i class="bi bi-grid"></i> Complementos <i class="bi bi-chevron-down float-end"></i></a>
-        <div class="submenu collapse {% if active_section == 'complementos_criticidad' or active_section == 'complementos_tipocriticidad' or active_section == 'complementos_producto' or active_section == 'complementos_tipoequipo' or active_section == 'complementos_tecnologia' or active_section == 'complementos_ubicacion' or active_section == 'complementos_sistema' %}show{% endif %}" id="complementosSubmenu">
-            <a href="{% url 'allCriticidadesPag' %}" class="{% if active_section == 'complementos_criticidad' %}active{% endif %}"><i class="bi bi-shield-exclamation"></i> Criticidad</a>
-            <a href="{% url 'allTipCriticidadesPag' %}" class="{% if active_section == 'complementos_tipocriticidad' %}active{% endif %}"><i class="bi bi-clipboard-check"></i> Tipo de Criticidad</a>
-            <a href="{% url 'allProductosPag' %}" class="{% if active_section == 'complementos_producto' %}active{% endif %}"><i class="bi bi-droplet"></i> Producto</a>
-            <a href="{% url 'allTiposEquipoPag' %}" class="{% if active_section == 'complementos_tipoequipo' %}active{% endif %}"><i class="bi bi-gear"></i> Tipo de Equipo</a>
-            <a href="{% url 'allTecnologiasPag' %}" class="{% if active_section == 'complementos_tecnologia' %}active{% endif %}"><i class="bi bi-diagram-3"></i> Tecnología</a>
+        <!-- Menú Complementos - Solo Admin -->
+        {% if can_access_admin %}
+        <a href="#" id="toggleComplementos" data-bs-toggle="collapse" data-bs-target="#complementosSubmenu" aria-expanded="{% if active_section == 'complementos_ubicacion' or active_section == 'complementos_sistema' %}true{% else %}false{% endif %}" aria-controls="complementosSubmenu"><i class="bi bi-grid"></i> Complementos <i class="bi bi-chevron-down float-end"></i></a>
+        <div class="submenu collapse {% if active_section == 'complementos_ubicacion' or active_section == 'complementos_sistema' %}show{% endif %}" id="complementosSubmenu">
             <a href="{% url 'allUbicacionesPag' %}" class="{% if active_section == 'complementos_ubicacion' %}active{% endif %}"><i class="bi bi-geo-alt"></i> Ubicaciones</a>
             <a href="{% url 'allSistemasPag' %}" class="{% if active_section == 'complementos_sistema' %}active{% endif %}"><i class="bi bi-cpu"></i> Sistemas</a>
         </div>
+        {% endif %}
 
         <!-- Botón de Logout -->
         {% if request.user.is_authenticated %}
@@ -99,6 +82,9 @@
     <!-- SweetAlert2 JS -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+    <!-- SweetAlert2 Utilities -->
+    <script src="{% static 'js/sweetalert2-utils.js' %}"></script>
+
     <!-- Scripts Globales -->
     <!-- Base API y Utilidades -->
     <script type="module" src="{% static 'js/global/utils/ui.js' %}"></script>
@@ -106,10 +92,6 @@
     <script type="module" src="{% static 'js/global/api/endpoints.js' %}"></script>
     
     <!-- Servicios de API -->
-    <script type="module" src="{% static 'js/global/api/services/productos.js' %}"></script>
-    <script type="module" src="{% static 'js/global/api/services/criticidad.js' %}"></script>
-    <script type="module" src="{% static 'js/global/api/services/tipoCriticidad.js' %}"></script>
-    <script type="module" src="{% static 'js/global/api/services/tecnologia.js' %}"></script>
     
     <!-- Punto de entrada API -->
     <script type="module" src="{% static 'js/global/api/index.js' %}"></script>

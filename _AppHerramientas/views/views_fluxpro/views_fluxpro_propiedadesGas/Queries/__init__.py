@@ -1,1 +1,0 @@
-from .CalcularPropiedadesGasQuery import CalcularPropiedadesGasQuery

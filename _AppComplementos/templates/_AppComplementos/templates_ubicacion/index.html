@@ -123,6 +123,12 @@
 {% endblock %}
 
 {% block extra_js %}
+<script>
+// Variables globales para permisos
+window.IS_SUPERUSER = "{{ is_superuser|yesno:'true,false' }}" === "true";
+window.CAN_DELETE_RECORDS = "{{ can_delete_records|yesno:'true,false' }}" === "true";
+</script>
+
 <script type="module" src="{% static '_AppComplementos/static_ubicacion/ubicacion.js' %}"></script>
 
 <!-- Leaflet para mapas -->

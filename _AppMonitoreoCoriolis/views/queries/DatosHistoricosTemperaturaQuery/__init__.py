@@ -1,0 +1,3 @@
+from .DatosHistoricosTemperaturaQuery import DatosHistoricosTemperaturaQueryView
+
+__all__ = ['DatosHistoricosTemperaturaQueryView']

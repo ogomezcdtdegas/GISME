@@ -1,0 +1,50 @@
+<!-- Modal para crear usuario -->
+<div class="modal fade" id="createUserModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header" style="background-color: #343a40; color: white;">
+                <h5 class="modal-title">
+                    <i class="bi bi-person-plus"></i> Crear Usuario
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="createUserForm" method="POST">
+                <div class="modal-body">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label">Correo Electrónico *</label>
+                            <input type="email" name="email" class="form-control" required>
+                            <div class="invalid-feedback"></div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Nombre</label>
+                            <input type="text" name="first_name" class="form-control">
+                        </div>
+
+                        <div class="col-md-6">
+                            <label class="form-label">Apellido</label>
+                            <input type="text" name="last_name" class="form-control">
+                        </div>
+
+                        <div class="col-12">
+                            <label class="form-label">Rol *</label>
+                            <select name="role" class="form-select" required>
+                                <option value="supervisor">Supervisor</option>
+                                <option value="admin">Administrador</option>
+                                <option value="admin_principal">AdministradorPrincipal</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check-circle"></i> Crear Usuario
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
