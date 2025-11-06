@@ -10,39 +10,30 @@
             </div>
             <div class="modal-body">
                 <!-- Información básica del batch -->
-                <div id="infoBatch" class="mb-4">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <h6><i class="bi bi-info-circle"></i> Información del Batch</h6>
-                            <div id="infoBatchBasica"></div>
+                <div class="row" id="contenedorBatch">
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100">
+                            <div class="card-header bg-primary text-white fw-bold">
+                                Información Básica
+                            </div>
+                            <div class="card-body" id="infoBatchBasica"></div>
                         </div>
-                        <div class="col-md-6">
-                            <h6><i class="bi bi-bar-chart"></i> Estadísticas</h6>
-                            <div id="estadisticasBatch"></div>
+                    </div>
+                    
+                    <div class="col-md-8 mb-3">
+                        <div class="card h-100">
+                            <div class="card-header bg-secondary text-white fw-bold">
+                                Estadísticas del Batch
+                            </div>
+                            <div class="card-body" id="estadisticasBatch"></div>
                         </div>
                     </div>
                 </div>
                 
                 <!-- Gráfico del batch -->
-                <div class="mb-3">
-                    <h6><i class="bi bi-graph-up"></i> Gráfico del Batch</h6>
+                 <div class="mb-3">
+                    <h5><i class="bi bi-graph-up"></i> Gráfico del Batch</h5>
                     <hr style="margin-top: 0; border-top: 2px solid black;">
-                    
-                    <!-- Información sobre la visualización -->
-                    <div class="alert alert-info" role="alert">
-                        <div class="row">
-                            <div class="col-md-8">
-                                <strong><i class="bi bi-info-circle"></i> Contexto extendido:</strong> La gráfica muestra 3 minutos antes y después del batch para mejor análisis.
-                                <br>
-                                🔹 <strong>Línea azul clara:</strong> Datos del batch detectado (línea gruesa, puntos grandes)
-                                <br>
-                                ⚫ <strong>Línea azul oscura:</strong> Datos de contexto - antes/después (línea más fina, puntos pequeños)
-                            </div>
-                            <div class="col-md-4">
-                                🔴 <strong>Líneas rojas punteadas:</strong> Límites inferior y superior de flujo másico configurados para la detección de batches
-                            </div>
-                        </div>
-                    </div>
                     
                     <div class="chart-container" style="position: relative; height: 400px;">
                         <canvas id="batchChart"></canvas>
@@ -50,7 +41,10 @@
                 </div>
                 
                 <!-- Controles del gráfico -->
-                <div class="mb-3">
+                <div class="mb-3 text-center">
+                    <div>
+                         <h6><i class="bi bi-sliders fw-bold"></i> Eje Vertical: </h6>
+                    </div>
                     <div class="form-check form-check-inline">
                         <input class="form-check-input" type="checkbox" id="showMassRate" checked>
                         <label class="form-check-label" for="showMassRate">
@@ -83,120 +77,159 @@
                     </div>
                 </div>
 
-                <!-- Sección: Incertidumbre -->
-                <div class="mb-3">
-                    <h6><i class="bi bi-percent"></i> Incertidumbre</h6>
-                    <hr style="margin-top: 0; border-top: 2px solid black;">
-                    <div class="row g-3">
-                        <!-- Columna 1: Resultados -->
-                        <div class="col-md-6">
-                            <div class="row gy-3">
-                                <div class="col-4">
-                                    <label for="NSV" class="form-label">Vol. Estándar Neto</label>
-                                    <div class="input-group input-group-sm">
-                                        <input type="number" class="form-control" id="NSV" name="NSV" readonly placeholder="-">
-                                        <span class="input-group-text">bbl</span>
-                                    </div>
-                                </div>
-                                <div class="col-4">
-                                    <label for="masa" class="form-label">Masa Corregida</label>
-                                    <div class="input-group input-group-sm">
-                                        <input type="number" class="form-control" id="masa" name="masa" readonly placeholder="-">
-                                        <span class="input-group-text">kg</span>
-                                    </div>
-                                </div>
-                                <div class="col-4">
-                                    <label for="k" class="form-label">Factor de Cobertura</label>
-                                    <div class="input-group input-group-sm">
-                                        <input type="text" class="form-control" id="k" name="k" readonly placeholder="-">
-                                        <span class="input-group-text">NA</span>
-                                    </div>
-                                </div>
-                                <div class="col-4">
-                                    <label for="U" class="form-label">U Estandar</label>
-                                    <div class="input-group input-group-sm">
-                                        <input type="number" class="form-control" id="U" name="U" readonly placeholder="-">
-                                        <span class="input-group-text">bbl</span>
-                                    </div>
-                                </div>
-                                <div class="col-4">
-                                    <label for="Uexp" class="form-label">U Expandida</label>
-                                    <div class="input-group input-group-sm">
-                                        <input type="number" class="form-control" id="Uexp" name="Uexp" readonly placeholder="-">
-                                        <span class="input-group-text">bbl</span>
-                                    </div>
-                                </div>
-                                <div class="col-4">
-                                    <label for="Urel" class="form-label">U Relativa</label>
-                                    <div class="input-group input-group-sm">
-                                        <input type="number" class="form-control" id="Urel" name="Urel" readonly placeholder="-">
-                                        <span class="input-group-text">%</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                <!-- Información sobre la visualización -->
+                <div class="alert alert-info" role="alert" style="font-size: 0.8rem; padding: 5px;">
+                  <div class="row">
+                    <div class="col-md-12 d-flex">
+                      <p class="col-3 mb-0 me-3">
+                        <strong><i class="bi bi-info-circle me-1"></i> Contexto Extendido:</strong><br>
+                        La gráfica muestra 3 minutos antes y después del batch para mejor análisis.
+                    </p>
+                    <div class="col-9">
+                        <p class="mb-1">
+                            <i class="bi bi-circle-fill me-1" style="color: blue;"></i>
+                            <strong>Línea azul clara:</strong> Datos del batch detectado (línea gruesa, puntos grandes)
+                        </p>
+               
+                        <p class="mb-1">
+                            <i class="bi bi-circle-fill me-1" style="color: darkblue;"></i>
+                            <strong>Línea azul oscura:</strong> Datos de contexto — antes/después (línea más fina, puntos pequeños)
+                        </p>
 
-                        <!-- Columna 2: Tabla de Resultados -->
-                        <div class="col-md-6">
-                            <div class="table-responsive">
-                                <table class="table table-sm table-striped align-middle text-center mb-0">
-                                    <thead>
-                                        <tr>
-                                            <th style="width: 25%;">Item</th>
-                                            <th style="width: 25%;">U std Comb</th>
-                                            <th style="width: 25%;">Contrib bbl</th>
-                                            <th style="width: 25%;">Contrib Rel</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>Medidor</td>
-                                            <td>
-                                                <input type="number" class="form-control form-control-sm" id="uMF" name="uMF" readonly placeholder="-">
-                                            </td>
-                                            <td>
-                                                <input type="number" class="form-control form-control-sm" id="cMF" name="cMF" readonly placeholder="-">
-                                            </td>
-                                            <td>
-                                                <input type="number" class="form-control form-control-sm" id="crMF" name="crMF" readonly placeholder="-">
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>Densidad</td>
-                                            <td>
-                                                <input type="number" class="form-control form-control-sm" id="udl" name="udl" readonly placeholder="-">
-                                            </td>
-                                            <td>
-                                                <input type="number" class="form-control form-control-sm" id="cdl" name="cdl" readonly placeholder="-">
-                                            </td>
-                                            <td>
-                                                <input type="number" class="form-control form-control-sm" id="crdl" name="crdl" readonly placeholder="-">
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
+                        <p class="mb-0">
+                            <i class="bi bi-circle-fill me-1" style="color: red;"></i>
+                            <strong>Líneas rojas punteadas:</strong> Límites inferior y superior de flujo másico configurados para la detección de batches
+                        </p>
                     </div>
                 </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="bi bi-x-circle"></i> Cerrar
-                </button>
+        </div>
 
-                {% if can_assign_tickets %}
-                <button type="button" id="btnAsignarTicket" class="btn btn-warning" onclick="asignarTicketBatch()">
-                    <i class="bi bi-tag"></i> Asignar Ticket
-                </button>
-                {% endif %}
+        <!-- Sección: Incertidumbre -->
+         <div class="mb-3">
+            <h5><i class="bi bi-percent"></i> Incertidumbre</h5>
+            <hr style="margin-top: 0; border-top: 2px solid black;">
+            <div class="row g-3">
+                <!-- Columna 1: Resultados -->
+                 <div class="col-md-6">
+                    <div class="row gy-3">
+                        <div class="col-4">
+                            <label for="NSV" class="form-label">Vol. Estándar Neto</label>
+                            <div class="input-group input-group-sm">
+                                <input type="number" class="form-control" id="NSV" name="NSV" readonly placeholder="-">
+                                <span class="input-group-text">bbl</span>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <label for="masa" class="form-label">Masa Corregida</label>
+                            <div class="input-group input-group-sm">
+                                <input type="number" class="form-control" id="masa" name="masa" readonly placeholder="-">
+                                <span class="input-group-text">kg</span>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <label for="k" class="form-label">Factor de Cobertura</label>
+                            <div class="input-group input-group-sm">
+                                <input type="text" class="form-control" id="k" name="k" readonly placeholder="-">
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <label for="U" class="form-label">U Estandar</label>
+                            <div class="input-group input-group-sm">
+                                <input type="number" class="form-control" id="U" name="U" readonly placeholder="-">
+                                <span class="input-group-text">bbl</span>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <label for="Uexp" class="form-label">U Expandida</label>
+                            <div class="input-group input-group-sm">
+                                <input type="number" class="form-control" id="Uexp" name="Uexp" readonly placeholder="-">
+                                <span class="input-group-text">bbl</span>
+                            </div>
+                        </div>
+                        <div class="col-4">
+                            <label for="Urel" class="form-label">U Relativa</label>
+                            <div class="input-group input-group-sm">
+                                <input type="number" class="form-control" id="Urel" name="Urel" readonly placeholder="-">
+                                <span class="input-group-text">%</span>
+                            </div>
+                        </div>
+                    </div> 
+                </div>
 
-                <button type="button" class="btn btn-primary" onclick="descargarDatosBatch()">
-                    <i class="bi bi-file-earmark-pdf"></i> Descargar PDF Ticket
-                </button>
+                <!-- Columna 2: Tabla de Resultados -->
+                <div class="col-md-6">
+                    <div class="table-responsive">
+                        <table class="table table-sm table-striped align-middle text-center mb-0">
+                            <thead>
+                                <tr>
+                                    <th style="width: 25%;">Item</th>
+                                    <th style="width: 25%;">U std Comb</th>
+                                    <th style="width: 25%;">Contrib bbl</th>
+                                    <th style="width: 25%;">Contrib Rel</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>Medidor</td>
+                                    <td>
+                                        <input type="number" class="form-control form-control-sm" id="uMF" name="uMF" readonly placeholder="-">
+                                    </td>
+                                    <td>
+                                        <div class="input-group input-group-sm">
+                                            <input type="number" class="form-control" id="cMF" name="cMF" readonly placeholder="-">
+                                            <span class="input-group-text">bbl</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="input-group input-group-sm">
+                                            <input type="number" class="form-control" id="crMF" name="crMF" readonly placeholder="-">
+                                            <span class="input-group-text">%</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>Densidad</td>
+                                    <td>
+                                        <input type="number" class="form-control form-control-sm" id="udl" name="udl" readonly placeholder="-">
+                                    </td>
+                                    <td>
+                                        <div class="input-group input-group-sm">
+                                            <input type="number" class="form-control" id="cdl" name="cdl" readonly placeholder="-">
+                                            <span class="input-group-text">bbl</span>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="input-group input-group-sm">
+                                            <input type="number" class="form-control" id="crdl" name="crdl" readonly placeholder="-">
+                                            <span class="input-group-text">%</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+            <i class="bi bi-x-circle"></i> Cerrar
+        </button>
+        
+        {% if can_assign_tickets %}
+        <button type="button" id="btnAsignarTicket" class="btn btn-warning" onclick="asignarTicketBatch()">
+            <i class="bi bi-tag"></i> Asignar Ticket
+        </button>
+        {% endif %}
+
+        <button type="button" class="btn btn-primary" onclick="descargarDatosBatch()">
+            <i class="bi bi-file-earmark-pdf"></i> Descargar PDF Ticket
+        </button>
+    </div>
+</div>
+</div>
 </div>
 
 <script>
@@ -239,28 +272,56 @@ function mostrarDetalleBatch(data) {
     
     // Mostrar información básica
     document.getElementById('infoBatchBasica').innerHTML = `
-        <p><strong>Sistema:</strong> ${data.batch_info.sistema_tag}</p>
-        ${data.batch_info.num_ticket ? `<p><strong># Ticket:</strong> <span class="badge bg-success">${data.batch_info.num_ticket}</span></p>` : ''}
-        <p><strong>Inicio:</strong> ${data.batch_info.fecha_inicio}</p>
-        <p><strong>Fin:</strong> ${data.batch_info.fecha_fin}</p>
-        <p><strong>Duración:</strong> ${(data.batch_info.duracion_minutos !== null && data.batch_info.duracion_minutos !== undefined)? Math.trunc(data.batch_info.duracion_minutos * 100) / 100: 'N/A'} minutos</p>
-        <div class="alert alert-info mt-2 mb-0" style="padding: 8px 12px; font-size: 0.85em;">
-            <i class="bi bi-info-circle"></i> 
-            <strong>Contexto extendido:</strong> La gráfica muestra 3 minutos antes y después del batch para mejor análisis.
-            <br>🔹 <strong>Línea azul clara:</strong> Datos del batch detectado (línea gruesa, puntos grandes)
-            <br>🔷 <strong>Línea azul oscura:</strong> Datos de contexto - antes/después (línea más fina, puntos pequeños)
-        </div>
+      <p><strong>Sistema:</strong> ${data.batch_info.sistema_tag}</p>
+      ${data.batch_info.num_ticket ? `<p><strong># Ticket:</strong> <span class="badge bg-success">${data.batch_info.num_ticket}</span></p>` : ''}
+      <p><strong>Inicio:</strong> ${data.batch_info.fecha_inicio}</p>
+      <p><strong>Fin:</strong> ${data.batch_info.fecha_fin}</p>
+      <p><strong>Duración:</strong> ${
+        data.batch_info.duracion_minutos != null
+          ? (Math.trunc(data.batch_info.duracion_minutos * 100) / 100)
+          : 'N/A'
+      } minutos</p>
     `;
-    
+
     // Mostrar estadísticas
     document.getElementById('estadisticasBatch').innerHTML = `
-        <p><strong>Masa Total:</strong> ${(data.batch_info.mass_total_kg !== null && data.batch_info.mass_total_kg !== undefined)? Math.trunc(data.batch_info.mass_total_kg * 100) / 100: 'N/A'} kg</p>
-        <p><strong>Volumen Bruto:</strong> ${(data.batch_info.vol_total !== null && data.batch_info.vol_total !== undefined)? Math.trunc(data.batch_info.vol_total * 100) / 100: 'N/A'} gal</p>
-        <p><strong>Temp. Promedio:</strong> ${(data.batch_info.temperatura_coriolis_prom_f !== null && data.batch_info.temperatura_coriolis_prom_f !== undefined)? Math.trunc(data.batch_info.temperatura_coriolis_prom_f * 100) / 100: 'N/A'} °F</p>
-        <p><strong>Presión Promedio:</strong> ${(data.batch_info.presion_out_prom !== null && data.batch_info.presion_out_prom !== undefined)? Math.trunc(data.batch_info.presion_out_prom * 100) / 100: 'N/A'} psi</p>
-        <p><strong>Densidad Promedio:</strong> ${(data.batch_info.densidad_prom !== null && data.batch_info.densidad_prom !== undefined)? Math.trunc(data.batch_info.densidad_prom * 1000000) / 1000000: 'N/A'} g/cc</p>
-        <p><strong>Caudal Másico Promedio:</strong> ${(data.batch_info.qm_promedio_kg_min !== null && data.batch_info.qm_promedio_kg_min !== undefined)? Math.trunc(data.batch_info.qm_promedio_kg_min * 100) / 100: 'N/A'} kg/min</p>
-        <p><strong>Total Registros:</strong> ${data.batch_info.total_registros}</p>
+      <div class="row">
+        <div class="col-md-6">
+          <p><strong>Masa Total:</strong> ${
+            data.batch_info.mass_total_kg != null
+              ? (Math.trunc(data.batch_info.mass_total_kg * 100) / 100)
+              : 'N/A'
+          } kg</p>
+
+          <p><strong>Volumen Bruto:</strong> ${
+            data.batch_info.vol_total != null
+              ? (Math.trunc(data.batch_info.vol_total * 100) / 100)
+              : 'N/A'
+          } gal</p>
+
+          <p><strong>Temp. Promedio:</strong> ${
+            data.batch_info.temperatura_coriolis_prom_f != null
+              ? (Math.trunc(data.batch_info.temperatura_coriolis_prom_f * 100) / 100)
+              : 'N/A'
+          } °F</p>
+        </div>
+
+        <div class="col-md-6">
+          <p><strong>Presión Promedio:</strong> ${
+            data.batch_info.presion_out_prom != null
+              ? (Math.trunc(data.batch_info.presion_out_prom * 100) / 100)
+              : 'N/A'
+          } psi</p>
+
+          <p><strong>Densidad Promedio:</strong> ${
+            data.batch_info.densidad_prom != null
+              ? (Math.trunc(data.batch_info.densidad_prom * 1000000) / 1000000)
+              : 'N/A'
+          } g/cc</p>
+
+          <p><strong>Total Registros:</strong> ${data.batch_info.total_registros}</p>
+        </div>
+      </div>
     `;
     
     // Controlar estado del botón de asignar ticket
