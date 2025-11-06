@@ -51,6 +51,39 @@ class ConfiguracionCoeficientes(BaseModel):
         help_text="Minutos que deben pasar en cero para confirmar cierre de batch"
     )
 
+    # ===============================
+    # Incertidumbre - Variables Medición
+    # ===============================
+    tipo_met = models.CharField(max_length=50, default="Coriolis", verbose_name="Tipo de medidor")  # id: tipoMet
+    dl = models.FloatField(null=True, blank=True, verbose_name="Densidad (kg/m³)")  # id: dl
+    product = models.CharField(max_length=50, default="GLP", verbose_name="Tipo de fluido")  # id: product
+    tl = models.FloatField(null=True, blank=True, verbose_name="Temperatura de líquido promedio (°F)")  # id: Tl
+    pl = models.FloatField(null=True, blank=True, verbose_name="Presión de líquido promedio (psi)")  # id: Pl
+    masa = models.FloatField(null=True, blank=True, verbose_name="Masa indicada por el medidor (kg)")  # id: Masa
+    mf = models.FloatField(null=True, blank=True, verbose_name="Factor de corrección del medidor (-)")  # id: MF
+    qm = models.FloatField(null=True, blank=True, verbose_name="Caudal másico promedio (kg/h)")  # id: Qm
+    vis = models.FloatField(null=True, blank=True, verbose_name="Viscosidad dinámica (cP)")  # id: vis
+    deltavis = models.FloatField(null=True, blank=True, verbose_name="Rango viscosidad (cP)")  # id: deltavis
+    dn = models.FloatField(null=True, blank=True, verbose_name="Diámetro nominal (in)")  # id: DN
+
+    # ===============================
+    # Incertidumbre - Medición de Densidad
+    # ===============================
+    metdl = models.CharField(max_length=100, null=True, blank=True, verbose_name="Método de análisis densidad")  # id: metdl
+    ucal_dens = models.FloatField(null=True, blank=True, verbose_name="Incertidumbre calibración densitómetro (kg/m³)")  # id: ucalDens
+    kcal_dens = models.FloatField(null=True, blank=True, verbose_name="Factor de cobertura densitómetro (-)")  # id: kcalDens
+    tipdens = models.CharField(max_length=100, null=True, blank=True, verbose_name="Tipo de densitómetro")  # id: tipdens
+    desv_dens = models.FloatField(null=True, blank=True, verbose_name="Desviación viscosidad (kg/m³)")  # id: desvdens
+
+    # ===============================
+    # Incertidumbre - Características del Medidor
+    # ===============================
+    ucal_met = models.FloatField(null=True, blank=True, verbose_name="Incertidumbre calibración medidor (%)")  # id: ucalMet
+    kcal_met = models.FloatField(null=True, blank=True, verbose_name="Factor de cobertura medidor")  # id: kcalMet
+    esis_met = models.FloatField(null=True, blank=True, verbose_name="Error máximo medidor (%)")  # id: esisMet
+    ucarta_met = models.FloatField(null=True, blank=True, verbose_name="Incertidumbre carta medidor (%)")  # id: ucartaMet
+    zero_stab = models.FloatField(null=True, blank=True, verbose_name="Estabilidad en cero medidor (Kg/m³)")  # id: zeroStab
+
     class Meta:
         verbose_name = "Configuración de Coeficientes"
         verbose_name_plural = "Configuraciones de Coeficientes"

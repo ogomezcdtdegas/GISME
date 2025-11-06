@@ -137,9 +137,19 @@ class ConfiguracionCoeficientesSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = ConfiguracionCoeficientes
-        fields = ["id", "systemId", "sistema_tag", "sistema_nombre", "mt", "bt", "mp", "bp", 
-                 "zero_presion", "span_presion", "lim_inf_caudal_masico", "lim_sup_caudal_masico", 
-                 "vol_masico_ini_batch", "num_ticket", "time_finished_batch", "created_at"]
+        fields = [
+            # Identificación
+            "id", "systemId", "sistema_tag", "sistema_nombre", "created_at",
+            # Coeficientes y batch
+            "mt", "bt", "mp", "bp", "zero_presion", "span_presion",
+            "lim_inf_caudal_masico", "lim_sup_caudal_masico", "vol_masico_ini_batch", "num_ticket", "time_finished_batch",
+            # Incertidumbre - Variables Medición
+            "tipo_met", "product", "tl", "pl", "masa", "mf", "qm", "vis", "deltavis", "dn",
+            # Incertidumbre - Medición de Densidad
+            "ucal_dens", "kcal_dens", "tipdens", "desv_dens",
+            # Incertidumbre - Características del Medidor
+            "ucal_met", "kcal_met", "esis_met", "ucarta_met", "zero_stab",
+        ]
     
     def get_sistema_nombre(self, obj):
         """Retorna el nombre completo del sistema"""

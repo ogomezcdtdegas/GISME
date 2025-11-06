@@ -42,6 +42,21 @@ class CreateOrUpdateCoeficientesCommandView(ComplementosPermissionMixin, APIView
             num_ticket = request.data.get('num_ticket', 1)
             time_finished_batch = request.data.get('time_finished_batch', 2.0)
 
+            # Campos de Incertidumbre
+            mf = request.data.get('mf')
+            vis = request.data.get('vis')
+            deltavis = request.data.get('deltavis')
+            dn = request.data.get('dn')
+            ucal_dens = request.data.get('ucal_dens')
+            kcal_dens = request.data.get('kcal_dens')
+            tipdens = request.data.get('tipdens')
+            desv_dens = request.data.get('desv_dens')
+            ucal_met = request.data.get('ucal_met')
+            kcal_met = request.data.get('kcal_met')
+            esis_met = request.data.get('esis_met')
+            ucarta_met = request.data.get('ucarta_met')
+            zero_stab = request.data.get('zero_stab')
+
             # Validaciones básicas
             if not system_id:
                 return Response({
@@ -95,7 +110,21 @@ class CreateOrUpdateCoeficientesCommandView(ComplementosPermissionMixin, APIView
                     'lim_sup_caudal_masico': float(lim_sup_caudal_masico),
                     'vol_masico_ini_batch': float(vol_masico_ini_batch),
                     'num_ticket': int(num_ticket),
-                    'time_finished_batch': float(time_finished_batch)
+                    'time_finished_batch': float(time_finished_batch),
+                    # Incertidumbre (defaults si vienen nulos)
+                    'mf': float(mf) if mf is not None and mf != '' else 1.0,
+                    'vis': float(vis) if vis is not None and vis != '' else 0.0,
+                    'deltavis': float(deltavis) if deltavis is not None and deltavis != '' else 0.0,
+                    'dn': float(dn) if dn is not None and dn != '' else 0.0,
+                    'ucal_dens': float(ucal_dens) if ucal_dens is not None and ucal_dens != '' else 0.0,
+                    'kcal_dens': float(kcal_dens) if kcal_dens is not None and kcal_dens != '' else 0.0,
+                    'tipdens': tipdens if tipdens not in [None, ''] else None,
+                    'desv_dens': float(desv_dens) if desv_dens is not None and desv_dens != '' else 0.0,
+                    'ucal_met': float(ucal_met) if ucal_met is not None and ucal_met != '' else 0.0,
+                    'kcal_met': float(kcal_met) if kcal_met is not None and kcal_met != '' else 0.0,
+                    'esis_met': float(esis_met) if esis_met is not None and esis_met != '' else 0.0,
+                    'ucarta_met': float(ucarta_met) if ucarta_met is not None and ucarta_met != '' else 0.0,
+                    'zero_stab': float(zero_stab) if zero_stab is not None and zero_stab != '' else 0.0,
                 }
             )
 
@@ -112,6 +141,33 @@ class CreateOrUpdateCoeficientesCommandView(ComplementosPermissionMixin, APIView
                 coeficientes.vol_masico_ini_batch = float(vol_masico_ini_batch)
                 coeficientes.num_ticket = int(num_ticket)
                 coeficientes.time_finished_batch = float(time_finished_batch)
+                # Actualizar incertidumbre solo si vienen en la solicitud
+                if mf is not None:
+                    coeficientes.mf = float(mf)
+                if vis is not None:
+                    coeficientes.vis = float(vis)
+                if deltavis is not None:
+                    coeficientes.deltavis = float(deltavis)
+                if dn is not None:
+                    coeficientes.dn = float(dn)
+                if ucal_dens is not None:
+                    coeficientes.ucal_dens = float(ucal_dens)
+                if kcal_dens is not None:
+                    coeficientes.kcal_dens = float(kcal_dens)
+                if tipdens is not None:
+                    coeficientes.tipdens = tipdens or None
+                if desv_dens is not None:
+                    coeficientes.desv_dens = float(desv_dens)
+                if ucal_met is not None:
+                    coeficientes.ucal_met = float(ucal_met)
+                if kcal_met is not None:
+                    coeficientes.kcal_met = float(kcal_met)
+                if esis_met is not None:
+                    coeficientes.esis_met = float(esis_met)
+                if ucarta_met is not None:
+                    coeficientes.ucarta_met = float(ucarta_met)
+                if zero_stab is not None:
+                    coeficientes.zero_stab = float(zero_stab)
                 coeficientes.save()
 
             # Registrar la acción en el log universal
@@ -141,7 +197,21 @@ class CreateOrUpdateCoeficientesCommandView(ComplementosPermissionMixin, APIView
                     "lim_sup_caudal_masico": coeficientes.lim_sup_caudal_masico,
                     "vol_masico_ini_batch": coeficientes.vol_masico_ini_batch,
                     "num_ticket": coeficientes.num_ticket,
-                    "time_finished_batch": coeficientes.time_finished_batch
+                    "time_finished_batch": coeficientes.time_finished_batch,
+                    # Incertidumbre en respuesta (sin dl manual)
+                    "mf": coeficientes.mf,
+                    "vis": coeficientes.vis,
+                    "deltavis": coeficientes.deltavis,
+                    "dn": coeficientes.dn,
+                    "ucal_dens": coeficientes.ucal_dens,
+                    "kcal_dens": coeficientes.kcal_dens,
+                    "tipdens": coeficientes.tipdens,
+                    "desv_dens": coeficientes.desv_dens,
+                    "ucal_met": coeficientes.ucal_met,
+                    "kcal_met": coeficientes.kcal_met,
+                    "esis_met": coeficientes.esis_met,
+                    "ucarta_met": coeficientes.ucarta_met,
+                    "zero_stab": coeficientes.zero_stab,
                 }
             }, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
 
