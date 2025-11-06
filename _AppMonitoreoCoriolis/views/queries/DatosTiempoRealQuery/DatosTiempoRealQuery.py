@@ -47,9 +47,10 @@ class DatosTiempoRealQueryView(APIView):
             presion = ultimo_dato.pressure_out
             if presion is not None:
                 # 1. Convertir valor crudo con span
-                valor_convertido = convertir_presion_con_span(presion, span_presion)
+                #valor_convertido = convertir_presion_con_span(presion, span_presion)
                 # 2. Aplicar corrección mx+b
-                presion_corr = mp * valor_convertido + bp
+                #presion_corr = mp * valor_convertido + bp
+                presion_corr = mp * presion + bp
                 presion_corrCalc = int(presion_corr * 1000) / 1000
             else:
                 presion_corr = None
