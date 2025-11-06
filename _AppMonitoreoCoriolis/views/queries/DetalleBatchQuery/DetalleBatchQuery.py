@@ -6,8 +6,10 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from _AppComplementos.models import ConfiguracionCoeficientes
 from _AppMonitoreoCoriolis.models import NodeRedData, BatchDetectado
-from UTIL_LIB.conversiones import celsius_a_fahrenheit, lb_s_a_kg_min, lb_a_kg
+from UTIL_LIB.conversiones import celsius_a_fahrenheit, lb_s_a_kg_min, lb_a_kg, g_cm3_a_kg_m3
 from _AppMonitoreoCoriolis.views.utils import COLOMBIA_TZ
+from UTIL_LIB.GUM_coriolis_simp import GUM
+from UTIL_LIB.densidad60Modelo import rho15_from_rhoobs_api1124
 
 # Configurar logging
 logger = logging.getLogger(__name__)
@@ -50,8 +52,10 @@ class DetalleBatchQueryView(APIView):
                     'error': 'No se encontraron datos para este batch'
                 }, status=404)
             
-            # Preparar datos para el gráfico
+            # Preparar datos para el gráfico y acumular Qm (dentro del batch)
             datos_grafico = []
+            suma_qm_in = 0.0
+            conteo_qm_in = 0
             for dato in datos:
                 # Convertir UTC a hora de Colombia usando timestamp IoT
                 fecha_colombia = dato.created_at_iot.astimezone(COLOMBIA_TZ)
@@ -68,7 +72,7 @@ class DetalleBatchQueryView(APIView):
                 # Convertir temperatura de °C a °F
                 temperatura_f = celsius_a_fahrenheit(dato.coriolis_temperature) if dato.coriolis_temperature is not None else None
                 
-                datos_grafico.append({
+                registro = {
                     'timestamp': int(fecha_colombia.timestamp() * 1000),  # Para Chart.js
                     'fecha_hora': fecha_colombia.strftime('%d/%m %H:%M:%S'),
                     'mass_rate_lb_s': dato.mass_rate,  # Original en lb/s
@@ -80,7 +84,84 @@ class DetalleBatchQueryView(APIView):
                     'density': dato.density,
                     'pressure_out': dato.pressure_out,  # Presión de salida en psi
                     'dentro_batch': dentro_batch  # Indica si está dentro del batch real
-                })
+                }
+                datos_grafico.append(registro)
+
+                # Acumular Qm solo para puntos dentro del batch
+                if dentro_batch and mass_rate_kg_min is not None:
+                    suma_qm_in += mass_rate_kg_min
+                    conteo_qm_in += 1
+
+            # Qm promedio durante el batch
+            Qm_prom = (suma_qm_in / conteo_qm_in) if conteo_qm_in > 0 else None
+
+            # Calcular densidad a 60°F (rho15) para usar en GUM
+            rho15 = None
+            try:
+                if batch.densidad_prom is not None and batch.temperatura_coriolis_prom is not None:
+                    rho_obs = g_cm3_a_kg_m3(batch.densidad_prom)  # g/cc -> kg/m³
+                    T_obs_C = batch.temperatura_coriolis_prom
+                    rho15, _gamma60 = rho15_from_rhoobs_api1124(rho_obs, T_obs_C)
+            except Exception as e:
+                logger.warning(f"No fue posible calcular rho15 para batch {batch_id}: {e}")
+
+                # Preparar entradas para motor GUM (usando nombres exactos)
+            incertidumbre_result = None
+            try:
+                # Valores medidos/promedios del batch
+                Tl = celsius_a_fahrenheit(batch.temperatura_coriolis_prom) if batch.temperatura_coriolis_prom is not None else None
+                Pl = batch.pressure_out_prom
+                Masa = batch.mass_total  # ya en kg según modelo
+
+                # Variables de configuración (Incertidumbre) desde ConfiguracionCoeficientes
+                # Pueden ser None si no están configuradas; el motor GUM validará y podría lanzar error
+                gum_input = {
+                    'dl': rho15,  # usar densidad a 60°F (kg/m³) calculada en backend
+                    'MF': getattr(config, 'mf', None),
+                    'vis': getattr(config, 'vis', None),
+                    'deltavis': getattr(config, 'deltavis', None),
+                    'DN': getattr(config, 'dn', None),
+                    'ucalDens': getattr(config, 'ucal_dens', None),
+                    'kcalDens': getattr(config, 'kcal_dens', None),
+                    'tipdens': getattr(config, 'tipdens', None),
+                    'desvdens': getattr(config, 'desv_dens', None),
+                    'ucalMet': getattr(config, 'ucal_met', None),
+                    'kcalMet': getattr(config, 'kcal_met', None),
+                    'esisMet': getattr(config, 'esis_met', None),
+                    'ucartaMet': getattr(config, 'ucarta_met', None),
+                    'zeroStab': getattr(config, 'zero_stab', None),
+                    # Backend-provided (temperatura en °F, presión psi, masa kg, Qm promedio kg/min)
+                    'Tl': Tl,
+                    'Pl': Pl,
+                    'Masa': Masa,
+                    'Qm': Qm_prom,
+                    # Constantes/fijos
+                    'tipoMet': 'COR',
+                    'product': 'GLP'
+                }
+
+                # Fallbacks / saneamiento de entradas
+                # MF por defecto 1 si no configurado
+                if gum_input['MF'] is None or gum_input['MF'] == 0:
+                    gum_input['MF'] = 1
+                # DN por defecto 1 si no configurado
+                if gum_input['DN'] is None or gum_input['DN'] == 0:
+                    gum_input['DN'] = 1
+                # Convertir Qm (kg/min) a kg/h si existe
+                if gum_input['Qm'] is not None:
+                    gum_input['Qm'] = gum_input['Qm'] * 60.0
+                # Reemplazar None numéricos por 0 para evitar TypeError dentro de operaciones
+                for clave in ['vis','deltavis','ucalDens','kcalDens','desvdens','ucalMet','kcalMet','esisMet','ucartaMet','zeroStab','Tl','Pl']:
+                    if gum_input[clave] is None:
+                        gum_input[clave] = 0
+
+                # Verificación mínima antes de cálculo
+                if gum_input['Masa'] and gum_input['Masa'] > 0 and gum_input['dl'] and gum_input['dl'] > 0:
+                    incertidumbre_result = GUM(gum_input)
+                else:
+                    logger.info(f"Incertidumbre omitida: Masa ({gum_input['Masa']}), dl ({gum_input['dl']}) insuficientes para batch {batch_id}")
+            except Exception as e:
+                logger.warning(f"No fue posible calcular incertidumbre GUM para batch {batch_id}: {e}")
             
             return Response({
                 'success': True,
@@ -97,6 +178,7 @@ class DetalleBatchQueryView(APIView):
                     'temperatura_coriolis_prom_c': batch.temperatura_coriolis_prom,  # Original en °C
                     'temperatura_coriolis_prom_f': celsius_a_fahrenheit(batch.temperatura_coriolis_prom) if batch.temperatura_coriolis_prom is not None else None,  # Convertido a °F
                     'densidad_prom': batch.densidad_prom,
+                    'qm_promedio_kg_min': Qm_prom,
                     'duracion_minutos': batch.duracion_minutos,
                     'total_registros': batch.total_registros,
                     # Timestamps para marcar límites del batch en la gráfica
@@ -107,7 +189,9 @@ class DetalleBatchQueryView(APIView):
                 'total_datos': len(datos_grafico),
                 # Límites para las líneas horizontales en el gráfico
                 'lim_inf_caudal_masico': lim_inf,
-                'lim_sup_caudal_masico': lim_sup
+                'lim_sup_caudal_masico': lim_sup,
+                # Resultados de Incertidumbre (si se pudo calcular)
+                'incertidumbre': incertidumbre_result
             })
             
         except Exception as e:

@@ -9,7 +9,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title" id="modalConfiguracionSistemaLabel">
-          <i class="bi bi-gear-fill"></i> COEFICIENTES DE CORRECCIÓN Y VARIABLES DE CONFIGURACIÓN
+          <i class="bi bi-gear-fill"></i> Configuración General
           {% if readonly_config_view %}
           <span class="badge bg-warning ms-2">Solo Lectura</span>
           {% endif %}
@@ -17,90 +17,249 @@
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
       </div>
       <div class="modal-body">
-        <form id="formConfiguracionSistema">
-          <!-- Temperatura de Salida -->
-          <div class="col-12">
-            <h6 class="fw-bold mb-3">Coeficientes de corrección:</h6>
-          </div>
-          <div class="row mb-4">
-            <div class="col-12">
-              <h6 class="mb-3">Temperatura de Salida:</h6>
-            </div>
-            <div class="col-md-6">
-              <label for="tempSalidaM" class="form-label">M:</label>
-              <input type="number" class="form-control" id="tempSalidaM" name="tempSalidaM" step="any" placeholder="Ingrese valor M">
-            </div>
-            <div class="col-md-6">
-              <label for="tempSalidaB" class="form-label">B:</label>
-              <input type="number" class="form-control" id="tempSalidaB" name="tempSalidaB" step="any" placeholder="Ingrese valor B">
-            </div>
-          </div>
+        <!-- Nav Tabs -->
+        <ul class="nav nav-tabs" id="configTabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="tab-correccion-tab" data-bs-toggle="tab" data-bs-target="#tab-correccion" type="button" role="tab" aria-controls="tab-correccion" aria-selected="true">Coeficientes de Corrección</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-batch-tab" data-bs-toggle="tab" data-bs-target="#tab-batch" type="button" role="tab" aria-controls="tab-batch" aria-selected="false">Detección de Batch</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-tickets-tab" data-bs-toggle="tab" data-bs-target="#tab-tickets" type="button" role="tab" aria-controls="tab-tickets" aria-selected="false">Tickets</button>
+          </li>
+          <li class="nav-item dropdown" role="presentation">
+            <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">Incertidumbre</a>
+            <ul class="dropdown-menu">
+              <li><a class="dropdown-item" id="tab-variables-medicion-tab" data-bs-toggle="tab" href="#tab-variables-medicion" role="tab" aria-controls="tab-variables-medicion">Variables Medición</a></li>
+              <li><a class="dropdown-item" id="tab-medicion-densidad-tab" data-bs-toggle="tab" href="#tab-medicion-densidad" role="tab" aria-controls="tab-medicion-densidad">Medición de Densidad</a></li>
+              <li><a class="dropdown-item" id="tab-caracteristicas-medidor-tab" data-bs-toggle="tab" href="#tab-caracteristicas-medidor" role="tab" aria-controls="tab-caracteristicas-medidor">Características del Medidor</a></li>
+            </ul>
+          </li>
+        </ul>
 
-          <!-- Presión de Salida -->
-          <div class="row mb-4">
-            <div class="col-12">
-              <h6 class="mb-3">Presión de Salida:</h6>
-            </div>
-            <div class="col-md-3">
-              <label for="presionSalidaM" class="form-label">M:</label>
-              <input type="number" class="form-control" id="presionSalidaM" name="presionSalidaM" step="any" placeholder="Ingrese valor M">
-            </div>
-            <div class="col-md-3">
-              <label for="presionSalidaB" class="form-label">B:</label>
-              <input type="number" class="form-control" id="presionSalidaB" name="presionSalidaB" step="any" placeholder="Ingrese valor B">
-            </div>
-            <div class="col-md-3">
-              <label for="zeroPresion" class="form-label">Zero:</label>
-              <input type="number" class="form-control" id="zeroPresion" name="zeroPresion" step="any" placeholder="0.0">
-            </div>
-            <div class="col-md-3">
-              <label for="spanPresion" class="form-label">Span:</label>
-              <input type="number" class="form-control" id="spanPresion" name="spanPresion" step="any" placeholder="1.0">
-            </div>
-          </div>
+        <form id="formConfiguracionSistema" class="pt-3">
+          <div class="tab-content" id="configTabsContent">
+            <!-- Tab: Coeficientes de Corrección -->
+            <div class="tab-pane fade show active" id="tab-correccion" role="tabpanel" aria-labelledby="tab-correccion-tab">
+              <div class="row mb-4">
+                <div class="col-12">
+                  <h6 class="fw-bold mb-3">Temperatura de Salida:</h6>
+                </div>
+                <div class="col-md-6">
+                  <div class="input-group">
+                    <span class="input-group-text">M</span>
+                    <input type="number" class="form-control" id="tempSalidaM" name="tempSalidaM" step="any" placeholder="Ingrese valor M">
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <div class="input-group">
+                    <span class="input-group-text">B</span>
+                    <input type="number" class="form-control" id="tempSalidaB" name="tempSalidaB" step="any" placeholder="Ingrese valor B">
+                  </div>
+                </div>
+              </div>
 
-          <!-- Información adicional -->
-          <div class="alert alert-info d-flex align-items-center mt-3">
-            <i class="bi bi-info-circle me-2"></i>
-            <small>
-              <strong>Información:</strong> Los coeficientes M y B se utilizan para la corrección lineal de las variables del sistema.
-              Fórmula: <code>Valor_Corregido = M × Valor_Original + B</code>
-            </small>
-          </div>
-          <!-- Configuración de Batch -->
-          <div class="row mb-4">
-            <div class="col-12">
-              <h6 class="fw-bold mb-3">Configuración detección de Batch:</h6>
+              <div class="row mb-4">
+                <div class="col-12">
+                  <h6 class="fw-bold mb-3">Presión de Salida:</h6>
+                </div>
+                <div class="col-md-3">
+                  <div class="input-group">
+                    <span class="input-group-text">M</span>
+                    <input type="number" class="form-control" id="presionSalidaM" name="presionSalidaM" step="any" placeholder="Ingrese valor M">
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="input-group">
+                    <span class="input-group-text">B</span>
+                    <input type="number" class="form-control" id="presionSalidaB" name="presionSalidaB" step="any" placeholder="Ingrese valor B">
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="input-group">
+                    <span class="input-group-text">Zero</span>
+                    <input type="number" class="form-control" id="zeroPresion" name="zeroPresion" step="any" placeholder="0.0">
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <div class="input-group">
+                    <span class="input-group-text">Span</span>
+                    <input type="number" class="form-control" id="spanPresion" name="spanPresion" step="any" placeholder="1.0">
+                  </div>
+                </div>
+              </div>
+
+              <div class="alert alert-info d-flex align-items-center mt-3">
+                <i class="bi bi-info-circle me-2"></i>
+                <small>
+                  <strong>Información: </strong>Los coeficientes M y B se utilizan para la corrección lineal de las variables del sistema.<br>
+                  <strong>Fórmula: </strong><code>Valor_Corregido = M × Valor_Original + B</code>
+                </small>
+              </div>
             </div>
-            <div class="col-md-4">
-              <label for="limInfCaudalMasico" class="form-label">Lím Inf Caudal Másico:</label>
-              <input type="number" class="form-control" id="limInfCaudalMasico" name="limInfCaudalMasico" step="any" placeholder="0.0" min="0">
-              <small class="form-text text-muted">kg/min</small>
+
+            <!-- Tab: Detección de Batch -->
+            <div class="tab-pane fade" id="tab-batch" role="tabpanel" aria-labelledby="tab-batch-tab">
+              <div class="row mb-4">
+                <div class="col-md-3">
+                  <label for="limInfCaudalMasico" class="form-label">Lím Inf Q. Másico:</label>
+                  <div class="input-group">
+                    <input type="number" class="form-control" id="limInfCaudalMasico" name="limInfCaudalMasico" step="any" placeholder="0.0" min="0">
+                    <span class="input-group-text">kg/min</span>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <label for="limSupCaudalMasico" class="form-label">Lím Sup Q. Másico:</label>
+                  <div class="input-group">
+                    <input type="number" class="form-control" id="limSupCaudalMasico" name="limSupCaudalMasico" step="any" placeholder="1000000.0" min="0">
+                    <span class="input-group-text">kg/min</span>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <label for="volMasicoIniBatch" class="form-label">Volumen:</label>
+                  <div class="input-group">
+                    <input type="number" class="form-control" id="volMasicoIniBatch" name="volMasicoIniBatch" step="any" placeholder="0.0" min="0">
+                    <span class="input-group-text">kg</span>
+                  </div>
+                </div>
+                <div class="col-md-3">
+                  <label for="timeFinishedBatch" class="form-label">Tiempo de Cierre:</label>
+                  <div class="input-group">
+                    <input type="number" class="form-control" id="timeFinishedBatch" name="timeFinishedBatch" step="0.1" placeholder="2.0" min="0.1">
+                    <span class="input-group-text">min</span>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div class="col-md-4">
-              <label for="limSupCaudalMasico" class="form-label">Lím Sup Caudal Másico:</label>
-              <input type="number" class="form-control" id="limSupCaudalMasico" name="limSupCaudalMasico" step="any" placeholder="1000000.0" min="0">
-              <small class="form-text text-muted">kg/min</small>
+
+            <!-- Tab: Tickets -->
+            <div class="tab-pane fade" id="tab-tickets" role="tabpanel" aria-labelledby="tab-tickets-tab">
+              <div class="row mb-4 align-items-center g-3 d-flex">
+                <div class="col-auto">
+                  <h6 class="fw-bold mb-0">Configuración Ticket:</h6>
+                </div>
+                <div class="col-md-3 d-flex align-items-center">
+                  <label for="numberTicket" class="form-label mb-0 me-1">#</label>
+                  <input type="number" class="form-control" id="numberTicket" name="numberTicket" step="any" placeholder="0" min="0">
+                </div>
+              </div>
             </div>
-            <div class="col-md-4">
-              <label for="volMasicoIniBatch" class="form-label">Vol detector de bath:</label>
-              <input type="number" class="form-control" id="volMasicoIniBatch" name="volMasicoIniBatch" step="any" placeholder="0.0" min="0">
-              <small class="form-text text-muted">kg</small>
+
+            <!-- Tab: Incertidumbre / Variables Medición -->
+            <div class="tab-pane fade" id="tab-variables-medicion" role="tabpanel" aria-labelledby="tab-variables-medicion-tab">
+              <div class="row g-3">
+                <div class="col-md-4">
+                  <label for="MF" class="form-label">Factor de corrección del medidor</label>
+                  <div class="input-group">
+                    <input type="number" step="any" class="form-control" id="MF" name="MF" placeholder="1.0">
+                    <span class="input-group-text">-</span>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <label for="vis" class="form-label">Viscosidad dinámica</label>
+                  <div class="input-group">
+                    <input type="number" step="any" class="form-control" id="vis" name="vis" placeholder="0.0">
+                    <span class="input-group-text">cP</span>
+                  </div>
+                </div>
+
+                <div class="col-md-4">
+                  <label for="deltavis" class="form-label">Rango viscosidad</label>
+                  <div class="input-group">
+                    <input type="number" step="any" class="form-control" id="deltavis" name="deltavis" placeholder="0.0">
+                    <span class="input-group-text">cP</span>
+                  </div>
+                </div>
+                <div class="col-md-4">
+                  <label for="DN" class="form-label">Diámetro nominal</label>
+                  <div class="input-group">
+                    <input type="number" step="any" class="form-control" id="DN" name="DN" placeholder="0.0">
+                    <span class="input-group-text">in</span>
+                  </div>
+                </div>
+              </div>
             </div>
-            <div class="col-md-4">
-              <label for="timeFinishedBatch" class="form-label">Tiempo para cierre de batch:</label>
-              <input type="number" class="form-control" id="timeFinishedBatch" name="timeFinishedBatch" step="0.1" placeholder="2.0" min="0.1">
-              <small class="form-text text-muted">minutos</small>
+
+            <!-- Tab: Incertidumbre / Medición de Densidad -->
+            <div class="tab-pane fade" id="tab-medicion-densidad" role="tabpanel" aria-labelledby="tab-medicion-densidad-tab">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label for="ucalDens" class="form-label">Incertidumbre calibración densitómetro</label>
+                  <div class="input-group">
+                    <input type="number" step="any" class="form-control" id="ucalDens" name="ucalDens" placeholder="0.0">
+                    <span class="input-group-text">kg/m³</span>
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <label for="kcalDens" class="form-label">Factor de cobertura densitómetro</label>
+                  <div class="input-group">
+                    <input type="number" step="any" class="form-control" id="kcalDens" name="kcalDens" placeholder="0.0">
+                    <span class="input-group-text">-</span>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label for="tipdens" class="form-label">Tipo de densitómetro</label>
+                  <select class="form-select" id="tipdens" name="tipdens">
+                    <option value="" selected disabled>— Seleccione —</option>
+                    <option value="Tipo Coriolis">Tipo Coriolis</option>
+                    <option value="Tipo Tubo Vibrante">Tipo Tubo Vibrante</option>
+                    <option value="Tipo Diente de horquilla de inserción">Tipo Diente de horquilla de inserción</option>
+                  </select>
+                </div>
+
+                <div class="col-md-6">
+                  <label for="desvdens" class="form-label">Desviación viscosidad</label>
+                  <div class="input-group">
+                    <input type="number" step="any" class="form-control" id="desvdens" name="desvdens" placeholder="0.0">
+                    <span class="input-group-text">kg/m³</span>
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
-          <!-- Configuración de Batch -->
-          <div class="row mb-4">
-            <div class="col-12">
-              <h6 class="fw-bold mb-3">Configuración Ticket:</h6>
-            </div>
-            <div class="col-md-4">
-              <label for="numberTicket" class="form-label"># Ticket:</label>
-              <input type="number" class="form-control" id="numberTicket" name="numberTicket" step="any" placeholder="0" min="0">
+
+            <!-- Tab: Incertidumbre / Características del Medidor -->
+            <div class="tab-pane fade" id="tab-caracteristicas-medidor" role="tabpanel" aria-labelledby="tab-caracteristicas-medidor-tab">
+              <div class="row g-3">
+                <div class="col-md-6">
+                  <label for="ucalMet" class="form-label">Incertidumbre calibración medidor</label>
+                  <div class="input-group">
+                    <input type="number" step="any" class="form-control" id="ucalMet" name="ucalMet" placeholder="0.0">
+                    <span class="input-group-text">%</span>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label for="kcalMet" class="form-label">Factor de cobertura medidor</label>
+                  <div class="input-group">
+                    <input type="number" step="any" class="form-control" id="kcalMet" name="kcalMet" placeholder="0.0">
+                    <span class="input-group-text">-</span>
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <label for="esisMet" class="form-label">Error máximo medidor</label>
+                  <div class="input-group">
+                    <input type="number" step="any" class="form-control" id="esisMet" name="esisMet" placeholder="0.0">
+                    <span class="input-group-text">%</span>
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <label for="ucartaMet" class="form-label">Incertidumbre carta medidor</label>
+                  <div class="input-group">
+                    <input type="number" step="any" class="form-control" id="ucartaMet" name="ucartaMet" placeholder="0.0">
+                    <span class="input-group-text">%</span>
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <label for="zeroStab" class="form-label">Estabilidad en cero medidor</label>
+                  <div class="input-group">
+                    <input type="number" step="any" class="form-control" id="zeroStab" name="zeroStab" placeholder="0.0">
+                    <span class="input-group-text">Kg/m³</span>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </form>
@@ -196,6 +355,23 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('volMasicoIniBatch').value = data.data.vol_masico_ini_batch || '0.0';
                 document.getElementById('numberTicket').value = data.data.num_ticket || '1';
                 document.getElementById('timeFinishedBatch').value = data.data.time_finished_batch || '2.0';
+
+                // =====================
+                // Campos Incertidumbre (sin densidad manual)
+                // =====================
+        document.getElementById('MF').value = data.data.mf ?? '1.0';
+        document.getElementById('vis').value = data.data.vis ?? '0.0';
+        document.getElementById('deltavis').value = data.data.deltavis ?? '0.0';
+        document.getElementById('DN').value = data.data.dn ?? '0.0';
+        document.getElementById('ucalDens').value = data.data.ucal_dens ?? '0.0';
+        document.getElementById('kcalDens').value = data.data.kcal_dens ?? '0.0';
+        document.getElementById('tipdens').value = (data.data.tipdens ?? '');
+        document.getElementById('desvdens').value = data.data.desv_dens ?? '0.0';
+        document.getElementById('ucalMet').value = data.data.ucal_met ?? '0.0';
+        document.getElementById('kcalMet').value = data.data.kcal_met ?? '0.0';
+        document.getElementById('esisMet').value = data.data.esis_met ?? '0.0';
+        document.getElementById('ucartaMet').value = data.data.ucarta_met ?? '0.0';
+        document.getElementById('zeroStab').value = data.data.zero_stab ?? '0.0';
                 
                 if (!data.exists) {
                     //console.info('Coeficientes no configurados. Mostrando valores por defecto.');
@@ -240,6 +416,21 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('volMasicoIniBatch').value = '0.0';
         document.getElementById('numberTicket').value = '1';
         document.getElementById('timeFinishedBatch').value = '2.0';
+
+  // Valores por defecto para incertidumbre (sin densidad manual)
+    document.getElementById('MF').value = '1.0';
+    document.getElementById('vis').value = '0.0';
+    document.getElementById('deltavis').value = '0.0';
+    document.getElementById('DN').value = '0.0';
+    document.getElementById('ucalDens').value = '0.0';
+    document.getElementById('kcalDens').value = '0.0';
+    document.getElementById('tipdens').value = '';
+    document.getElementById('desvdens').value = '0.0';
+    document.getElementById('ucalMet').value = '0.0';
+    document.getElementById('kcalMet').value = '0.0';
+    document.getElementById('esisMet').value = '0.0';
+    document.getElementById('ucartaMet').value = '0.0';
+    document.getElementById('zeroStab').value = '0.0';
     }
 
     function actualizarCoeficientes() {
@@ -266,12 +457,37 @@ document.addEventListener('DOMContentLoaded', function() {
         const numTicket = parseInt(document.getElementById('numberTicket').value);
         const timeFinishedBatch = parseFloat(document.getElementById('timeFinishedBatch').value);
 
+  // =====================
+  // Lectura campos incertidumbre
+  // =====================
+  const mfVal = parseFloat(document.getElementById('MF').value);
+  const visVal = parseFloat(document.getElementById('vis').value);
+  const deltavisVal = parseFloat(document.getElementById('deltavis').value);
+  const dnVal = parseFloat(document.getElementById('DN').value);
+  const ucalDensVal = parseFloat(document.getElementById('ucalDens').value);
+  const kcalDensVal = parseFloat(document.getElementById('kcalDens').value);
+  const tipdensVal = document.getElementById('tipdens').value || '';
+  const desvDensVal = parseFloat(document.getElementById('desvdens').value);
+  const ucalMetVal = parseFloat(document.getElementById('ucalMet').value);
+  const kcalMetVal = parseFloat(document.getElementById('kcalMet').value);
+  const esisMetVal = parseFloat(document.getElementById('esisMet').value);
+  const ucartaMetVal = parseFloat(document.getElementById('ucartaMet').value);
+  const zeroStabVal = parseFloat(document.getElementById('zeroStab').value);
+
         // Validar que todos los valores son números válidos
         if (isNaN(mt) || isNaN(bt) || isNaN(mp) || isNaN(bp) || isNaN(zeroPresion) || isNaN(spanPresion) ||
             isNaN(limInfCaudalMasico) || isNaN(limSupCaudalMasico) || isNaN(volMasicoIniBatch) || isNaN(numTicket) || isNaN(timeFinishedBatch)) {
             showErrorAlert('Todos los valores deben ser números válidos');
             return;
         }
+
+    // Validar campos de incertidumbre (solo si no son NaN; permitir que estén en 0)
+    const incertidumbreNumericos = [mfVal, visVal, deltavisVal, dnVal, ucalDensVal, kcalDensVal, desvDensVal, ucalMetVal, kcalMetVal, esisMetVal, ucartaMetVal, zeroStabVal];
+    const algunNaN = incertidumbreNumericos.some(v => isNaN(v));
+    if (algunNaN) {
+      showErrorAlert('Campos de incertidumbre contienen valores no numéricos');
+      return;
+    }
         
         // Validaciones adicionales
         if (limInfCaudalMasico < 0 || limSupCaudalMasico < 0 || volMasicoIniBatch < 0 || numTicket < 1 || timeFinishedBatch < 0.1) {
@@ -296,7 +512,21 @@ document.addEventListener('DOMContentLoaded', function() {
             lim_sup_caudal_masico: limSupCaudalMasico,
             vol_masico_ini_batch: volMasicoIniBatch,
             num_ticket: numTicket,
-            time_finished_batch: timeFinishedBatch
+      time_finished_batch: timeFinishedBatch,
+            // Campos incertidumbre (sin densidad manual)
+      mf: mfVal,
+      vis: visVal,
+      deltavis: deltavisVal,
+      dn: dnVal,
+      ucal_dens: ucalDensVal,
+      kcal_dens: kcalDensVal,
+      tipdens: tipdensVal,
+      desv_dens: desvDensVal,
+      ucal_met: ucalMetVal,
+      kcal_met: kcalMetVal,
+      esis_met: esisMetVal,
+      ucarta_met: ucartaMetVal,
+      zero_stab: zeroStabVal
         };
 
         //console.log('Actualizando coeficientes:', coeficientes);

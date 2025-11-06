@@ -59,6 +59,22 @@ class GetCoeficientesBySistemaQueryView(APIView):
                         "vol_masico_ini_batch": 0.0,
                         "num_ticket": 1,
                         "time_finished_batch": 2.0
+                        ,
+                        # Incertidumbre - defaults
+                        "dl": 0.0,
+                        "mf": 1.0,
+                        "vis": 0.0,
+                        "deltavis": 0.0,
+                        "dn": 0.0,
+                        "ucal_dens": 0.0,
+                        "kcal_dens": 0.0,
+                        "tipdens": "",
+                        "desv_dens": 0.0,
+                        "ucal_met": 0.0,
+                        "kcal_met": 0.0,
+                        "esis_met": 0.0,
+                        "ucarta_met": 0.0,
+                        "zero_stab": 0.0
                     }
                 }, status=status.HTTP_200_OK)
 
