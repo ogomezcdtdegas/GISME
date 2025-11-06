@@ -112,13 +112,15 @@ class DatosTendenciasQueryView(APIView):
                 # Presión - APLICAR CORRECCIÓN DEL MOMENTO y mantener en PSI
                 if dato.pressure_out is not None:
                     # 1. Convertir valor crudo con span
-                    valor_convertido = convertir_presion_con_span(dato.pressure_out, span_presion)
-                    
+                    #valor_convertido = convertir_presion_con_span(dato.pressure_out, span_presion)
+
                     # 2. Aplicar corrección mx+b del momento
                     # Usar coeficientes del momento si están disponibles, sino usar los actuales
                     mp_momento = dato.mp if dato.mp is not None else mp
                     bp_momento = dato.bp if dato.bp is not None else bp
-                    presion_corregida = mp_momento * valor_convertido + bp_momento
+                    #presion_corregida = mp_momento * valor_convertido + bp_momento
+                    presion_corregida = mp_momento * dato.pressure_out + bp_momento
+                    
                     presion.append({
                         'x': timestamp,
                         'y': presion_corregida,
