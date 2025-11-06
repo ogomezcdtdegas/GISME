@@ -4,13 +4,10 @@ import os
 DEBUG = False
 ALLOWED_HOSTS = os.getenv('DJANGO_ALLOWED_HOSTS_PROD', 'tudominio.com').split(',')
 
-<<<<<<< HEAD
-=======
 CSRF_TRUSTED_ORIGINS = [
     f"https://{host}" for host in os.getenv('DJANGO_ALLOWED_HOSTS_PROD', 'tudominio.com').split(',')
 ]
 
->>>>>>> msalonlyv43
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
@@ -21,8 +18,6 @@ DATABASES = {
         'PORT': os.getenv('DB_PORT'),
     }
 }
-<<<<<<< HEAD
-=======
 
 # Configuración para Azure App Service Linux
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
@@ -30,7 +25,6 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 ''' ---------------------------------------------------------------CONFIGURACIONES DE SEGURIDAD-------------------------------------------------------------------------------------------- '''
 # Preparar para HTTPS (comentar hasta que esté configurado)
->>>>>>> msalonlyv43
 
 SECURE_SSL_REDIRECT = True
 # Protección contra: Ataques "man-in-the-middle" (MITM) y transmisión de datos en texto plano.
