@@ -9,11 +9,37 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
             </div>
             <div class="modal-body">
+                <style>
+                    #modalDetalleBatch .card-pastel {
+                        border: 1px solid #d9e6fb;
+                        border-radius: 0.85rem;
+                        box-shadow: 0 6px 18px rgba(15, 35, 95, 0.08);
+                    }
+                    #modalDetalleBatch .card-header-pastel {
+                        background: linear-gradient(120deg, #eef5ff, #e3f2fd);
+                        color: #0f3a5d;
+                        border-bottom: 1px solid #d1e3fb;
+                        font-weight: 600;
+                    }
+                    #modalDetalleBatch .incertidumbre-resumen table tr td:first-child {
+                        width: 70%;
+                    }
+                    #modalDetalleBatch .incertidumbre-resumen .form-control {
+                        text-align: right;
+                    }
+                    #modalDetalleBatch .incertidumbre-resumen small {
+                        color: #6c778b;
+                        font-weight: 500;
+                    }
+                    #modalDetalleBatch .chart-controls .form-check-label {
+                        font-weight: 500;
+                    }
+                </style>
                 <!-- Información básica del batch -->
-                <div class="row" id="contenedorBatch">
+                <div class="row g-3" id="contenedorBatch">
                     <div class="col-md-4 mb-3">
-                        <div class="card h-100">
-                            <div class="card-header bg-primary text-white fw-bold">
+                        <div class="card card-pastel h-100 shadow-sm">
+                            <div class="card-header card-header-pastel">
                                 Información Básica
                             </div>
                             <div class="card-body" id="infoBatchBasica"></div>
@@ -21,8 +47,8 @@
                     </div>
                     
                     <div class="col-md-8 mb-3">
-                        <div class="card h-100">
-                            <div class="card-header bg-secondary text-white fw-bold">
+                        <div class="card card-pastel h-100 shadow-sm">
+                            <div class="card-header card-header-pastel">
                                 Estadísticas del Batch
                             </div>
                             <div class="card-body" id="estadisticasBatch"></div>
@@ -31,187 +57,253 @@
                 </div>
                 
                 <!-- Gráfico del batch -->
-                 <div class="mb-3">
-                    <h5><i class="bi bi-graph-up"></i> Gráfico del Batch</h5>
-                    <hr style="margin-top: 0; border-top: 2px solid black;">
-                    
-                    <div class="chart-container" style="position: relative; height: 400px;">
-                        <canvas id="batchChart"></canvas>
+                <div class="card card-pastel mb-3 shadow-sm">
+                    <div class="card-header card-header-pastel">
+                        <i class="bi bi-graph-up"></i> Gráfico del Batch
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container mb-3" style="position: relative; height: 400px;">
+                            <canvas id="batchChart"></canvas>
+                        </div>
+                        <div class="chart-controls border rounded-3 p-3 bg-white">
+                            <h6 class="fw-semibold mb-3 text-center">
+                                <i class="bi bi-sliders"></i> Controles del gráfico
+                            </h6>
+                            <div class="d-flex flex-wrap justify-content-center gap-3">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" id="showMassRate" checked>
+                                    <label class="form-check-label" for="showMassRate">
+                                        Flujo Másico (kg/min)
+                                    </label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" id="showTotalMass" checked>
+                                    <label class="form-check-label" for="showTotalMass">
+                                        Masa Total (kg)
+                                    </label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" id="showTemperature">
+                                    <label class="form-check-label" for="showTemperature">
+                                        Temperatura (°F)
+                                    </label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" id="showPressure">
+                                    <label class="form-check-label" for="showPressure">
+                                        Presión (psi)
+                                    </label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="checkbox" id="showDensity">
+                                    <label class="form-check-label" for="showDensity">
+                                        Densidad (g/cc)
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="alert alert-info mt-3 mb-0 small">
+                            <div class="row g-3 align-items-center">
+                                <div class="col-lg-4">
+                                    <strong><i class="bi bi-info-circle me-1"></i> Contexto extendido:</strong><br>
+                                    La gráfica incluye 3 minutos antes y después del batch para un análisis más completo.
+                                </div>
+                                <div class="col-lg-8">
+                                    <p class="mb-1">
+                                        <i class="bi bi-circle-fill me-1" style="color: #5dade2;"></i>
+                                        <strong>Línea azul clara:</strong> Datos del batch detectado (línea gruesa, puntos grandes)
+                                    </p>
+                                    <p class="mb-1">
+                                        <i class="bi bi-circle-fill me-1" style="color: #1f618d;"></i>
+                                        <strong>Línea azul oscura:</strong> Contexto previo/posterior (línea fina, puntos pequeños)
+                                    </p>
+                                    <p class="mb-0">
+                                        <i class="bi bi-dash-lg me-1" style="color: #c0392b;"></i>
+                                        <strong>Líneas rojas:</strong> Límites configurados de flujo másico
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-                
-                <!-- Controles del gráfico -->
-                <div class="mb-3 text-center">
-                    <div>
-                         <h6><i class="bi bi-sliders fw-bold"></i> Eje Vertical: </h6>
+
+                <!-- Sección: Incertidumbre -->
+                <div class="card card-pastel mb-3 shadow-sm">
+                    <div class="card-header card-header-pastel">
+                        <i class="bi bi-percent"></i> Incertidumbre de volumen @60°F
                     </div>
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" id="showMassRate" checked>
-                        <label class="form-check-label" for="showMassRate">
-                            Flujo Másico (kg/min)
-                        </label>
-                    </div>
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" id="showTotalMass" checked>
-                        <label class="form-check-label" for="showTotalMass">
-                            Masa Total (kg)
-                        </label>
-                    </div>
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" id="showTemperature">
-                        <label class="form-check-label" for="showTemperature">
-                            Temperatura (°F)
-                        </label>
-                    </div>
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" id="showPressure">
-                        <label class="form-check-label" for="showPressure">
-                            Presión (psi)
-                        </label>
-                    </div>
-                    <div class="form-check form-check-inline">
-                        <input class="form-check-input" type="checkbox" id="showDensity">
-                        <label class="form-check-label" for="showDensity">
-                            Densidad (g/cc)
-                        </label>
+                    <div class="card-body">
+                        <div class="row g-4">
+                            <div class="col-12">
+                                <div class="table-responsive">
+                                    <table class="table table-sm align-middle mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Componente</th>
+                                                <th>Unidad</th>
+                                                <th class="text-end">Valor</th>
+                                                <th class="text-end">U std comb</th>
+                                                <th class="text-end">Contrib bbl</th>
+                                                <th class="text-end">Contrib %</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td class="fw-semibold">Masa Coriolis</td>
+                                                <td>kg</td>
+                                                <td class="text-end">
+                                                    <span id="valorMasa" class="fw-semibold text-primary">-</span>
+                                                </td>
+                                                <td>
+                                                    <input type="number" class="form-control form-control-sm text-end" id="uMF" name="uMF" readonly placeholder="-">
+                                                </td>
+                                                <td>
+                                                    <div class="input-group input-group-sm">
+                                                        <input type="number" class="form-control text-end" id="cMF" name="cMF" readonly placeholder="-">
+                                                        <span class="input-group-text">bbl</span>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="input-group input-group-sm">
+                                                        <input type="number" class="form-control text-end" id="crMF" name="crMF" readonly placeholder="-">
+                                                        <span class="input-group-text">%</span>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td class="fw-semibold">Densidad @60°F</td>
+                                                <td>g/cc</td>
+                                                <td class="text-end">
+                                                    <span id="valorDensidad" class="fw-semibold text-primary">-</span>
+                                                </td>
+                                                <td>
+                                                    <input type="number" class="form-control form-control-sm text-end" id="udl" name="udl" readonly placeholder="-">
+                                                </td>
+                                                <td>
+                                                    <div class="input-group input-group-sm">
+                                                        <input type="number" class="form-control text-end" id="cdl" name="cdl" readonly placeholder="-">
+                                                        <span class="input-group-text">bbl</span>
+                                                    </div>
+                                                </td>
+                                                <td>
+                                                    <div class="input-group input-group-sm">
+                                                        <input type="number" class="form-control text-end" id="crdl" name="crdl" readonly placeholder="-">
+                                                        <span class="input-group-text">%</span>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div class="col-12">
+                                <div class="row justify-content-end">
+                                    <div class="col-lg-6 col-xl-5 incertidumbre-resumen">
+                                        <div class="table-responsive">
+                                            <table class="table table-sm align-middle mb-0">
+                                                <tbody>
+                                                    <tr>
+                                                        <td>
+                                                            <div class="d-flex flex-column">
+                                                                <small>u combinada</small>
+                                                                <span class="fw-semibold">uc</span>
+                                                            </div>
+                                                        </td>
+                                                        <td class="text-end">
+                                                            <div class="input-group input-group-sm">
+                                                                <input type="number" class="form-control" id="U" name="U" readonly placeholder="-">
+                                                                <span class="input-group-text">bbl</span>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>
+                                                            <div class="d-flex flex-column">
+                                                                <small>U expandida</small>
+                                                                <span class="fw-semibold">k·uc</span>
+                                                            </div>
+                                                        </td>
+                                                        <td class="text-end">
+                                                            <div class="input-group input-group-sm">
+                                                                <input type="number" class="form-control" id="Uexp" name="Uexp" readonly placeholder="-">
+                                                                <span class="input-group-text">bbl</span>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>
+                                                            <div class="d-flex flex-column">
+                                                                <small>Volumen @60°F</small>
+                                                                <span class="fw-semibold">Estándar Neto</span>
+                                                            </div>
+                                                        </td>
+                                                        <td class="text-end">
+                                                            <div class="input-group input-group-sm">
+                                                                <input type="number" class="form-control" id="NSV" name="NSV" readonly placeholder="-">
+                                                                <span class="input-group-text">bbl</span>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>
+                                                            <div class="d-flex flex-column">
+                                                                <small>U relativa</small>
+                                                                <span class="fw-semibold">Uexp / NSV</span>
+                                                            </div>
+                                                        </td>
+                                                        <td class="text-end">
+                                                            <div class="input-group input-group-sm">
+                                                                <input type="number" class="form-control" id="Urel" name="Urel" readonly placeholder="-">
+                                                                <span class="input-group-text">%</span>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>
+                                                            <div class="d-flex flex-column">
+                                                                <small>Masa corregida</small>
+                                                                <span class="fw-semibold">Batch</span>
+                                                            </div>
+                                                        </td>
+                                                        <td class="text-end">
+                                                            <div class="input-group input-group-sm">
+                                                                <input type="number" class="form-control" id="masa" name="masa" readonly placeholder="-">
+                                                                <span class="input-group-text">kg</span>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>
+                                                            <div class="d-flex flex-column">
+                                                                <small>Factor de cobertura</small>
+                                                                <span class="fw-semibold">k</span>
+                                                            </div>
+                                                        </td>
+                                                        <td class="text-end">
+                                                            <input type="text" class="form-control form-control-sm text-end" id="k" name="k" readonly placeholder="-">
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Información sobre la visualización -->
-                <div class="alert alert-info" role="alert" style="font-size: 0.8rem; padding: 5px;">
-                  <div class="row">
-                    <div class="col-md-12 d-flex">
-                      <p class="col-3 mb-0 me-3">
-                        <strong><i class="bi bi-info-circle me-1"></i> Contexto Extendido:</strong><br>
-                        La gráfica muestra 3 minutos antes y después del batch para mejor análisis.
-                    </p>
-                    <div class="col-9">
-                        <p class="mb-1">
-                            <i class="bi bi-circle-fill me-1" style="color: blue;"></i>
-                            <strong>Línea azul clara:</strong> Datos del batch detectado (línea gruesa, puntos grandes)
-                        </p>
-               
-                        <p class="mb-1">
-                            <i class="bi bi-circle-fill me-1" style="color: darkblue;"></i>
-                            <strong>Línea azul oscura:</strong> Datos de contexto — antes/después (línea más fina, puntos pequeños)
-                        </p>
-
-                        <p class="mb-0">
-                            <i class="bi bi-circle-fill me-1" style="color: red;"></i>
-                            <strong>Líneas rojas punteadas:</strong> Límites inferior y superior de flujo másico configurados para la detección de batches
-                        </p>
+                <!-- Diagnóstico del medidor -->
+                <div class="card card-pastel mb-3 shadow-sm">
+                    <div class="card-header card-header-pastel">
+                        <i class="bi bi-activity"></i> Diagnóstico del Medidor Coriolis
+                    </div>
+                    <div class="card-body" id="diagnosticoBatch">
+                        <div class="text-muted small">
+                            <i class="bi bi-info-circle"></i> No hay diagnóstico disponible.
+                        </div>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <!-- Sección: Incertidumbre -->
-         <div class="mb-3">
-            <h5><i class="bi bi-percent"></i> Incertidumbre</h5>
-            <hr style="margin-top: 0; border-top: 2px solid black;">
-            <div class="row g-3">
-                <!-- Columna 1: Resultados -->
-                 <div class="col-md-6">
-                    <div class="row gy-3">
-                        <div class="col-4">
-                            <label for="NSV" class="form-label">Vol. Estándar Neto</label>
-                            <div class="input-group input-group-sm">
-                                <input type="number" class="form-control" id="NSV" name="NSV" readonly placeholder="-">
-                                <span class="input-group-text">bbl</span>
-                            </div>
-                        </div>
-                        <div class="col-4">
-                            <label for="masa" class="form-label">Masa Corregida</label>
-                            <div class="input-group input-group-sm">
-                                <input type="number" class="form-control" id="masa" name="masa" readonly placeholder="-">
-                                <span class="input-group-text">kg</span>
-                            </div>
-                        </div>
-                        <div class="col-4">
-                            <label for="k" class="form-label">Factor de Cobertura</label>
-                            <div class="input-group input-group-sm">
-                                <input type="text" class="form-control" id="k" name="k" readonly placeholder="-">
-                            </div>
-                        </div>
-                        <div class="col-4">
-                            <label for="U" class="form-label">U Estandar</label>
-                            <div class="input-group input-group-sm">
-                                <input type="number" class="form-control" id="U" name="U" readonly placeholder="-">
-                                <span class="input-group-text">bbl</span>
-                            </div>
-                        </div>
-                        <div class="col-4">
-                            <label for="Uexp" class="form-label">U Expandida</label>
-                            <div class="input-group input-group-sm">
-                                <input type="number" class="form-control" id="Uexp" name="Uexp" readonly placeholder="-">
-                                <span class="input-group-text">bbl</span>
-                            </div>
-                        </div>
-                        <div class="col-4">
-                            <label for="Urel" class="form-label">U Relativa</label>
-                            <div class="input-group input-group-sm">
-                                <input type="number" class="form-control" id="Urel" name="Urel" readonly placeholder="-">
-                                <span class="input-group-text">%</span>
-                            </div>
-                        </div>
-                    </div> 
-                </div>
-
-                <!-- Columna 2: Tabla de Resultados -->
-                <div class="col-md-6">
-                    <div class="table-responsive">
-                        <table class="table table-sm table-striped align-middle text-center mb-0">
-                            <thead>
-                                <tr>
-                                    <th style="width: 25%;">Item</th>
-                                    <th style="width: 25%;">U std Comb</th>
-                                    <th style="width: 25%;">Contrib bbl</th>
-                                    <th style="width: 25%;">Contrib Rel</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <td>Medidor</td>
-                                    <td>
-                                        <input type="number" class="form-control form-control-sm" id="uMF" name="uMF" readonly placeholder="-">
-                                    </td>
-                                    <td>
-                                        <div class="input-group input-group-sm">
-                                            <input type="number" class="form-control" id="cMF" name="cMF" readonly placeholder="-">
-                                            <span class="input-group-text">bbl</span>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="input-group input-group-sm">
-                                            <input type="number" class="form-control" id="crMF" name="crMF" readonly placeholder="-">
-                                            <span class="input-group-text">%</span>
-                                        </div>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td>Densidad</td>
-                                    <td>
-                                        <input type="number" class="form-control form-control-sm" id="udl" name="udl" readonly placeholder="-">
-                                    </td>
-                                    <td>
-                                        <div class="input-group input-group-sm">
-                                            <input type="number" class="form-control" id="cdl" name="cdl" readonly placeholder="-">
-                                            <span class="input-group-text">bbl</span>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="input-group input-group-sm">
-                                            <input type="number" class="form-control" id="crdl" name="crdl" readonly placeholder="-">
-                                            <span class="input-group-text">%</span>
-                                        </div>
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
     </div>
     <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
@@ -323,6 +415,9 @@ function mostrarDetalleBatch(data) {
         </div>
       </div>
     `;
+
+    // Mostrar diagnóstico
+    renderDiagnosticoBatch(data.diagnostico);
     
     // Controlar estado del botón de asignar ticket
     actualizarEstadoBotonTicket(data.batch_info.num_ticket);
@@ -363,6 +458,222 @@ function mostrarDetalleBatch(data) {
         const modal = new bootstrap.Modal(document.getElementById('modalDetalleBatch'));
         modal.show();
     }, 300);
+}
+
+// Renderiza el bloque de diagnóstico del medidor
+function renderDiagnosticoBatch(diagnostico) {
+    const contenedor = document.getElementById('diagnosticoBatch');
+    if (!contenedor) return;
+
+    if (!diagnostico) {
+        contenedor.innerHTML = `
+            <div class="alert alert-secondary mb-0">
+                <i class="bi bi-info-circle"></i> Diagnóstico no disponible para este batch.
+            </div>
+        `;
+        return;
+    }
+
+    const estados = {
+        'OK': { clase: 'success', icono: 'bi-check-circle', texto: 'Diagnóstico dentro de parámetros' },
+        'ALERTA': { clase: 'danger', icono: 'bi-exclamation-triangle', texto: 'Diagnóstico con alertas' },
+        'SIN_DATOS': { clase: 'secondary', icono: 'bi-info-circle', texto: 'Sin datos de diagnóstico' }
+    };
+
+    const estado = estados[diagnostico.estado_general] || estados['SIN_DATOS'];
+    const mensajes = Array.isArray(diagnostico.mensajes) ? diagnostico.mensajes : [];
+    const mensajesHTML = mensajes.length
+        ? `<ul class="mb-0 ps-3">${mensajes.map(msg => `<li>${msg}</li>`).join('')}</ul>`
+        : '<p class="mb-0">Sin mensajes adicionales.</p>';
+
+    const alarmas = Array.isArray(diagnostico.alarmas_detectadas) ? diagnostico.alarmas_detectadas : [];
+    const alarmasHTML = alarmas.length
+        ? `<p class="mb-0"><strong>Alarmas detectadas:</strong> ${alarmas.join(', ')}</p>`
+        : '';
+
+    const multifaseHTML = renderDiagnosticoMultifase(diagnostico.multifase);
+    const saludHTML = renderDiagnosticoSalud(diagnostico.salud_medidor);
+    const parametrosHTML = renderDiagnosticoParametros(diagnostico.parametros);
+
+    contenedor.innerHTML = `
+        <div class="d-flex align-items-center mb-2">
+            <i class="bi ${estado.icono} text-${estado.clase} fs-4 me-2"></i>
+            <h6 class="mb-0">${estado.texto}</h6>
+        </div>
+        <div class="alert alert-${estado.clase} mb-3">
+            ${mensajesHTML}
+        </div>
+        ${alarmasHTML}
+        ${multifaseHTML}
+        ${saludHTML}
+        ${parametrosHTML}
+    `;
+}
+
+function renderDiagnosticoMultifase(multifase) {
+    if (!multifase) {
+        return `
+            <div class="alert alert-secondary">
+                <i class="bi bi-info-circle"></i> Sin datos para diagnóstico de fluido/multifase.
+            </div>
+        `;
+    }
+
+    const detalles = Array.isArray(multifase.detalles) ? multifase.detalles : [];
+    const cards = detalles.length ? detalles.map(renderDiagnosticoDetalleCard).join('') : '<div class="text-muted"><em>Sin indicadores configurados.</em></div>';
+
+    return `
+        <div class="mt-3">
+            <h6 class="fw-bold mb-2"><i class="bi bi-droplet-half me-1"></i> Fluido / Multífases</h6>
+            <div class="text-muted small mb-2">
+                <strong>Densidad GLP ref:</strong> ${formatearDiagnosticoValor(multifase.densidad_glp_referencia)} g/cc ·
+                <strong>Variación:</strong> ${formatearDiagnosticoValor(multifase.variacion_glp_pct)} %
+            </div>
+            <div class="row g-3">
+                ${cards}
+            </div>
+        </div>
+    `;
+}
+
+function renderDiagnosticoDetalleCard(detalle) {
+    const estado = detalle.estado || 'SIN_DATOS';
+    const color = estado === 'ALERTA' ? 'danger' : (estado === 'OK' ? 'success' : 'secondary');
+    const valor = detalle.valor !== undefined && detalle.valor !== null
+        ? `<div class="text-muted small mb-0">Valor: ${formatearDiagnosticoValor(detalle.valor)} ${detalle.unidad || ''}</div>`
+        : '';
+
+    return `
+        <div class="col-md-6 col-xl-3">
+            <div class="border rounded h-100 p-3">
+                <div class="d-flex align-items-center mb-2">
+                    <span class="badge bg-${color} me-2">${estado}</span>
+                    <h6 class="mb-0">${detalle.titulo || detalle.id}</h6>
+                </div>
+                <p class="mb-2">${detalle.mensaje || 'Sin descripción.'}</p>
+                ${valor}
+            </div>
+        </div>
+    `;
+}
+
+function renderDiagnosticoSalud(salud) {
+    if (!salud) {
+        return `
+            <div class="alert alert-secondary mt-3">
+                <i class="bi bi-info-circle"></i> Sin datos para diagnóstico de la salud del medidor.
+            </div>
+        `;
+    }
+
+    const indicadores = Array.isArray(salud.indicadores) ? salud.indicadores : [];
+    const filas = indicadores.length
+        ? indicadores.map(ind => {
+            const estado = ind.estado || 'SIN_DATOS';
+            const color = estado === 'ALERTA' ? 'danger' : (estado === 'OK' ? 'success' : 'secondary');
+            const umbral = ind.umbral !== undefined && ind.umbral !== null ? formatearDiagnosticoValor(ind.umbral) : 'N/A';
+            return `
+                <tr>
+                    <td>${ind.label || ind.id}</td>
+                    <td>${formatearDiagnosticoValor(ind.valor)} ${ind.unidad || ''}</td>
+                    <td>${umbral} ${ind.unidad || ''}</td>
+                    <td><span class="badge bg-${color}">${estado}</span></td>
+                    <td>${ind.descripcion || ''}</td>
+                </tr>
+            `;
+        }).join('')
+        : '';
+
+    const tablaIndicadores = filas
+        ? `
+            <div class="table-responsive">
+                <table class="table table-sm align-middle mb-2">
+                    <thead>
+                        <tr>
+                            <th>Indicador</th>
+                            <th>Valor</th>
+                            <th>Umbral</th>
+                            <th>Estado</th>
+                            <th>Detalle</th>
+                        </tr>
+                    </thead>
+                    <tbody>${filas}</tbody>
+                </table>
+            </div>
+        `
+        : '<p class="mb-2"><em>No hay indicadores definidos.</em></p>';
+
+    const mensajes = Array.isArray(salud.mensajes) ? salud.mensajes : [];
+    const mensajesHTML = mensajes.length
+        ? `<ul class="mb-0 ps-3">${mensajes.map(msg => `<li>${msg}</li>`).join('')}</ul>`
+        : '<p class="mb-0 text-muted">Sin observaciones adicionales.</p>';
+
+    return `
+        <div class="mt-4">
+            <h6 class="fw-bold mb-2"><i class="bi bi-activity me-1"></i> Salud del medidor</h6>
+            ${tablaIndicadores}
+            <div class="alert alert-light border mb-0">${mensajesHTML}</div>
+        </div>
+    `;
+}
+
+function renderDiagnosticoParametros(parametros) {
+    const lista = Array.isArray(parametros) ? parametros : [];
+    if (!lista.length) {
+        return '<p class="mb-0 mt-3"><em>No hay parámetros de diagnóstico para mostrar.</em></p>';
+    }
+
+    const filas = lista.map(param => {
+        const metricas = param.metricas || {};
+        const unidad = param.unidad ? ` <small class="text-muted">(${param.unidad})</small>` : '';
+        const estadoParametro = param.en_alarma
+            ? '<span class="badge bg-danger">Alarma</span>'
+            : '<span class="badge bg-success">OK</span>';
+        return `
+            <tr>
+                <td>${param.label}${unidad}</td>
+                <td>${formatearDiagnosticoValor(metricas.ultimo)}</td>
+                <td>${formatearDiagnosticoValor(metricas.promedio)}</td>
+                <td>${formatearDiagnosticoValor(metricas.min)}</td>
+                <td>${formatearDiagnosticoValor(metricas.max)}</td>
+                <td>${estadoParametro}</td>
+            </tr>
+        `;
+    }).join('');
+
+    return `
+        <div class="table-responsive mt-4">
+            <table class="table table-sm align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Parámetro</th>
+                        <th>Último</th>
+                        <th>Promedio</th>
+                        <th>Mínimo</th>
+                        <th>Máximo</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>${filas}</tbody>
+            </table>
+        </div>
+    `;
+}
+
+function formatearDiagnosticoValor(valor) {
+    if (valor === null || valor === undefined || Number.isNaN(valor)) {
+        return 'N/A';
+    }
+    const absValor = Math.abs(valor);
+    let decimales = 3;
+    if (absValor >= 1000) {
+        decimales = 0;
+    } else if (absValor >= 100) {
+        decimales = 1;
+    } else if (absValor >= 10) {
+        decimales = 2;
+    }
+    return Number.parseFloat(valor).toFixed(decimales);
 }
 
 // Función para crear el gráfico del batch
@@ -657,10 +968,17 @@ function actualizarSeccionIncertidumbre(inc) {
         if (!el) return;
         el.value = (val === null || val === undefined) ? '' : val;
     };
+    const setText = (id, val) => {
+        const target = document.getElementById(id);
+        if (!target) return;
+        target.textContent = (val === null || val === undefined || val === '') ? '-' : val;
+    };
 
     // Limpiar si no hay datos
     if (!inc) {
         ['NSV','masa','U','Uexp','k','Urel','uMF','cMF','crMF','udl','cdl','crdl'].forEach(id=>setVal(id, ''));
+        setText('valorMasa', '-');
+        setText('valorDensidad', '-');
         return;
     }
 
@@ -679,6 +997,14 @@ function actualizarSeccionIncertidumbre(inc) {
     setVal('cdl', inc.cdl);
     setVal('crMF', inc.crMF);
     setVal('crdl', inc.crdl);
+
+    setText('valorMasa', inc.masa);
+    const densidadProm = datosActualesBatch?.batch_info?.densidad_prom;
+    let densidadTexto = '-';
+    if (densidadProm !== null && densidadProm !== undefined) {
+        densidadTexto = Number.parseFloat(densidadProm).toFixed(3);
+    }
+    setText('valorDensidad', densidadTexto);
 }
 
 // Función para descargar PDF del ticket del batch

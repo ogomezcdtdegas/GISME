@@ -50,17 +50,34 @@ class ActualizarConfiguracionCommandView(APIView):
                         'error': f'El número de ticket debe ser mayor o igual a {max_ticket + 1}, ya que el máximo ({max_ticket}) ya fue asignado.'
                     }, status=400)
             
-            # Actualizar campos
-            campos_actualizables = [
+            campos_float = [
                 'mt', 'bt', 'mp', 'bp', 'zero_presion', 'span_presion',
-                'lim_inf_caudal_masico', 'lim_sup_caudal_masico', 
-                'vol_masico_ini_batch', 'num_ticket', 'time_finished_batch'
+                'lim_inf_caudal_masico', 'lim_sup_caudal_masico',
+                'vol_masico_ini_batch', 'time_finished_batch',
+                'mf', 'vis', 'deltavis', 'dn', 'ucal_dens', 'kcal_dens',
+                'desv_dens', 'ucal_met', 'kcal_met', 'esis_met', 'ucarta_met',
+                'zero_stab',
+                'diagnostic_glp_density_ref', 'diagnostic_glp_density_tolerance_pct',
+                'diagnostic_driver_amp_base', 'diagnostic_driver_amp_multiplier',
+                'diagnostic_n1_threshold', 'diagnostic_n2_threshold',
+                'diagnostic_amp_imbalance_threshold_pct'
             ]
-            
-            for campo in campos_actualizables:
-                if campo in data:
-                    setattr(config, campo, data[campo])
-            
+
+            for campo in campos_float:
+                if campo in data and data[campo] is not None and data[campo] != '':
+                    try:
+                        setattr(config, campo, float(data[campo]))
+                    except (ValueError, TypeError):
+                        logger.warning("Valor inválido para %s: %s", campo, data[campo])
+                        continue
+
+            if 'num_ticket' in data and data['num_ticket'] is not None:
+                config.num_ticket = int(data['num_ticket'])
+
+            # Campos texto
+            if 'tipdens' in data:
+                config.tipdens = data['tipdens'] or None
+
             config.save()
             
             logger.info(f"Configuración actualizada para sistema {sistema_id}")
@@ -79,7 +96,27 @@ class ActualizarConfiguracionCommandView(APIView):
                     'lim_sup_caudal_masico': config.lim_sup_caudal_masico,
                     'vol_masico_ini_batch': config.vol_masico_ini_batch,
                     'num_ticket': config.num_ticket,
-                    'time_finished_batch': config.time_finished_batch
+                    'time_finished_batch': config.time_finished_batch,
+                    'mf': config.mf,
+                    'vis': config.vis,
+                    'deltavis': config.deltavis,
+                    'dn': config.dn,
+                    'ucal_dens': config.ucal_dens,
+                    'kcal_dens': config.kcal_dens,
+                    'tipdens': config.tipdens,
+                    'desv_dens': config.desv_dens,
+                    'ucal_met': config.ucal_met,
+                    'kcal_met': config.kcal_met,
+                    'esis_met': config.esis_met,
+                    'ucarta_met': config.ucarta_met,
+                    'zero_stab': config.zero_stab,
+                    'diagnostic_glp_density_ref': config.diagnostic_glp_density_ref,
+                    'diagnostic_glp_density_tolerance_pct': config.diagnostic_glp_density_tolerance_pct,
+                    'diagnostic_driver_amp_base': config.diagnostic_driver_amp_base,
+                    'diagnostic_driver_amp_multiplier': config.diagnostic_driver_amp_multiplier,
+                    'diagnostic_n1_threshold': config.diagnostic_n1_threshold,
+                    'diagnostic_n2_threshold': config.diagnostic_n2_threshold,
+                    'diagnostic_amp_imbalance_threshold_pct': config.diagnostic_amp_imbalance_threshold_pct
                 }
             })
             

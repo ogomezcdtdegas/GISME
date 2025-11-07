@@ -57,6 +57,18 @@ class CreateOrUpdateCoeficientesCommandView(ComplementosPermissionMixin, APIView
             ucarta_met = request.data.get('ucarta_met')
             zero_stab = request.data.get('zero_stab')
 
+            # Campos de diagnóstico
+            diagnostic_glp_density_ref = request.data.get('diagnostic_glp_density_ref')
+            diagnostic_glp_density_tolerance_pct = request.data.get('diagnostic_glp_density_tolerance_pct')
+            diagnostic_driver_amp_base = request.data.get('diagnostic_driver_amp_base')
+            diagnostic_driver_amp_multiplier = request.data.get('diagnostic_driver_amp_multiplier')
+            diagnostic_n1_threshold = request.data.get('diagnostic_n1_threshold')
+            diagnostic_n2_threshold = request.data.get('diagnostic_n2_threshold')
+            diagnostic_amp_imbalance_threshold_pct = request.data.get('diagnostic_amp_imbalance_threshold_pct')
+
+            def optional_float(value):
+                return float(value) if value not in [None, ''] else None
+
             # Validaciones básicas
             if not system_id:
                 return Response({
@@ -125,6 +137,13 @@ class CreateOrUpdateCoeficientesCommandView(ComplementosPermissionMixin, APIView
                     'esis_met': float(esis_met) if esis_met is not None and esis_met != '' else 0.0,
                     'ucarta_met': float(ucarta_met) if ucarta_met is not None and ucarta_met != '' else 0.0,
                     'zero_stab': float(zero_stab) if zero_stab is not None and zero_stab != '' else 0.0,
+                    'diagnostic_glp_density_ref': optional_float(diagnostic_glp_density_ref) if diagnostic_glp_density_ref not in [None, ''] else 0.55,
+                    'diagnostic_glp_density_tolerance_pct': optional_float(diagnostic_glp_density_tolerance_pct) if diagnostic_glp_density_tolerance_pct not in [None, ''] else 5.0,
+                    'diagnostic_driver_amp_base': optional_float(diagnostic_driver_amp_base),
+                    'diagnostic_driver_amp_multiplier': optional_float(diagnostic_driver_amp_multiplier) if diagnostic_driver_amp_multiplier not in [None, ''] else 1.3,
+                    'diagnostic_n1_threshold': optional_float(diagnostic_n1_threshold),
+                    'diagnostic_n2_threshold': optional_float(diagnostic_n2_threshold),
+                    'diagnostic_amp_imbalance_threshold_pct': optional_float(diagnostic_amp_imbalance_threshold_pct) if diagnostic_amp_imbalance_threshold_pct not in [None, ''] else 5.0,
                 }
             )
 
@@ -168,6 +187,20 @@ class CreateOrUpdateCoeficientesCommandView(ComplementosPermissionMixin, APIView
                     coeficientes.ucarta_met = float(ucarta_met)
                 if zero_stab is not None:
                     coeficientes.zero_stab = float(zero_stab)
+                if diagnostic_glp_density_ref is not None:
+                    coeficientes.diagnostic_glp_density_ref = optional_float(diagnostic_glp_density_ref)
+                if diagnostic_glp_density_tolerance_pct is not None:
+                    coeficientes.diagnostic_glp_density_tolerance_pct = optional_float(diagnostic_glp_density_tolerance_pct)
+                if diagnostic_driver_amp_base is not None:
+                    coeficientes.diagnostic_driver_amp_base = optional_float(diagnostic_driver_amp_base)
+                if diagnostic_driver_amp_multiplier is not None:
+                    coeficientes.diagnostic_driver_amp_multiplier = optional_float(diagnostic_driver_amp_multiplier)
+                if diagnostic_n1_threshold is not None:
+                    coeficientes.diagnostic_n1_threshold = optional_float(diagnostic_n1_threshold)
+                if diagnostic_n2_threshold is not None:
+                    coeficientes.diagnostic_n2_threshold = optional_float(diagnostic_n2_threshold)
+                if diagnostic_amp_imbalance_threshold_pct is not None:
+                    coeficientes.diagnostic_amp_imbalance_threshold_pct = optional_float(diagnostic_amp_imbalance_threshold_pct)
                 coeficientes.save()
 
             # Registrar la acción en el log universal
@@ -212,6 +245,13 @@ class CreateOrUpdateCoeficientesCommandView(ComplementosPermissionMixin, APIView
                     "esis_met": coeficientes.esis_met,
                     "ucarta_met": coeficientes.ucarta_met,
                     "zero_stab": coeficientes.zero_stab,
+                    "diagnostic_glp_density_ref": coeficientes.diagnostic_glp_density_ref,
+                    "diagnostic_glp_density_tolerance_pct": coeficientes.diagnostic_glp_density_tolerance_pct,
+                    "diagnostic_driver_amp_base": coeficientes.diagnostic_driver_amp_base,
+                    "diagnostic_driver_amp_multiplier": coeficientes.diagnostic_driver_amp_multiplier,
+                    "diagnostic_n1_threshold": coeficientes.diagnostic_n1_threshold,
+                    "diagnostic_n2_threshold": coeficientes.diagnostic_n2_threshold,
+                    "diagnostic_amp_imbalance_threshold_pct": coeficientes.diagnostic_amp_imbalance_threshold_pct,
                 }
             }, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
 
