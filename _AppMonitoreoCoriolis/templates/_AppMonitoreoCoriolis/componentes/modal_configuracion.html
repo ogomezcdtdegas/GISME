@@ -42,50 +42,42 @@
           <div class="tab-content" id="configTabsContent">
             <!-- Tab: Coeficientes de Corrección -->
             <div class="tab-pane fade show active" id="tab-correccion" role="tabpanel" aria-labelledby="tab-correccion-tab">
-              <div class="row mb-4">
-                <div class="col-12">
-                  <h6 class="fw-bold mb-3">Temperatura de Salida:</h6>
+              <div class="row align-items-center mb-4">
+                <div class="col-auto">
+                  <h6 class="fw-bold mb-0">Temperatura de Salida:</h6>
                 </div>
-                <div class="col-md-6">
+            
+                <div class="col-auto">
                   <div class="input-group">
-                    <span class="input-group-text">M</span>
+                    <span class="fw-bold input-group-text">M</span>
                     <input type="number" class="form-control" id="tempSalidaM" name="tempSalidaM" step="any" placeholder="Ingrese valor M">
                   </div>
                 </div>
-                <div class="col-md-6">
+            
+                <div class="col-auto">
                   <div class="input-group">
-                    <span class="input-group-text">B</span>
+                    <span class="fw-bold input-group-text">B</span>
                     <input type="number" class="form-control" id="tempSalidaB" name="tempSalidaB" step="any" placeholder="Ingrese valor B">
                   </div>
                 </div>
               </div>
 
-              <div class="row mb-4">
-                <div class="col-12">
-                  <h6 class="fw-bold mb-3">Presión de Salida:</h6>
+              <div class="row align-items-center mb-4">
+                <div class="col-auto">
+                  <h6 class="fw-bold mb-0">Presión de Salida:</h6>
                 </div>
-                <div class="col-md-3">
+
+                <div class="col-auto">
                   <div class="input-group">
-                    <span class="input-group-text">M</span>
+                    <span class="fw-bold input-group-text">M</span>
                     <input type="number" class="form-control" id="presionSalidaM" name="presionSalidaM" step="any" placeholder="Ingrese valor M">
                   </div>
                 </div>
-                <div class="col-md-3">
+                
+                <div class="col-auto">
                   <div class="input-group">
-                    <span class="input-group-text">B</span>
+                    <span class="fw-bold input-group-text">B</span>
                     <input type="number" class="form-control" id="presionSalidaB" name="presionSalidaB" step="any" placeholder="Ingrese valor B">
-                  </div>
-                </div>
-                <div class="col-md-3">
-                  <div class="input-group">
-                    <span class="input-group-text">Zero</span>
-                    <input type="number" class="form-control" id="zeroPresion" name="zeroPresion" step="any" placeholder="0.0">
-                  </div>
-                </div>
-                <div class="col-md-3">
-                  <div class="input-group">
-                    <span class="input-group-text">Span</span>
-                    <input type="number" class="form-control" id="spanPresion" name="spanPresion" step="any" placeholder="1.0">
                   </div>
                 </div>
               </div>
@@ -103,28 +95,28 @@
             <div class="tab-pane fade" id="tab-batch" role="tabpanel" aria-labelledby="tab-batch-tab">
               <div class="row mb-4">
                 <div class="col-md-3">
-                  <label for="limInfCaudalMasico" class="form-label">Lím Inf Q. Másico:</label>
+                  <label for="limInfCaudalMasico" class="fw-bold form-label">Lím Inf Q. Másico:</label>
                   <div class="input-group">
                     <input type="number" class="form-control" id="limInfCaudalMasico" name="limInfCaudalMasico" step="any" placeholder="0.0" min="0">
                     <span class="input-group-text">kg/min</span>
                   </div>
                 </div>
                 <div class="col-md-3">
-                  <label for="limSupCaudalMasico" class="form-label">Lím Sup Q. Másico:</label>
+                  <label for="limSupCaudalMasico" class="fw-bold form-label">Lím Sup Q. Másico:</label>
                   <div class="input-group">
                     <input type="number" class="form-control" id="limSupCaudalMasico" name="limSupCaudalMasico" step="any" placeholder="1000000.0" min="0">
                     <span class="input-group-text">kg/min</span>
                   </div>
                 </div>
                 <div class="col-md-3">
-                  <label for="volMasicoIniBatch" class="form-label">Volumen:</label>
+                  <label for="volMasicoIniBatch" class="fw-bold form-label">Volumen:</label>
                   <div class="input-group">
                     <input type="number" class="form-control" id="volMasicoIniBatch" name="volMasicoIniBatch" step="any" placeholder="0.0" min="0">
                     <span class="input-group-text">kg</span>
                   </div>
                 </div>
                 <div class="col-md-3">
-                  <label for="timeFinishedBatch" class="form-label">Tiempo de Cierre:</label>
+                  <label for="timeFinishedBatch" class="fw-bold form-label">Tiempo de Cierre:</label>
                   <div class="input-group">
                     <input type="number" class="form-control" id="timeFinishedBatch" name="timeFinishedBatch" step="0.1" placeholder="2.0" min="0.1">
                     <span class="input-group-text">min</span>
@@ -140,7 +132,7 @@
                   <h6 class="fw-bold mb-0">Configuración Ticket:</h6>
                 </div>
                 <div class="col-md-3 d-flex align-items-center">
-                  <label for="numberTicket" class="form-label mb-0 me-1">#</label>
+                  <label for="numberTicket" class="fw-bold form-label mb-0 me-1">#</label>
                   <input type="number" class="form-control" id="numberTicket" name="numberTicket" step="any" placeholder="0" min="0">
                 </div>
               </div>
@@ -149,30 +141,29 @@
             <!-- Tab: Incertidumbre / Variables Medición -->
             <div class="tab-pane fade" id="tab-variables-medicion" role="tabpanel" aria-labelledby="tab-variables-medicion-tab">
               <div class="row g-3">
-                <div class="col-md-4">
-                  <label for="MF" class="form-label">Factor de corrección del medidor</label>
+                <div class="col-md-3">
+                  <label for="MF" class="fw-bold form-label">Factor de Corrección</label>
                   <div class="input-group">
                     <input type="number" step="any" class="form-control" id="MF" name="MF" placeholder="1.0">
-                    <span class="input-group-text">-</span>
                   </div>
                 </div>
-                <div class="col-md-4">
-                  <label for="vis" class="form-label">Viscosidad dinámica</label>
+                <div class="col-md-3">
+                  <label for="vis" class="fw-bold form-label">Viscosidad dinámica</label>
                   <div class="input-group">
                     <input type="number" step="any" class="form-control" id="vis" name="vis" placeholder="0.0">
                     <span class="input-group-text">cP</span>
                   </div>
                 </div>
 
-                <div class="col-md-4">
-                  <label for="deltavis" class="form-label">Rango viscosidad</label>
+                <div class="col-md-3">
+                  <label for="deltavis" class="fw-bold form-label">Rango viscosidad</label>
                   <div class="input-group">
                     <input type="number" step="any" class="form-control" id="deltavis" name="deltavis" placeholder="0.0">
                     <span class="input-group-text">cP</span>
                   </div>
                 </div>
-                <div class="col-md-4">
-                  <label for="DN" class="form-label">Diámetro nominal</label>
+                <div class="col-md-3">
+                  <label for="DN" class="fw-bold form-label">Diámetro nominal</label>
                   <div class="input-group">
                     <input type="number" step="any" class="form-control" id="DN" name="DN" placeholder="0.0">
                     <span class="input-group-text">in</span>
@@ -185,7 +176,7 @@
             <div class="tab-pane fade" id="tab-medicion-densidad" role="tabpanel" aria-labelledby="tab-medicion-densidad-tab">
               <div class="row g-3">
                 <div class="col-md-6">
-                  <label for="ucalDens" class="form-label">Incertidumbre calibración densitómetro</label>
+                  <label for="ucalDens" class="fw-bold form-label">Incertidumbre Calibración Densitómetro</label>
                   <div class="input-group">
                     <input type="number" step="any" class="form-control" id="ucalDens" name="ucalDens" placeholder="0.0">
                     <span class="input-group-text">kg/m³</span>
@@ -193,14 +184,13 @@
                 </div>
 
                 <div class="col-md-6">
-                  <label for="kcalDens" class="form-label">Factor de cobertura densitómetro</label>
+                  <label for="kcalDens" class="fw-bold form-label">Factor de Cobertura Densitómetro</label>
                   <div class="input-group">
                     <input type="number" step="any" class="form-control" id="kcalDens" name="kcalDens" placeholder="0.0">
-                    <span class="input-group-text">-</span>
                   </div>
                 </div>
                 <div class="col-md-6">
-                  <label for="tipdens" class="form-label">Tipo de densitómetro</label>
+                  <label for="tipdens" class="fw-bold form-label">Tipo de Densitómetro</label>
                   <select class="form-select" id="tipdens" name="tipdens">
                     <option value="" selected disabled>— Seleccione —</option>
                     <option value="Tipo Coriolis">Tipo Coriolis</option>
@@ -210,7 +200,7 @@
                 </div>
 
                 <div class="col-md-6">
-                  <label for="desvdens" class="form-label">Desviación viscosidad</label>
+                  <label for="desvdens" class="fw-bold form-label">Desviación Viscosidad</label>
                   <div class="input-group">
                     <input type="number" step="any" class="form-control" id="desvdens" name="desvdens" placeholder="0.0">
                     <span class="input-group-text">kg/m³</span>
@@ -223,37 +213,36 @@
             <div class="tab-pane fade" id="tab-caracteristicas-medidor" role="tabpanel" aria-labelledby="tab-caracteristicas-medidor-tab">
               <div class="row g-3">
                 <div class="col-md-6">
-                  <label for="ucalMet" class="form-label">Incertidumbre calibración medidor</label>
+                  <label for="ucalMet" class="fw-bold form-label">Incertidumbre Calibración Medidor</label>
                   <div class="input-group">
                     <input type="number" step="any" class="form-control" id="ucalMet" name="ucalMet" placeholder="0.0">
                     <span class="input-group-text">%</span>
                   </div>
                 </div>
                 <div class="col-md-6">
-                  <label for="kcalMet" class="form-label">Factor de cobertura medidor</label>
+                  <label for="kcalMet" class="fw-bold form-label">Factor de Cobertura Medidor</label>
                   <div class="input-group">
                     <input type="number" step="any" class="form-control" id="kcalMet" name="kcalMet" placeholder="0.0">
-                    <span class="input-group-text">-</span>
                   </div>
                 </div>
 
-                <div class="col-md-6">
-                  <label for="esisMet" class="form-label">Error máximo medidor</label>
+                <div class="col-md-4">
+                  <label for="esisMet" class="fw-bold form-label">Error máximo Medidor</label>
                   <div class="input-group">
                     <input type="number" step="any" class="form-control" id="esisMet" name="esisMet" placeholder="0.0">
                     <span class="input-group-text">%</span>
                   </div>
                 </div>
-                <div class="col-md-6">
-                  <label for="ucartaMet" class="form-label">Incertidumbre carta medidor</label>
+                <div class="col-md-4">
+                  <label for="ucartaMet" class="fw-bold form-label">Incertidumbre Carta Medidor</label>
                   <div class="input-group">
                     <input type="number" step="any" class="form-control" id="ucartaMet" name="ucartaMet" placeholder="0.0">
                     <span class="input-group-text">%</span>
                   </div>
                 </div>
 
-                <div class="col-md-6">
-                  <label for="zeroStab" class="form-label">Estabilidad en cero medidor</label>
+                <div class="col-md-4">
+                  <label for="zeroStab" class="fw-bold form-label">Estabilidad en cero Medidor</label>
                   <div class="input-group">
                     <input type="number" step="any" class="form-control" id="zeroStab" name="zeroStab" placeholder="0.0">
                     <span class="input-group-text">Kg/m³</span>
