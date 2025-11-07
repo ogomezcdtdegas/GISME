@@ -6,11 +6,12 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from _AppComplementos.models import Sistema, ConfiguracionCoeficientes
 from _AppMonitoreoCoriolis.models import BatchDetectado
+from _AppAdmin.mixins import ComplementosPermissionMixin
 
 # Configurar logging
 logger = logging.getLogger(__name__)
 
-class ActualizarConfiguracionCommandView(APIView):
+class ActualizarConfiguracionCommandView(ComplementosPermissionMixin,APIView):
     """
     CBV para actualizar la configuración de coeficientes de un sistema
     Incluye validación de número de ticket
