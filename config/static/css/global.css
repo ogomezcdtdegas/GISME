@@ -111,9 +111,9 @@ h1 {
 }
 
 #toggleSidebar {
-    position: fixed;
-    top: 16px;
-    left: 16px;
+    position: absolute;
+    top: 5px;
+    left: 10px;
     z-index: 2100; /* Mayor que el de la sidebar */
 }
 
