@@ -149,6 +149,10 @@ class ConfiguracionCoeficientesSerializer(serializers.ModelSerializer):
             "ucal_dens", "kcal_dens", "tipdens", "desv_dens",
             # Incertidumbre - Características del Medidor
             "ucal_met", "kcal_met", "esis_met", "ucarta_met", "zero_stab",
+            # Diagnóstico
+            "diagnostic_glp_density_ref", "diagnostic_glp_density_tolerance_pct",
+            "diagnostic_driver_amp_base", "diagnostic_driver_amp_multiplier",
+            "diagnostic_n1_threshold", "diagnostic_n2_threshold", "diagnostic_amp_imbalance_threshold_pct",
         ]
     
     def get_sistema_nombre(self, obj):

@@ -30,6 +30,18 @@
                     </div>
                 </div>
                 
+                <!-- Diagnóstico del medidor -->
+                <div class="card mb-3 shadow-sm">
+                    <div class="card-header bg-info text-white fw-bold">
+                        <i class="bi bi-activity"></i> Diagnóstico del Medidor Coriolis
+                    </div>
+                    <div class="card-body" id="diagnosticoBatch">
+                        <div class="text-muted small">
+                            <i class="bi bi-info-circle"></i> No hay diagnóstico disponible.
+                        </div>
+                    </div>
+                </div>
+                
                 <!-- Gráfico del batch -->
                  <div class="mb-3">
                     <h5><i class="bi bi-graph-up"></i> Gráfico del Batch</h5>
@@ -323,6 +335,9 @@ function mostrarDetalleBatch(data) {
         </div>
       </div>
     `;
+
+    // Mostrar diagnóstico
+    renderDiagnosticoBatch(data.diagnostico);
     
     // Controlar estado del botón de asignar ticket
     actualizarEstadoBotonTicket(data.batch_info.num_ticket);
@@ -363,6 +378,222 @@ function mostrarDetalleBatch(data) {
         const modal = new bootstrap.Modal(document.getElementById('modalDetalleBatch'));
         modal.show();
     }, 300);
+}
+
+// Renderiza el bloque de diagnóstico del medidor
+function renderDiagnosticoBatch(diagnostico) {
+    const contenedor = document.getElementById('diagnosticoBatch');
+    if (!contenedor) return;
+
+    if (!diagnostico) {
+        contenedor.innerHTML = `
+            <div class="alert alert-secondary mb-0">
+                <i class="bi bi-info-circle"></i> Diagnóstico no disponible para este batch.
+            </div>
+        `;
+        return;
+    }
+
+    const estados = {
+        'OK': { clase: 'success', icono: 'bi-check-circle', texto: 'Diagnóstico dentro de parámetros' },
+        'ALERTA': { clase: 'danger', icono: 'bi-exclamation-triangle', texto: 'Diagnóstico con alertas' },
+        'SIN_DATOS': { clase: 'secondary', icono: 'bi-info-circle', texto: 'Sin datos de diagnóstico' }
+    };
+
+    const estado = estados[diagnostico.estado_general] || estados['SIN_DATOS'];
+    const mensajes = Array.isArray(diagnostico.mensajes) ? diagnostico.mensajes : [];
+    const mensajesHTML = mensajes.length
+        ? `<ul class="mb-0 ps-3">${mensajes.map(msg => `<li>${msg}</li>`).join('')}</ul>`
+        : '<p class="mb-0">Sin mensajes adicionales.</p>';
+
+    const alarmas = Array.isArray(diagnostico.alarmas_detectadas) ? diagnostico.alarmas_detectadas : [];
+    const alarmasHTML = alarmas.length
+        ? `<p class="mb-0"><strong>Alarmas detectadas:</strong> ${alarmas.join(', ')}</p>`
+        : '';
+
+    const multifaseHTML = renderDiagnosticoMultifase(diagnostico.multifase);
+    const saludHTML = renderDiagnosticoSalud(diagnostico.salud_medidor);
+    const parametrosHTML = renderDiagnosticoParametros(diagnostico.parametros);
+
+    contenedor.innerHTML = `
+        <div class="d-flex align-items-center mb-2">
+            <i class="bi ${estado.icono} text-${estado.clase} fs-4 me-2"></i>
+            <h6 class="mb-0">${estado.texto}</h6>
+        </div>
+        <div class="alert alert-${estado.clase} mb-3">
+            ${mensajesHTML}
+        </div>
+        ${alarmasHTML}
+        ${multifaseHTML}
+        ${saludHTML}
+        ${parametrosHTML}
+    `;
+}
+
+function renderDiagnosticoMultifase(multifase) {
+    if (!multifase) {
+        return `
+            <div class="alert alert-secondary">
+                <i class="bi bi-info-circle"></i> Sin datos para diagnóstico de fluido/multifase.
+            </div>
+        `;
+    }
+
+    const detalles = Array.isArray(multifase.detalles) ? multifase.detalles : [];
+    const cards = detalles.length ? detalles.map(renderDiagnosticoDetalleCard).join('') : '<div class="text-muted"><em>Sin indicadores configurados.</em></div>';
+
+    return `
+        <div class="mt-3">
+            <h6 class="fw-bold mb-2"><i class="bi bi-droplet-half me-1"></i> Fluido / Multífases</h6>
+            <div class="text-muted small mb-2">
+                <strong>Densidad GLP ref:</strong> ${formatearDiagnosticoValor(multifase.densidad_glp_referencia)} g/cc ·
+                <strong>Variación:</strong> ${formatearDiagnosticoValor(multifase.variacion_glp_pct)} %
+            </div>
+            <div class="row g-3">
+                ${cards}
+            </div>
+        </div>
+    `;
+}
+
+function renderDiagnosticoDetalleCard(detalle) {
+    const estado = detalle.estado || 'SIN_DATOS';
+    const color = estado === 'ALERTA' ? 'danger' : (estado === 'OK' ? 'success' : 'secondary');
+    const valor = detalle.valor !== undefined && detalle.valor !== null
+        ? `<div class="text-muted small mb-0">Valor: ${formatearDiagnosticoValor(detalle.valor)} ${detalle.unidad || ''}</div>`
+        : '';
+
+    return `
+        <div class="col-md-6 col-xl-3">
+            <div class="border rounded h-100 p-3">
+                <div class="d-flex align-items-center mb-2">
+                    <span class="badge bg-${color} me-2">${estado}</span>
+                    <h6 class="mb-0">${detalle.titulo || detalle.id}</h6>
+                </div>
+                <p class="mb-2">${detalle.mensaje || 'Sin descripción.'}</p>
+                ${valor}
+            </div>
+        </div>
+    `;
+}
+
+function renderDiagnosticoSalud(salud) {
+    if (!salud) {
+        return `
+            <div class="alert alert-secondary mt-3">
+                <i class="bi bi-info-circle"></i> Sin datos para diagnóstico de la salud del medidor.
+            </div>
+        `;
+    }
+
+    const indicadores = Array.isArray(salud.indicadores) ? salud.indicadores : [];
+    const filas = indicadores.length
+        ? indicadores.map(ind => {
+            const estado = ind.estado || 'SIN_DATOS';
+            const color = estado === 'ALERTA' ? 'danger' : (estado === 'OK' ? 'success' : 'secondary');
+            const umbral = ind.umbral !== undefined && ind.umbral !== null ? formatearDiagnosticoValor(ind.umbral) : 'N/A';
+            return `
+                <tr>
+                    <td>${ind.label || ind.id}</td>
+                    <td>${formatearDiagnosticoValor(ind.valor)} ${ind.unidad || ''}</td>
+                    <td>${umbral} ${ind.unidad || ''}</td>
+                    <td><span class="badge bg-${color}">${estado}</span></td>
+                    <td>${ind.descripcion || ''}</td>
+                </tr>
+            `;
+        }).join('')
+        : '';
+
+    const tablaIndicadores = filas
+        ? `
+            <div class="table-responsive">
+                <table class="table table-sm align-middle mb-2">
+                    <thead>
+                        <tr>
+                            <th>Indicador</th>
+                            <th>Valor</th>
+                            <th>Umbral</th>
+                            <th>Estado</th>
+                            <th>Detalle</th>
+                        </tr>
+                    </thead>
+                    <tbody>${filas}</tbody>
+                </table>
+            </div>
+        `
+        : '<p class="mb-2"><em>No hay indicadores definidos.</em></p>';
+
+    const mensajes = Array.isArray(salud.mensajes) ? salud.mensajes : [];
+    const mensajesHTML = mensajes.length
+        ? `<ul class="mb-0 ps-3">${mensajes.map(msg => `<li>${msg}</li>`).join('')}</ul>`
+        : '<p class="mb-0 text-muted">Sin observaciones adicionales.</p>';
+
+    return `
+        <div class="mt-4">
+            <h6 class="fw-bold mb-2"><i class="bi bi-activity me-1"></i> Salud del medidor</h6>
+            ${tablaIndicadores}
+            <div class="alert alert-light border mb-0">${mensajesHTML}</div>
+        </div>
+    `;
+}
+
+function renderDiagnosticoParametros(parametros) {
+    const lista = Array.isArray(parametros) ? parametros : [];
+    if (!lista.length) {
+        return '<p class="mb-0 mt-3"><em>No hay parámetros de diagnóstico para mostrar.</em></p>';
+    }
+
+    const filas = lista.map(param => {
+        const metricas = param.metricas || {};
+        const unidad = param.unidad ? ` <small class="text-muted">(${param.unidad})</small>` : '';
+        const estadoParametro = param.en_alarma
+            ? '<span class="badge bg-danger">Alarma</span>'
+            : '<span class="badge bg-success">OK</span>';
+        return `
+            <tr>
+                <td>${param.label}${unidad}</td>
+                <td>${formatearDiagnosticoValor(metricas.ultimo)}</td>
+                <td>${formatearDiagnosticoValor(metricas.promedio)}</td>
+                <td>${formatearDiagnosticoValor(metricas.min)}</td>
+                <td>${formatearDiagnosticoValor(metricas.max)}</td>
+                <td>${estadoParametro}</td>
+            </tr>
+        `;
+    }).join('');
+
+    return `
+        <div class="table-responsive mt-4">
+            <table class="table table-sm align-middle mb-0">
+                <thead>
+                    <tr>
+                        <th>Parámetro</th>
+                        <th>Último</th>
+                        <th>Promedio</th>
+                        <th>Mínimo</th>
+                        <th>Máximo</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody>${filas}</tbody>
+            </table>
+        </div>
+    `;
+}
+
+function formatearDiagnosticoValor(valor) {
+    if (valor === null || valor === undefined || Number.isNaN(valor)) {
+        return 'N/A';
+    }
+    const absValor = Math.abs(valor);
+    let decimales = 3;
+    if (absValor >= 1000) {
+        decimales = 0;
+    } else if (absValor >= 100) {
+        decimales = 1;
+    } else if (absValor >= 10) {
+        decimales = 2;
+    }
+    return Number.parseFloat(valor).toFixed(decimales);
 }
 
 // Función para crear el gráfico del batch

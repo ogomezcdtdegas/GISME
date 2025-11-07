@@ -58,8 +58,7 @@ class GetCoeficientesBySistemaQueryView(APIView):
                         "lim_sup_caudal_masico": 1000000.0,
                         "vol_masico_ini_batch": 0.0,
                         "num_ticket": 1,
-                        "time_finished_batch": 2.0
-                        ,
+                        "time_finished_batch": 2.0,
                         # Incertidumbre - defaults
                         "dl": 0.0,
                         "mf": 1.0,
@@ -74,7 +73,15 @@ class GetCoeficientesBySistemaQueryView(APIView):
                         "kcal_met": 0.0,
                         "esis_met": 0.0,
                         "ucarta_met": 0.0,
-                        "zero_stab": 0.0
+                        "zero_stab": 0.0,
+                        # Diagnóstico - defaults
+                        "diagnostic_glp_density_ref": 0.55,
+                        "diagnostic_glp_density_tolerance_pct": 5.0,
+                        "diagnostic_driver_amp_base": None,
+                        "diagnostic_driver_amp_multiplier": 1.3,
+                        "diagnostic_n1_threshold": None,
+                        "diagnostic_n2_threshold": None,
+                        "diagnostic_amp_imbalance_threshold_pct": 5.0,
                     }
                 }, status=status.HTTP_200_OK)
 

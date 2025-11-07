@@ -21,6 +21,7 @@ urlpatterns = [
     path('api/listar-tickets/<uuid:sistema_id>/', views.ListarTicketsQueryView.as_view(), name='listar_tickets'),
     path('api/asignar-ticket-batch/<uuid:batch_id>/', views.AsignarTicketBatchView.as_view(), name='asignar_ticket_batch'),
     path('api/detalle-batch/<uuid:batch_id>/', views.DetalleBatchView.as_view(), name='detalle_batch'),
+    path('api/configuracion/actualizar/<uuid:sistema_id>/', views.ActualizarConfiguracionView.as_view(), name='actualizar_configuracion'),
     
     # PDF Downloads
     path('pdf/ticket-batch/<uuid:batch_id>/', DescargarTicketBatchPDFView.as_view(), name='descargar_ticket_batch_pdf'),

@@ -84,6 +84,56 @@ class ConfiguracionCoeficientes(BaseModel):
     ucarta_met = models.FloatField(null=True, blank=True, verbose_name="Incertidumbre carta medidor (%)")  # id: ucartaMet
     zero_stab = models.FloatField(null=True, blank=True, verbose_name="Estabilidad en cero medidor (Kg/m³)")  # id: zeroStab
 
+    # ===============================
+    # Diagnóstico del Coriolis
+    # ===============================
+    diagnostic_glp_density_ref = models.FloatField(
+        null=True,
+        blank=True,
+        default=0.55,
+        verbose_name="Densidad GLP de referencia (g/cc)",
+        help_text="Valor nominal de la densidad del GLP usado para estimar porcentaje de agua"
+    )
+    diagnostic_glp_density_tolerance_pct = models.FloatField(
+        null=True,
+        blank=True,
+        default=5.0,
+        verbose_name="Variación permitida densidad GLP (%)",
+        help_text="Margen porcentual para considerar variaciones naturales del GLP"
+    )
+    diagnostic_driver_amp_base = models.FloatField(
+        null=True,
+        blank=True,
+        verbose_name="Driver Amp base (mA)",
+        help_text="Corriente de referencia del driver para detectar incrementos anómalos"
+    )
+    diagnostic_driver_amp_multiplier = models.FloatField(
+        null=True,
+        blank=True,
+        default=1.3,
+        verbose_name="Multiplicador alerta Driver Amp",
+        help_text="Factor multiplicador aplicado al valor base para marcar alerta"
+    )
+    diagnostic_n1_threshold = models.FloatField(
+        null=True,
+        blank=True,
+        verbose_name="Umbral N1",
+        help_text="Valor máximo esperado para el ruido estimado N1"
+    )
+    diagnostic_n2_threshold = models.FloatField(
+        null=True,
+        blank=True,
+        verbose_name="Umbral N2",
+        help_text="Valor máximo esperado para el ruido estimado N2"
+    )
+    diagnostic_amp_imbalance_threshold_pct = models.FloatField(
+        null=True,
+        blank=True,
+        default=5.0,
+        verbose_name="Umbral desbalance A1/A2 (%)",
+        help_text="Porcentaje de desbalance entre A1 y A2 a partir del cual se reporta alerta"
+    )
+
     class Meta:
         verbose_name = "Configuración de Coeficientes"
         verbose_name_plural = "Configuraciones de Coeficientes"

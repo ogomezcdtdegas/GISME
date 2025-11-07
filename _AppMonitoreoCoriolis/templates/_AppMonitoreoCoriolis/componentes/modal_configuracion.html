@@ -28,6 +28,9 @@
           <li class="nav-item" role="presentation">
             <button class="nav-link" id="tab-tickets-tab" data-bs-toggle="tab" data-bs-target="#tab-tickets" type="button" role="tab" aria-controls="tab-tickets" aria-selected="false">Tickets</button>
           </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="tab-diagnostico-tab" data-bs-toggle="tab" data-bs-target="#tab-diagnostico" type="button" role="tab" aria-controls="tab-diagnostico" aria-selected="false">Diagnóstico</button>
+          </li>
           <li class="nav-item dropdown" role="presentation">
             <a class="nav-link dropdown-toggle" data-bs-toggle="dropdown" href="#" role="button" aria-expanded="false">Incertidumbre</a>
             <ul class="dropdown-menu">
@@ -134,6 +137,83 @@
                 <div class="col-md-3 d-flex align-items-center">
                   <label for="numberTicket" class="fw-bold form-label mb-0 me-1">#</label>
                   <input type="number" class="form-control" id="numberTicket" name="numberTicket" step="any" placeholder="0" min="0">
+                </div>
+              </div>
+            </div>
+
+            <!-- Tab: Diagnóstico -->
+            <div class="tab-pane fade" id="tab-diagnostico" role="tabpanel" aria-labelledby="tab-diagnostico-tab">
+              <div class="row g-3">
+                <div class="col-lg-6">
+                  <div class="card h-100 shadow-sm">
+                    <div class="card-header bg-info text-white fw-bold">
+                      <i class="bi bi-droplet-half"></i> Fluido y Multífases
+                    </div>
+                    <div class="card-body">
+                      <div class="mb-3">
+                        <label for="diagnosticGlpDensityRef" class="fw-bold form-label">Densidad de referencia GLP</label>
+                        <div class="input-group">
+                          <input type="number" step="0.0001" class="form-control" id="diagnosticGlpDensityRef" name="diagnosticGlpDensityRef" placeholder="0.55">
+                          <span class="input-group-text">g/cc</span>
+                        </div>
+                        <small class="text-muted">Usada para estimar el porcentaje de agua por mezcla de densidades.</small>
+                      </div>
+                      <div class="mb-3">
+                        <label for="diagnosticGlpDensityTolerance" class="fw-bold form-label">Variación permitida GLP</label>
+                        <div class="input-group">
+                          <input type="number" step="0.1" class="form-control" id="diagnosticGlpDensityTolerance" name="diagnosticGlpDensityTolerance" placeholder="5">
+                          <span class="input-group-text">%</span>
+                        </div>
+                        <small class="text-muted">Margen para absorber variaciones naturales del GLP.</small>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-lg-6">
+                  <div class="card h-100 shadow-sm">
+                    <div class="card-header bg-secondary text-white fw-bold">
+                      <i class="bi bi-activity"></i> Señales del medidor
+                    </div>
+                    <div class="card-body">
+                      <div class="mb-3">
+                        <label for="diagnosticDriverAmpBase" class="fw-bold form-label">Driver Amp base</label>
+                        <div class="input-group">
+                          <input type="number" step="0.01" class="form-control" id="diagnosticDriverAmpBase" name="diagnosticDriverAmpBase" placeholder="Ingrese referencia">
+                          <span class="input-group-text">mA</span>
+                        </div>
+                        <small class="text-muted">Valor nominal configurado en sitio.</small>
+                      </div>
+                      <div class="mb-3">
+                        <label for="diagnosticDriverAmpMultiplier" class="fw-bold form-label">Multiplicador alerta Driver Amp</label>
+                        <div class="input-group">
+                          <input type="number" step="0.05" class="form-control" id="diagnosticDriverAmpMultiplier" name="diagnosticDriverAmpMultiplier" placeholder="1.3" min="1">
+                        </div>
+                        <small class="text-muted">Se marcará alerta cuando Driver Amp supere base × multiplicador.</small>
+                      </div>
+                      <div class="row g-3">
+                        <div class="col-md-6">
+                          <label for="diagnosticN1Threshold" class="fw-bold form-label">Umbral N1</label>
+                          <div class="input-group">
+                            <input type="number" step="0.01" class="form-control" id="diagnosticN1Threshold" name="diagnosticN1Threshold" placeholder="Valor máximo">
+                          </div>
+                        </div>
+                        <div class="col-md-6">
+                          <label for="diagnosticN2Threshold" class="fw-bold form-label">Umbral N2</label>
+                          <div class="input-group">
+                            <input type="number" step="0.01" class="form-control" id="diagnosticN2Threshold" name="diagnosticN2Threshold" placeholder="Valor máximo">
+                          </div>
+                        </div>
+                      </div>
+                      <div class="mt-3">
+                        <label for="diagnosticAmpImbalanceThreshold" class="fw-bold form-label">Umbral desbalance A1/A2</label>
+                        <div class="input-group">
+                          <input type="number" step="0.1" class="form-control" id="diagnosticAmpImbalanceThreshold" name="diagnosticAmpImbalanceThreshold" placeholder="5">
+                          <span class="input-group-text">%</span>
+                        </div>
+                        <small class="text-muted">Señala alerta si |A1-A2|/(A1+A2) supera este porcentaje.</small>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -278,6 +358,19 @@ document.addEventListener('DOMContentLoaded', function() {
     const modal = document.getElementById('modalConfiguracionSistema');
     const btnActualizar = document.getElementById('btnActualizarCoeficientes');
     const form = document.getElementById('formConfiguracionSistema');
+    const setInputValue = (id, value) => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.value = value;
+        }
+    };
+    const getInputValue = (id, parser = parseFloat) => {
+        const el = document.getElementById(id);
+        if (!el) {
+            return null;
+        }
+        return parser === null ? el.value : parser(el.value);
+    };
     
     if (modal) {
         modal.addEventListener('hidden.bs.modal', function () {
@@ -300,10 +393,12 @@ document.addEventListener('DOMContentLoaded', function() {
         cargarCoeficientesActuales();
     });
 
-    // Manejar click del botón Actualizar
-    btnActualizar.addEventListener('click', function() {
-        actualizarCoeficientes();
-    });
+    // Manejar click del botón Actualizar (si el usuario tiene permisos)
+    if (btnActualizar) {
+        btnActualizar.addEventListener('click', function() {
+            actualizarCoeficientes();
+        });
+    }
 
     function cargarCoeficientesActuales() {
         //console.log('Cargando coeficientes actuales...');
@@ -331,36 +426,47 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
             if (data.success && data.data) {
-                document.getElementById('tempSalidaM').value = data.data.mt || '1.0';
-                document.getElementById('tempSalidaB').value = data.data.bt || '0.0';
-                document.getElementById('presionSalidaM').value = data.data.mp || '1.0';
-                document.getElementById('presionSalidaB').value = data.data.bp || '0.0';
-                document.getElementById('zeroPresion').value = data.data.zero_presion || '0.0';
-                document.getElementById('spanPresion').value = data.data.span_presion || '1.0';
+                setInputValue('tempSalidaM', data.data.mt ?? '1.0');
+                setInputValue('tempSalidaB', data.data.bt ?? '0.0');
+                setInputValue('presionSalidaM', data.data.mp ?? '1.0');
+                setInputValue('presionSalidaB', data.data.bp ?? '0.0');
                 
                 // Nuevos campos de configuración de batch
-                document.getElementById('limInfCaudalMasico').value = data.data.lim_inf_caudal_masico || '0.0';
-                document.getElementById('limSupCaudalMasico').value = data.data.lim_sup_caudal_masico || '1000000.0';
-                document.getElementById('volMasicoIniBatch').value = data.data.vol_masico_ini_batch || '0.0';
-                document.getElementById('numberTicket').value = data.data.num_ticket || '1';
-                document.getElementById('timeFinishedBatch').value = data.data.time_finished_batch || '2.0';
+                setInputValue('limInfCaudalMasico', data.data.lim_inf_caudal_masico ?? '0.0');
+                setInputValue('limSupCaudalMasico', data.data.lim_sup_caudal_masico ?? '1000000.0');
+                setInputValue('volMasicoIniBatch', data.data.vol_masico_ini_batch ?? '0.0');
+                setInputValue('numberTicket', data.data.num_ticket ?? '1');
+                setInputValue('timeFinishedBatch', data.data.time_finished_batch ?? '2.0');
 
-                // =====================
-                // Campos Incertidumbre (sin densidad manual)
-                // =====================
-        document.getElementById('MF').value = data.data.mf ?? '1.0';
-        document.getElementById('vis').value = data.data.vis ?? '0.0';
-        document.getElementById('deltavis').value = data.data.deltavis ?? '0.0';
-        document.getElementById('DN').value = data.data.dn ?? '0.0';
-        document.getElementById('ucalDens').value = data.data.ucal_dens ?? '0.0';
-        document.getElementById('kcalDens').value = data.data.kcal_dens ?? '0.0';
-        document.getElementById('tipdens').value = (data.data.tipdens ?? '');
-        document.getElementById('desvdens').value = data.data.desv_dens ?? '0.0';
-        document.getElementById('ucalMet').value = data.data.ucal_met ?? '0.0';
-        document.getElementById('kcalMet').value = data.data.kcal_met ?? '0.0';
-        document.getElementById('esisMet').value = data.data.esis_met ?? '0.0';
-        document.getElementById('ucartaMet').value = data.data.ucarta_met ?? '0.0';
-        document.getElementById('zeroStab').value = data.data.zero_stab ?? '0.0';
+                // Campos de incertidumbre
+                setInputValue('MF', data.data.mf ?? '1.0');
+                setInputValue('vis', data.data.vis ?? '0.0');
+                setInputValue('deltavis', data.data.deltavis ?? '0.0');
+                setInputValue('DN', data.data.dn ?? '0.0');
+                setInputValue('ucalDens', data.data.ucal_dens ?? '0.0');
+                setInputValue('kcalDens', data.data.kcal_dens ?? '0.0');
+                setInputValue('tipdens', data.data.tipdens ?? '');
+                setInputValue('desvdens', data.data.desv_dens ?? '0.0');
+                setInputValue('ucalMet', data.data.ucal_met ?? '0.0');
+                setInputValue('kcalMet', data.data.kcal_met ?? '0.0');
+                setInputValue('esisMet', data.data.esis_met ?? '0.0');
+                setInputValue('ucartaMet', data.data.ucarta_met ?? '0.0');
+                setInputValue('zeroStab', data.data.zero_stab ?? '0.0');
+                const diagInputs = {
+                    diagnosticGlpDensityRef: data.data.diagnostic_glp_density_ref ?? '0.55',
+                    diagnosticGlpDensityTolerance: data.data.diagnostic_glp_density_tolerance_pct ?? '5',
+            diagnosticDriverAmpBase: data.data.diagnostic_driver_amp_base ?? '',
+            diagnosticDriverAmpMultiplier: data.data.diagnostic_driver_amp_multiplier ?? '1.3',
+            diagnosticN1Threshold: data.data.diagnostic_n1_threshold ?? '',
+            diagnosticN2Threshold: data.data.diagnostic_n2_threshold ?? '',
+            diagnosticAmpImbalanceThreshold: data.data.diagnostic_amp_imbalance_threshold_pct ?? '5'
+        };
+        Object.entries(diagInputs).forEach(([id, value]) => {
+            const input = document.getElementById(id);
+            if (input) {
+                input.value = value;
+            }
+        });
                 
                 if (!data.exists) {
                     //console.info('Coeficientes no configurados. Mostrando valores por defecto.');
@@ -392,34 +498,38 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     function cargarValoresPorDefecto() {
-        document.getElementById('tempSalidaM').value = '1.0';
-        document.getElementById('tempSalidaB').value = '0.0';
-        document.getElementById('presionSalidaM').value = '1.0';
-        document.getElementById('presionSalidaB').value = '0.0';
-        document.getElementById('zeroPresion').value = '0.0';
-        document.getElementById('spanPresion').value = '1.0';
-        
-        // Valores por defecto para configuración de batch
-        document.getElementById('limInfCaudalMasico').value = '0.0';
-        document.getElementById('limSupCaudalMasico').value = '1000000.0';
-        document.getElementById('volMasicoIniBatch').value = '0.0';
-        document.getElementById('numberTicket').value = '1';
-        document.getElementById('timeFinishedBatch').value = '2.0';
-
-  // Valores por defecto para incertidumbre (sin densidad manual)
-    document.getElementById('MF').value = '1.0';
-    document.getElementById('vis').value = '0.0';
-    document.getElementById('deltavis').value = '0.0';
-    document.getElementById('DN').value = '0.0';
-    document.getElementById('ucalDens').value = '0.0';
-    document.getElementById('kcalDens').value = '0.0';
-    document.getElementById('tipdens').value = '';
-    document.getElementById('desvdens').value = '0.0';
-    document.getElementById('ucalMet').value = '0.0';
-    document.getElementById('kcalMet').value = '0.0';
-    document.getElementById('esisMet').value = '0.0';
-    document.getElementById('ucartaMet').value = '0.0';
-    document.getElementById('zeroStab').value = '0.0';
+        const defaults = {
+            tempSalidaM: '1.0',
+            tempSalidaB: '0.0',
+            presionSalidaM: '1.0',
+            presionSalidaB: '0.0',
+            limInfCaudalMasico: '0.0',
+            limSupCaudalMasico: '1000000.0',
+            volMasicoIniBatch: '0.0',
+            numberTicket: '1',
+            timeFinishedBatch: '2.0',
+            MF: '1.0',
+            vis: '0.0',
+            deltavis: '0.0',
+            DN: '0.0',
+            ucalDens: '0.0',
+            kcalDens: '0.0',
+            tipdens: '',
+            desvdens: '0.0',
+            ucalMet: '0.0',
+            kcalMet: '0.0',
+            esisMet: '0.0',
+            ucartaMet: '0.0',
+            zeroStab: '0.0',
+            diagnosticGlpDensityRef: '0.55',
+            diagnosticGlpDensityTolerance: '5',
+            diagnosticDriverAmpBase: '',
+            diagnosticDriverAmpMultiplier: '1.3',
+            diagnosticN1Threshold: '',
+            diagnosticN2Threshold: '',
+            diagnosticAmpImbalanceThreshold: '5'
+        };
+        Object.entries(defaults).forEach(([id, value]) => setInputValue(id, value));
     }
 
     function actualizarCoeficientes() {
@@ -432,40 +542,54 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // Obtener valores del formulario
-        const mt = parseFloat(document.getElementById('tempSalidaM').value);
-        const bt = parseFloat(document.getElementById('tempSalidaB').value);
-        const mp = parseFloat(document.getElementById('presionSalidaM').value);
-        const bp = parseFloat(document.getElementById('presionSalidaB').value);
-        const zeroPresion = parseFloat(document.getElementById('zeroPresion').value);
-        const spanPresion = parseFloat(document.getElementById('spanPresion').value);
+        const mt = getInputValue('tempSalidaM');
+        const bt = getInputValue('tempSalidaB');
+        const mp = getInputValue('presionSalidaM');
+        const bp = getInputValue('presionSalidaB');
         
         // Obtener valores de configuración de batch
-        const limInfCaudalMasico = parseFloat(document.getElementById('limInfCaudalMasico').value);
-        const limSupCaudalMasico = parseFloat(document.getElementById('limSupCaudalMasico').value);
-        const volMasicoIniBatch = parseFloat(document.getElementById('volMasicoIniBatch').value);
-        const numTicket = parseInt(document.getElementById('numberTicket').value);
-        const timeFinishedBatch = parseFloat(document.getElementById('timeFinishedBatch').value);
+        const limInfCaudalMasico = getInputValue('limInfCaudalMasico');
+        const limSupCaudalMasico = getInputValue('limSupCaudalMasico');
+        const volMasicoIniBatch = getInputValue('volMasicoIniBatch');
+        const numTicketRaw = getInputValue('numberTicket', null);
+        const numTicket = numTicketRaw !== null && numTicketRaw !== '' ? parseInt(numTicketRaw, 10) : null;
+        const timeFinishedBatch = getInputValue('timeFinishedBatch');
 
   // =====================
   // Lectura campos incertidumbre
   // =====================
-  const mfVal = parseFloat(document.getElementById('MF').value);
-  const visVal = parseFloat(document.getElementById('vis').value);
-  const deltavisVal = parseFloat(document.getElementById('deltavis').value);
-  const dnVal = parseFloat(document.getElementById('DN').value);
-  const ucalDensVal = parseFloat(document.getElementById('ucalDens').value);
-  const kcalDensVal = parseFloat(document.getElementById('kcalDens').value);
-  const tipdensVal = document.getElementById('tipdens').value || '';
-  const desvDensVal = parseFloat(document.getElementById('desvdens').value);
-  const ucalMetVal = parseFloat(document.getElementById('ucalMet').value);
-  const kcalMetVal = parseFloat(document.getElementById('kcalMet').value);
-  const esisMetVal = parseFloat(document.getElementById('esisMet').value);
-  const ucartaMetVal = parseFloat(document.getElementById('ucartaMet').value);
-  const zeroStabVal = parseFloat(document.getElementById('zeroStab').value);
+  const mfVal = getInputValue('MF');
+  const visVal = getInputValue('vis');
+  const deltavisVal = getInputValue('deltavis');
+  const dnVal = getInputValue('DN');
+  const ucalDensVal = getInputValue('ucalDens');
+  const kcalDensVal = getInputValue('kcalDens');
+  const tipdensVal = getInputValue('tipdens', null) || '';
+  const desvDensVal = getInputValue('desvdens');
+  const ucalMetVal = getInputValue('ucalMet');
+  const kcalMetVal = getInputValue('kcalMet');
+  const esisMetVal = getInputValue('esisMet');
+  const ucartaMetVal = getInputValue('ucartaMet');
+  const zeroStabVal = getInputValue('zeroStab');
+  const diagGlpRefRaw = getInputValue('diagnosticGlpDensityRef', null) ?? '';
+  const diagGlpToleranceRaw = getInputValue('diagnosticGlpDensityTolerance', null) ?? '';
+  const diagDriverAmpBaseRaw = getInputValue('diagnosticDriverAmpBase', null) ?? '';
+  const diagDriverAmpMultiplierRaw = getInputValue('diagnosticDriverAmpMultiplier', null) ?? '';
+  const diagN1Raw = getInputValue('diagnosticN1Threshold', null) ?? '';
+  const diagN2Raw = getInputValue('diagnosticN2Threshold', null) ?? '';
+  const diagImbalanceRaw = getInputValue('diagnosticAmpImbalanceThreshold', null) ?? '';
+
+  const diagGlpRefVal = diagGlpRefRaw === '' ? null : parseFloat(diagGlpRefRaw);
+  const diagGlpToleranceVal = diagGlpToleranceRaw === '' ? null : parseFloat(diagGlpToleranceRaw);
+  const diagDriverAmpBaseVal = diagDriverAmpBaseRaw === '' ? null : parseFloat(diagDriverAmpBaseRaw);
+  const diagDriverAmpMultiplierVal = diagDriverAmpMultiplierRaw === '' ? null : parseFloat(diagDriverAmpMultiplierRaw);
+  const diagN1Val = diagN1Raw === '' ? null : parseFloat(diagN1Raw);
+  const diagN2Val = diagN2Raw === '' ? null : parseFloat(diagN2Raw);
+  const diagImbalanceVal = diagImbalanceRaw === '' ? null : parseFloat(diagImbalanceRaw);
 
         // Validar que todos los valores son números válidos
-        if (isNaN(mt) || isNaN(bt) || isNaN(mp) || isNaN(bp) || isNaN(zeroPresion) || isNaN(spanPresion) ||
-            isNaN(limInfCaudalMasico) || isNaN(limSupCaudalMasico) || isNaN(volMasicoIniBatch) || isNaN(numTicket) || isNaN(timeFinishedBatch)) {
+        const requeridos = [mt, bt, mp, bp, limInfCaudalMasico, limSupCaudalMasico, volMasicoIniBatch, timeFinishedBatch];
+        if (requeridos.some(v => v === null || Number.isNaN(v)) || numTicket === null || Number.isNaN(numTicket)) {
             showErrorAlert('Todos los valores deben ser números válidos');
             return;
         }
@@ -475,6 +599,33 @@ document.addEventListener('DOMContentLoaded', function() {
     const algunNaN = incertidumbreNumericos.some(v => isNaN(v));
     if (algunNaN) {
       showErrorAlert('Campos de incertidumbre contienen valores no numéricos');
+      return;
+    }
+
+    const diagnosticoValores = [diagGlpRefVal, diagGlpToleranceVal, diagDriverAmpBaseVal, diagDriverAmpMultiplierVal, diagN1Val, diagN2Val, diagImbalanceVal];
+    const diagnosticoInvalido = diagnosticoValores.some(v => v !== null && Number.isNaN(v));
+    if (diagnosticoInvalido) {
+      showErrorAlert('Campos de diagnóstico contienen valores no numéricos');
+      return;
+    }
+
+    if (diagGlpRefVal !== null && diagGlpRefVal <= 0) {
+      showErrorAlert('La densidad de referencia debe ser mayor a 0');
+      return;
+    }
+
+    if (diagGlpToleranceVal !== null && diagGlpToleranceVal < 0) {
+      showErrorAlert('La variación de densidad no puede ser negativa');
+      return;
+    }
+
+    if (diagDriverAmpMultiplierVal !== null && diagDriverAmpMultiplierVal < 1) {
+      showErrorAlert('El multiplicador de Driver Amp debe ser mayor o igual a 1');
+      return;
+    }
+
+    if (diagImbalanceVal !== null && diagImbalanceVal < 0) {
+      showErrorAlert('El umbral de desbalance no puede ser negativo');
       return;
     }
         
@@ -490,13 +641,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         const coeficientes = {
-            systemId: sistemaId,
             mt: mt,
             bt: bt,
             mp: mp,
             bp: bp,
-            zero_presion: zeroPresion,
-            span_presion: spanPresion,
             lim_inf_caudal_masico: limInfCaudalMasico,
             lim_sup_caudal_masico: limSupCaudalMasico,
             vol_masico_ini_batch: volMasicoIniBatch,
@@ -515,7 +663,14 @@ document.addEventListener('DOMContentLoaded', function() {
       kcal_met: kcalMetVal,
       esis_met: esisMetVal,
       ucarta_met: ucartaMetVal,
-      zero_stab: zeroStabVal
+      zero_stab: zeroStabVal,
+      diagnostic_glp_density_ref: diagGlpRefVal,
+      diagnostic_glp_density_tolerance_pct: diagGlpToleranceVal,
+      diagnostic_driver_amp_base: diagDriverAmpBaseVal,
+      diagnostic_driver_amp_multiplier: diagDriverAmpMultiplierVal,
+      diagnostic_n1_threshold: diagN1Val,
+      diagnostic_n2_threshold: diagN2Val,
+      diagnostic_amp_imbalance_threshold_pct: diagImbalanceVal
         };
 
         //console.log('Actualizando coeficientes:', coeficientes);
@@ -525,7 +680,7 @@ document.addEventListener('DOMContentLoaded', function() {
         btnActualizar.innerHTML = '<i class="bi bi-hourglass-split"></i> Guardando...';
 
         // Llamada al backend para guardar los coeficientes
-        fetch('/complementos/api/coeficientes/', {
+        fetch(`/monitoreo/api/configuracion/actualizar/${sistemaId}/`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
