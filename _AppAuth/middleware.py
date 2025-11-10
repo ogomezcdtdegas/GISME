@@ -43,3 +43,13 @@ class AuthMiddleware:
 
         # Si NO está autenticado → manda al login de MSAL
         return redirect('/aad/login?post_login_redirect_uri=/')
+
+
+class CustomServerHeaderMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        response = self.get_response(request)
+        response['Server'] = 'Kernel'
+        return response
