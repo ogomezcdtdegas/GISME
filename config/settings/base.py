@@ -97,7 +97,6 @@ MIDDLEWARE = [
     '_AppAuth.middleware_msal.MSALAuthMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    '_AppAuth.middleware.CustomServerHeaderMiddleware',
     '_AppAuth.middleware.AuthMiddleware',
 ]
 
