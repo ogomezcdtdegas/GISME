@@ -47,7 +47,7 @@ sistema_urls = [
 ]
 
 coeficientes_urls = [
-    path('api/coeficientes/', CreateOrUpdateCoeficientesCommandView.as_view(), name='crear_actualizar_coeficientes'),
+    #path('api/coeficientes/', CreateOrUpdateCoeficientesCommandView.as_view(), name='crear_actualizar_coeficientes'),
     path('api/coeficientes/<uuid:sistema_id>/', GetCoeficientesBySistemaQueryView.as_view(), name='obtener_coeficientes_sistema'),
     path('api/coeficientes-by-id/<uuid:pk>/', ObtenerCoeficientesQueryView.as_view(), name='obtener_coeficientes_por_id'),
 ]

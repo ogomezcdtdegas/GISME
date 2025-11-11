@@ -7,6 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from _AppComplementos.models import Sistema, ConfiguracionCoeficientes
 from _AppMonitoreoCoriolis.models import BatchDetectado
 from _AppAdmin.mixins import ComplementosPermissionMixin
+from _AppAdmin.utils import log_user_action, get_client_ip
 
 # Configurar logging
 logger = logging.getLogger(__name__)
@@ -80,6 +81,48 @@ class ActualizarConfiguracionCommandView(ComplementosPermissionMixin,APIView):
                 config.tipdens = data['tipdens'] or None
 
             config.save()
+
+            # Registrar la acción en el log universal
+            action = 'crear' if created else 'editar'
+            log_user_action(
+                user=request.user,
+                action=action,
+                affected_type='sistema',  # Tipo de registro afectado
+                affected_value = (
+                    f"{sistema.tag} - Coeficientes de corrección: "
+                    f"MT: {config.mt}, "
+                    f"BT: {config.bt}, "
+                    f"MP: {config.mp}, "
+                    f"BP: {config.bp}, "
+                    f"LimInf: {config.lim_inf_caudal_masico}, "
+                    f"LimSup: {config.lim_sup_caudal_masico}, "
+                    f"VolBatch: {config.vol_masico_ini_batch}, "
+                    f"Ticket: {config.num_ticket}, "
+                    f"TimeBatch: {config.time_finished_batch}, "
+                    f"DensRefGLP: {config.diagnostic_glp_density_ref}, "
+                    f"VarPermGLP: {config.diagnostic_glp_density_tolerance_pct}, "
+                    f"DriverAmpBase: {config.diagnostic_driver_amp_base}, "
+                    f"DriverAmpMult: {config.diagnostic_driver_amp_multiplier}, "
+                    f"N1Threshold: {config.diagnostic_n1_threshold}, "
+                    f"N2Threshold: {config.diagnostic_n2_threshold}, "
+                    f"UmbralDesbalance: {config.diagnostic_amp_imbalance_threshold_pct}, "
+                    f"FactorCorreción: {config.mf}, "
+                    f"ViscosidadDinámica: {config.vis}, "
+                    f"RangoViscosidad: {config.deltavis}, "
+                    f"DiametroNominal: {config.dn}, "
+                    f"IncertCalDensitómetro: {config.ucal_dens}, "
+                    f"FactorCobDensitómetro: {config.kcal_dens}, "
+                    f"TipoDensitómetro: {config.tipdens}, "
+                    f"DesvViscosidad: {config.desv_dens}, "
+                    f"IncertCalMedidor: {config.ucal_met}, "
+                    f"FactorCobMedidor: {config.kcal_met}, "
+                    f"ErrorMáxMedidor: {config.esis_met}, "
+                    f"IncertCartaMedidor: {config.ucarta_met}, "
+                    f"EstabilidadCeroMedidor: {config.zero_stab}"
+                ),
+                affected_id=str(sistema_id),  # ID del sistema afectado
+                ip_address=get_client_ip(request)
+            )
             
             logger.info(f"Configuración actualizada para sistema {sistema_id}")
             
