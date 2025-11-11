@@ -688,20 +688,24 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             body: JSON.stringify(coeficientes)
         })
-        .then(response => {
+        .then(async response => {
             // Verificar si hay error de permisos
             if (response.status === 403) {
-                return response.json().then(data => {
-                    // Lanzar error específico para permisos
-                    const errorMsg = data.error || 'No tiene permisos para esta acción. Contacte al administrador.';
-                    const permissionError = new Error(errorMsg);
-                    permissionError.isPermissionError = true;
-                    throw permissionError;
-                });
+                const data = await response.json();
+                const errorMsg = data.error || 'No tiene permisos para esta acción. Contacte al administrador.';
+                const permissionError = new Error(errorMsg);
+                permissionError.isPermissionError = true;
+                throw permissionError;
             }
+            
+            // Manejar otros errores HTTP (incluyendo 400)
             if (!response.ok) {
-                throw new Error(`Error ${response.status}: ${response.statusText}`);
+                const data = await response.json();
+                // Extraer el mensaje personalizado del backend
+                const errorMsg = data.error || data.message || `Error ${response.status}: ${response.statusText}`;
+                throw new Error(errorMsg);
             }
+            
             return response.json();
         })
         .then(data => {
