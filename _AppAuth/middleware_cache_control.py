@@ -83,8 +83,9 @@ class CacheControlMiddleware:
         
         # Para el resto de páginas (contenido dinámico)
         else:
-            # Cache corto para páginas dinámicas (5 minutos)
-            response['Cache-Control'] = 'public, max-age=300'
+            response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+            response['Pragma'] = 'no-cache'
+            response['Expires'] = '0'
         
         return response
     
