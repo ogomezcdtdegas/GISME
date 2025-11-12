@@ -4,10 +4,10 @@
 {% block title %}Monitoreo Coriolis - GISME{% endblock %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="{% static 'css/monitoreo.css' %}">
-<link rel="stylesheet" href="{% static 'css/coriolis-common.css' %}">
-<link rel="stylesheet" href="{% static 'css/coriolis-spa.css' %}">
-<link rel="stylesheet" href="{% static 'css/soft-colors.css' %}">
+<link rel="stylesheet" href="{% static '_AppMonitoreoCoriolis/css/css_general/monitoreo.css' %}">
+<link rel="stylesheet" href="{% static '_AppMonitoreoCoriolis/css/css_general/coriolis-common.css' %}">
+<link rel="stylesheet" href="{% static '_AppMonitoreoCoriolis/css/css_general/coriolis-spa.css' %}">
+<link rel="stylesheet" href="{% static '_AppMonitoreoCoriolis/css/css_general/soft-colors.css' %}">
 <!-- Leaflet CSS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
@@ -22,87 +22,6 @@
 {% endblock %}
 
 {% block content %}
-<style>
-.hidden {
-    display: none !important;
-}
-
-/* Estilos para imagen fija del sistema Coriolis */
-.img-container {
-    overflow-x: auto !important;
-    overflow-y: hidden !important;
-    white-space: nowrap !important;
-    padding-bottom: 15px !important; /* Espacio para la barra de scroll horizontal */
-}
-
-.img-fixed {
-    width: 1050px !important;
-    height: auto !important;
-    min-width: 1050px !important;
-    max-width: none !important;
-    display: block !important;
-}
-
-/* Elementos de UI fijos que no se mueven con el scroll */
-.sistema-ui-overlay {
-    position: relative !important;
-    pointer-events: none !important; /* Permitir clics a través del overlay */
-    z-index: 10 !important;
-}
-
-.sistema-ui-element {
-    position: absolute !important;
-    pointer-events: auto !important; /* Restaurar clics en los elementos específicos */
-    z-index: 21 !important;
-}
-
-/* Mejorar las barras de scroll */
-.img-container::-webkit-scrollbar {
-    height: 12px;
-}
-
-.img-container::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 6px;
-}
-
-.img-container::-webkit-scrollbar-thumb {
-    background: #c1c1c1;
-    border-radius: 6px;
-}
-
-.img-container::-webkit-scrollbar-thumb:hover {
-    background: #a8a8a8;
-}
-
-/* Asegurar que el contenedor del card también tenga scroll horizontal si es necesario */
-.coriolis-card-body {
-    overflow-x: auto !important;
-}
-
-/* Media query personalizada para breakpoint a 1533px */
-@media (max-width: 1533px) {
-    .coriolis-responsive-layout .col-xl-9,
-    .coriolis-responsive-layout .col-xl-3 {
-        flex: 0 0 100% !important;
-        max-width: 100% !important;
-    }
-}
-
-/* Estilos para botones responsivos del header */
-@media (max-width: 768px) {
-    .coriolis-header-buttons {
-        flex-direction: column !important;
-        gap: 0.75rem !important;
-        align-items: stretch !important;
-    }
-    
-    .coriolis-header-buttons .btn {
-        width: 100% !important;
-        margin: 0 !important;
-    }
-}
-</style>
 
 <script>
 // Variables globales del sistema desde Django
@@ -461,13 +380,13 @@ let SISTEMA_ACTUAL;
 <script src="{% static 'js/coriolis-spa.js' %}"></script>
 
 <!-- Scripts modulares extraídos -->
-<script src="{% static '_AppMonitoreoCoriolis/js/config.js' %}?v=2.4"></script>
+<script src="{% static '_AppMonitoreoCoriolis/js/js_graficos/config.js' %}?v=2.4"></script>
 <script src="{% static '_AppMonitoreoCoriolis/js/utils.js' %}?v=2.2"></script>
-<script src="{% static '_AppMonitoreoCoriolis/js/data-loader.js' %}?v=2.5"></script>
-<script src="{% static '_AppMonitoreoCoriolis/js/charts.js' %}?v=2.4"></script>
-<script src="{% static '_AppMonitoreoCoriolis/js/time-control.js' %}?v=2.4"></script>
+<script src="{% static '_AppMonitoreoCoriolis/js/js_graficos/data-loader.js' %}?v=2.5"></script>
+<script src="{% static '_AppMonitoreoCoriolis/js/js_graficos/charts.js' %}?v=2.4"></script>
+<script src="{% static '_AppMonitoreoCoriolis/js/js_graficos/time-control.js' %}?v=2.4"></script>
 <!--<script src="{% static '_AppMonitoreoCoriolis/js/pdf-generator.js' %}?v=2.2"></script>-->
-<script src="{% static '_AppMonitoreoCoriolis/js/main.js' %}?v=2.5"></script>
+<script src="{% static '_AppMonitoreoCoriolis/js/js_graficos/main.js' %}?v=2.5"></script>
 
 <script>
 // Función global para abrir el modal de tickets

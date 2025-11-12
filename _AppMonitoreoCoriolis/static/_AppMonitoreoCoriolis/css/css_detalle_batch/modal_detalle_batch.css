@@ -1,0 +1,34 @@
+/**
+ * CSS para el modal de detalle de batch
+ * Estilos específicos para el modal modalDetalleBatch
+ */
+
+#modalDetalleBatch .card-pastel {
+    border: 1px solid #d9e6fb;
+    border-radius: 0.85rem;
+    box-shadow: 0 6px 18px rgba(15, 35, 95, 0.08);
+}
+
+#modalDetalleBatch .card-header-pastel {
+    background: linear-gradient(120deg, #eef5ff, #e3f2fd);
+    color: #0f3a5d;
+    border-bottom: 1px solid #d1e3fb;
+    font-weight: 600;
+}
+
+#modalDetalleBatch .incertidumbre-resumen table tr td:first-child {
+    width: 70%;
+}
+
+#modalDetalleBatch .incertidumbre-resumen .form-control {
+    text-align: right;
+}
+
+#modalDetalleBatch .incertidumbre-resumen small {
+    color: #6c778b;
+    font-weight: 500;
+}
+
+#modalDetalleBatch .chart-controls .form-check-label {
+    font-weight: 500;
+}
