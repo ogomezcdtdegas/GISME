@@ -46,6 +46,21 @@ async function actualizarDisplaysConDatosReales() {
             document.getElementById('tabla-frecuencia').textContent = 
                 `${data.datos.frecuencia.valor.toFixed(2)}`;
 
+            document.getElementById('tabla-NoiseEstimatedN1').textContent = 
+                `${data.datos.NoiseEstimadedN1.valor.toFixed(2)}`;
+
+            document.getElementById('tabla-NoiseEstimatedN2').textContent =
+                `${data.datos.NoiseEstimadedN2.valor.toFixed(2)}`;
+
+            document.getElementById('tabla-DriverAmplitude').textContent =
+                `${data.datos.DriverAmplitude.valor.toFixed(2)}`;
+
+            document.getElementById('tabla-DriverCurr').textContent =
+                `${data.datos.DriverCurr.valor.toFixed(2)}`;
+
+            document.getElementById('tabla-A1-A2').textContent =
+                `${data.datos.A1A2.valor.toFixed(2)}`;
+
             /*document.getElementById('tabla-concSolido').textContent = 
                 `${data.datos.concSolido.valor.toFixed(3)}`;
 

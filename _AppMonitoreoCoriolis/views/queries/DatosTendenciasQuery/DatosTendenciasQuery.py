@@ -39,7 +39,8 @@ class DatosTendenciasQueryView(APIView):
                         'flujo_volumetrico': {'label': 'Flujo Volumétrico', 'data': [], 'unidad': 'm³/min', 'color': '#007bff', 'total_registros': 0},
                         'temperatura_coriolis': {'label': 'Temperatura Coriolis', 'data': [], 'unidad': '°F', 'color': '#f59416', 'total_registros': 0},
                         'temperatura_salida': {'label': 'Temperatura de Salida', 'data': [], 'unidad': '°F', 'color': '#6f42c1', 'total_registros': 0},
-                        'presion': {'label': 'Presión', 'data': [], 'unidad': 'PSI', 'color': '#dc3545', 'total_registros': 0}
+                        'presion': {'label': 'Presión', 'data': [], 'unidad': 'PSI', 'color': '#dc3545', 'total_registros': 0},
+                        'densidad': {'label': 'Densidad', 'data': [], 'unidad': 'g/cc', 'color': "#cbdc35", 'total_registros': 0}
                     },
                     'total_registros': 0,
                     'info': 'No hay datos disponibles para este sistema'
@@ -62,6 +63,7 @@ class DatosTendenciasQueryView(APIView):
             temperatura_coriolis = []
             temperatura_salida = []
             presion = []
+            densidad = []
             
             for dato in datos:
                 # Convertir UTC a hora de Colombia usando timestamp IoT
@@ -126,7 +128,15 @@ class DatosTendenciasQueryView(APIView):
                         'y': presion_corregida,
                         'fecha': fecha_str
                     })
-            
+
+                # Densidad - mantener en g/cc
+                if dato.density is not None:
+                    densidad.append({
+                        'x': timestamp,
+                        'y': dato.density,
+                        'fecha': fecha_str
+                    })
+
             return Response({
                 'success': True,
                 'datasets': {
@@ -164,6 +174,13 @@ class DatosTendenciasQueryView(APIView):
                         'unidad': 'PSI',
                         'color': '#dc3545',  # Rojo
                         'total_registros': len(presion)
+                    },
+                    'densidad': {
+                        'label': 'Densidad',
+                        'data': densidad,
+                        'unidad': 'g/cc',
+                        'color': "#cbdc35",  # Amarillo verdoso
+                        'total_registros': len(densidad)
                     }
                 },
                 'sistema': {
