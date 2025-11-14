@@ -33,6 +33,7 @@ if (typeof window.chartjs_plugin_annotation !== 'undefined') {
 }
 
 let batchChart = null;
+let batchChartTecnico = null;
 let datosActualesBatch = null;
 
 // Función para mostrar el detalle del batch
@@ -100,15 +101,19 @@ function mostrarDetalleBatch(data) {
     // Controlar estado del botón de asignar ticket
     actualizarEstadoBotonTicket(data.batch_info.num_ticket);
     
-    // Crear el gráfico
+    // Crear el gráfico principal
     const limites = {
         lim_inf: data.lim_inf_caudal_masico,
         lim_sup: data.lim_sup_caudal_masico
     };
     crearGraficoBatch(data.datos_grafico, limites);
     
+    // Crear el gráfico técnico
+    crearGraficoTecnicoBatch(data.datos_grafico, limites);
+    
     // Configurar eventos de los checkboxes
     configurarEventosGraficoBatch();
+    configurarEventosGraficoTecnicoBatch();
 
     // Actualizar sección de Incertidumbre (si hay datos)
     actualizarSeccionIncertidumbre(data.incertidumbre);
@@ -861,4 +866,295 @@ function getCSRFToken() {
     
     //console.log('🔐 Token CSRF obtenido:', token ? `✅ Válido (${token.length} chars)` : '❌ No encontrado');
     return token || '';
+}
+
+// Función para crear el gráfico técnico del batch
+function crearGraficoTecnicoBatch(datos, limites) {
+    const ctx = document.getElementById('batchChartTecnico').getContext('2d');
+    
+    // Destruir gráfico anterior si existe
+    if (batchChartTecnico) {
+        batchChartTecnico.destroy();
+    }
+    
+    // Preparar datos para Chart.js
+    const labels = datos.map(d => d.fecha_hora);
+    
+    const datasets = [
+        // Caudal másico (igual al gráfico principal)
+        {
+            label: 'Caudal Másico (kg/min)',
+            data: datos.map(d => d.mass_rate_kg_min),
+            borderColor: datos.map(d => d.dentro_batch ? '#007bff' : '#004085'),
+            backgroundColor: '#007bff20',
+            yAxisID: 'y1',
+            tension: 0.4,
+            pointRadius: datos.map(d => d.dentro_batch ? 3 : 1),
+            pointBorderColor: datos.map(d => d.dentro_batch ? '#007bff' : '#004085'),
+            pointBackgroundColor: datos.map(d => d.dentro_batch ? '#007bff' : '#004085'),
+            borderWidth: 2,
+            segment: {
+                borderColor: function(ctx) {
+                    const currentIndex = ctx.p0DataIndex;
+                    const isInBatch = datos[currentIndex]?.dentro_batch;
+                    return isInBatch ? '#007bff' : '#004085';
+                },
+                borderWidth: function(ctx) {
+                    const currentIndex = ctx.p0DataIndex;
+                    const isInBatch = datos[currentIndex]?.dentro_batch;
+                    return isInBatch ? 3 : 2;
+                }
+            },
+            hidden: false
+        },
+        // Densidad
+        {
+            label: 'Densidad (g/cc)',
+            data: datos.map(d => d.density),
+            borderColor: datos.map(d => d.dentro_batch ? '#6f42c1' : '#4a2c7a'),
+            backgroundColor: '#6f42c120',
+            yAxisID: 'y2',
+            tension: 0.4,
+            pointRadius: datos.map(d => d.dentro_batch ? 3 : 1),
+            pointBorderColor: datos.map(d => d.dentro_batch ? '#6f42c1' : '#4a2c7a'),
+            pointBackgroundColor: datos.map(d => d.dentro_batch ? '#6f42c1' : '#4a2c7a'),
+            borderWidth: 2,
+            segment: {
+                borderColor: function(ctx) {
+                    const currentIndex = ctx.p0DataIndex;
+                    const isInBatch = datos[currentIndex]?.dentro_batch;
+                    return isInBatch ? '#6f42c1' : '#4a2c7a';
+                },
+                borderWidth: function(ctx) {
+                    const currentIndex = ctx.p0DataIndex;
+                    const isInBatch = datos[currentIndex]?.dentro_batch;
+                    return isInBatch ? 3 : 2;
+                }
+            },
+            hidden: false
+        },
+        // Driver Current
+        {
+            label: 'Driver Current (mA)',
+            data: datos.map(d => d.driver_current_ma || d.driver_current || d.driver_curr),
+            borderColor: '#e74c3c',
+            backgroundColor: '#e74c3c20',
+            yAxisID: 'y3',
+            tension: 0.4,
+            pointRadius: 2,
+            hidden: true
+        },
+        // Driver Amplitude
+        {
+            label: 'Driver Amplitude',
+            data: datos.map(d => d.dsp_rxmsg_driverAmplitude || d.driver_amplitude || d.dsp_rwsg_driverAmplitude),
+            borderColor: '#f39c12',
+            backgroundColor: '#f39c1220',
+            yAxisID: 'y4',
+            tension: 0.4,
+            pointRadius: 2,
+            hidden: true
+        },
+        // Noise N1
+        {
+            label: 'Noise N1',
+            data: datos.map(d => d.dsp_rxmsg_noiseEstimatedN1 || d.dsp_rwsg_noiseEstimatedN1 || d.noise_n1 || d.ruido_n1),
+            borderColor: '#e91e63',
+            backgroundColor: '#e91e6320',
+            yAxisID: 'y5',
+            tension: 0.4,
+            pointRadius: 2,
+            hidden: true
+        },
+        // Noise N2
+        {
+            label: 'Noise N2',
+            data: datos.map(d => d.dsp_rxmsg_noiseEstimatedN2 || d.dsp_rwsg_noiseEstimatedN2 || d.noise_n2 || d.ruido_n2),
+            borderColor: '#f48fb1',
+            backgroundColor: '#f48fb120',
+            yAxisID: 'y6',
+            tension: 0.4,
+            pointRadius: 2,
+            hidden: true
+        },
+        // Frecuencia
+        {
+            label: 'Frecuencia (Hz)',
+            data: datos.map(d => d.coriolis_frequency || d.coriolis_frecuency || d.frequency_hz || d.frecuencia),
+            borderColor: '#1abc9c',
+            backgroundColor: '#1abc9c20',
+            yAxisID: 'y7',
+            tension: 0.4,
+            pointRadius: 2,
+            hidden: true
+        }
+    ];
+    
+    batchChartTecnico = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: datasets
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: {
+                mode: 'index',
+                intersect: false,
+            },
+            plugins: {
+                legend: {
+                    display: true,
+                    position: 'top',
+                    labels: {
+                        usePointStyle: true,
+                        padding: 15
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        title: function(context) {
+                            return context[0].label;
+                        },
+                        label: function(context) {
+                            const punto = datos[context.dataIndex];
+                            const prefijo = punto.dentro_batch ? '🔹 Batch: ' : '⚫ Contexto: ';
+                            return prefijo + context.dataset.label + ': ' + context.formattedValue;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    title: {
+                        display: true,
+                        text: 'Tiempo'
+                    }
+                },
+                y1: {
+                    type: 'linear',
+                    position: 'left',
+                    title: {
+                        display: true,
+                        text: 'Caudal Másico (kg/min)'
+                    },
+                    grid: {
+                        color: '#007bff40'
+                    }
+                },
+                y2: {
+                    type: 'linear',
+                    position: 'right',
+                    title: {
+                        display: true,
+                        text: 'Densidad (g/cc)'
+                    },
+                    grid: {
+                        drawOnChartArea: false,
+                        color: '#6f42c140'
+                    }
+                },
+                y3: {
+                    type: 'linear',
+                    position: 'right',
+                    title: {
+                        display: true,
+                        text: 'Driver Current (mA)'
+                    },
+                    grid: {
+                        drawOnChartArea: false,
+                        color: '#e74c3c40'
+                    },
+                    display: false
+                },
+                y4: {
+                    type: 'linear',
+                    position: 'right',
+                    title: {
+                        display: true,
+                        text: 'Driver Amplitude'
+                    },
+                    grid: {
+                        drawOnChartArea: false,
+                        color: '#f39c1240'
+                    },
+                    display: false
+                },
+                y5: {
+                    type: 'linear',
+                    position: 'right',
+                    title: {
+                        display: true,
+                        text: 'Noise N1'
+                    },
+                    grid: {
+                        drawOnChartArea: false,
+                        color: '#e91e6340'
+                    },
+                    display: false
+                },
+                y6: {
+                    type: 'linear',
+                    position: 'right',
+                    title: {
+                        display: true,
+                        text: 'Noise N2'
+                    },
+                    grid: {
+                        drawOnChartArea: false,
+                        color: '#f48fb140'
+                    },
+                    display: false
+                },
+                y7: {
+                    type: 'linear',
+                    position: 'right',
+                    title: {
+                        display: true,
+                        text: 'Frecuencia (Hz)'
+                    },
+                    grid: {
+                        drawOnChartArea: false,
+                        color: '#1abc9c40'
+                    },
+                    display: false
+                }
+            }
+        }
+    });
+}
+
+// Función para configurar eventos de los checkboxes del gráfico técnico
+function configurarEventosGraficoTecnicoBatch() {
+    const checkboxes = ['showFlowRate', 'showDensityTech', 'showDriverCurrent', 'showDriverAmplitude', 'showNoiseN1', 'showNoiseN2', 'showFrequency'];
+    const datasets = [0, 1, 2, 3, 4, 5, 6]; // Índices de los datasets
+    const scales = ['y1', 'y2', 'y3', 'y4', 'y5', 'y6', 'y7']; // Escalas correspondientes
+    
+    checkboxes.forEach((checkboxId, index) => {
+        // Usar querySelectorAll para manejar checkboxes duplicados
+        const checkboxElements = document.querySelectorAll(`#${checkboxId}`);
+        checkboxElements.forEach(checkbox => {
+            if (checkbox) {
+                checkbox.addEventListener('change', function() {
+                    if (batchChartTecnico) {
+                        const dataset = batchChartTecnico.data.datasets[datasets[index]];
+                        const scale = scales[index];
+                        
+                        dataset.hidden = !this.checked;
+                        batchChartTecnico.options.scales[scale].display = this.checked;
+                        
+                        // Sincronizar todos los checkboxes con el mismo ID
+                        checkboxElements.forEach(cb => {
+                            if (cb !== this) {
+                                cb.checked = this.checked;
+                            }
+                        });
+                        
+                        batchChartTecnico.update();
+                    }
+                });
+            }
+        });
+    });
 }

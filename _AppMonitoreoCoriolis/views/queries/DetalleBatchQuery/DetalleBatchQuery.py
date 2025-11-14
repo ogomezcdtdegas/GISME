@@ -91,6 +91,7 @@ class DetalleBatchQueryView(APIView):
                     'dsp_rxmsg_driverAmplitude': dato.dsp_rxmsg_driverAmplitude,
                     'dsp_rxmsg_noiseEstimatedN1': dato.dsp_rxmsg_noiseEstimatedN1,
                     'dsp_rxmsg_noiseEstimatedN2': dato.dsp_rxmsg_noiseEstimatedN2,
+                    'coriolis_frequency': dato.coriolis_frecuency,  # Frecuencia del medidor Coriolis
                     'dentro_batch': dentro_batch  # Indica si está dentro del batch real
                 }
                 datos_grafico.append(registro)
