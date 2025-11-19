@@ -98,6 +98,26 @@ class DatosTiempoRealQueryView(APIView):
                         'valor': float(ultimo_dato.coriolis_frecuency) if ultimo_dato.coriolis_frecuency else 0,
                         'unidad': 'Hz'
                     },
+                    'NoiseEstimadedN1': {
+                        'valor': float(ultimo_dato.dsp_rxmsg_noiseEstimatedN1) if ultimo_dato.dsp_rxmsg_noiseEstimatedN1 else 0,
+                        'unidad': '--'
+                    },
+                    'NoiseEstimadedN2': {
+                        'valor': float(ultimo_dato.dsp_rxmsg_noiseEstimatedN2) if ultimo_dato.dsp_rxmsg_noiseEstimatedN2 else 0,
+                        'unidad': '--'
+                    },
+                    'DriverAmplitude': {
+                        'valor': float(ultimo_dato.dsp_rxmsg_driverAmplitude) if ultimo_dato.dsp_rxmsg_driverAmplitude else 0,
+                        'unidad': '--'
+                    },
+                    'DriverCurr': {
+                        'valor': float(ultimo_dato.driver_curr) if ultimo_dato.driver_curr else 0,
+                        'unidad': 'mA'
+                    },
+                    'A1A2': {
+                        'valor': float(ultimo_dato.dsp_rxmsg_amplitudeEstimateA1 - ultimo_dato.dsp_rxmsg_amplitudeEstimateA2) if (ultimo_dato.dsp_rxmsg_amplitudeEstimateA1 - ultimo_dato.dsp_rxmsg_amplitudeEstimateA2) else 0,
+                        'unidad': '--'
+                    },
                     'concSolido': {
                         'valor': float(ultimo_dato.pconc) if ultimo_dato.pconc else 0,
                         'unidad': '%'

@@ -98,6 +98,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     '_AppAuth.middleware.AuthMiddleware',
+    '_AppAuth.middleware_cache_control.CacheControlMiddleware',  # Añadir al final para procesar todas las respuestas
 ]
 
 USE_EASYAUTH = os.getenv("USE_EASYAUTH", "False").lower() == "true"
