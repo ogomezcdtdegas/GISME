@@ -399,3 +399,20 @@ function abrirModalBatches() {
     const modal = new bootstrap.Modal(document.getElementById('modalBuscarBatches'));
     modal.show();
 }
+
+// ================================
+// ESCUCHAR EVENTO DE TICKET ASIGNADO
+// ================================
+window.addEventListener('ticketAsignado', function(event) {
+    // Verificar si el modal de batches está abierto
+    const modalBatches = document.getElementById('modalBuscarBatches');
+    if (modalBatches && modalBatches.classList.contains('show')) {
+        // Verificar si hay batches listados
+        const listaBatches = document.getElementById('listaBatches');
+        if (listaBatches && listaBatches.children.length > 0) {
+            // Recargar la lista de batches
+            console.log('Recargando lista de batches después de asignar ticket #' + event.detail.numTicket);
+            listarBatchesDetectados();
+        }
+    }
+});

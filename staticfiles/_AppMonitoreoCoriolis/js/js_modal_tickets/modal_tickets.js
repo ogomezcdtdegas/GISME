@@ -17,11 +17,12 @@ document.addEventListener('DOMContentLoaded', function() {
     let paginacionInfo = null;
     let paginaActual = 1;
     let tamañoPagina = 10;
+    let terminoBusqueda = '';
     
     // ================================
-    // FUNCIÓN PARA CARGAR TICKETS CON PAGINACIÓN
+    // FUNCIÓN PARA CARGAR TICKETS CON PAGINACIÓN Y BÚSQUEDA
     // ================================
-    async function cargarTodosLosTickets(pagina = 1, pageSize = 10) {
+    async function cargarTodosLosTickets(pagina = 1, pageSize = 10, busqueda = '') {
         const sistemaId = obtenerSistemaActual();
         if (!sistemaId) {
             alert('No se ha seleccionado un sistema');
@@ -32,7 +33,13 @@ document.addEventListener('DOMContentLoaded', function() {
             spinnerTickets.style.display = 'block';
             btnActualizarTickets.disabled = true;
             
-            const response = await fetch(`/monitoreo/api/listar-tickets/${sistemaId}/`, {
+            // Construir URL con parámetros de búsqueda
+            let url = `/monitoreo/api/listar-todos-tickets/${sistemaId}/?page=${pagina}&page_size=${pageSize}`;
+            if (busqueda && busqueda.trim() !== '') {
+                url += `&search=${encodeURIComponent(busqueda.trim())}`;
+            }
+            
+            const response = await fetch(url, {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -47,13 +54,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 paginacionInfo = data.pagination || null;
                 paginaActual = pagina;
                 tamañoPagina = pageSize;
-                
-                // Ordenar por número de ticket (numérico descendente)
-                todosLosTickets.sort((a, b) => {
-                    const ticketA = a.num_ticket || 0;
-                    const ticketB = b.num_ticket || 0;
-                    return ticketB - ticketA;
-                });
+                terminoBusqueda = busqueda;
                 
                 ticketsFiltrados = [...todosLosTickets];
                 mostrarTicketsEnTabla();
@@ -76,22 +77,23 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // ================================
-    // FUNCIÓN PARA FILTRAR TICKETS POR NÚMERO (lado cliente)
+    // FUNCIÓN PARA BUSCAR TICKETS (consulta al backend)
     // ================================
+    let timeoutBusqueda = null;
+    
     function filtrarTickets() {
-        const termino = buscarTicket.value.toLowerCase().trim();
+        const termino = buscarTicket.value.trim();
         
-        if (termino === '') {
-            ticketsFiltrados = [...todosLosTickets];
-        } else {
-            ticketsFiltrados = todosLosTickets.filter(ticket => 
-                String(ticket.num_ticket || '').toLowerCase().includes(termino)
-            );
+        // Cancelar búsqueda anterior si existe
+        if (timeoutBusqueda) {
+            clearTimeout(timeoutBusqueda);
         }
         
-        // Al filtrar, ocultar controles de paginación porque filtramos la página actual
-        document.getElementById('paginacionTickets').innerHTML = '';
-        mostrarTicketsEnTabla();
+        // Esperar 500ms después de que el usuario deje de escribir
+        timeoutBusqueda = setTimeout(() => {
+            // Hacer nueva consulta al backend con el término de búsqueda
+            cargarTodosLosTickets(1, tamañoPagina, termino);
+        }, 500);
     }
     
     // ================================
@@ -173,11 +175,7 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
         
         listaTickets.innerHTML = html;
-        
-        // Solo mostrar paginación si no hay filtro activo
-        if (buscarTicket.value.trim() === '') {
-            mostrarControlesPaginacion();
-        }
+        mostrarControlesPaginacion();
     }
     
     // ================================
@@ -186,31 +184,44 @@ document.addEventListener('DOMContentLoaded', function() {
     function mostrarControlesPaginacion() {
         const contenedorPaginacion = document.getElementById('paginacionTickets');
         
-        if (!paginacionInfo || paginacionInfo.total_pages <= 1) {
+        if (!paginacionInfo) {
             contenedorPaginacion.innerHTML = '';
             return;
         }
         
-        const { current_page, total_pages, has_previous, has_next, previous_page, next_page, total_batches } = paginacionInfo;
+        const { current_page, total_pages, has_previous, has_next, previous_page, next_page, total_batches, page_size } = paginacionInfo;
+        
+        // Calcular el rango de registros mostrados
+        const start = ((current_page - 1) * page_size) + 1;
+        const end = Math.min(current_page * page_size, total_batches);
         
         let html = `
             <div class="d-flex justify-content-between align-items-center w-100">
                 <div>
                     <small class="text-muted">
-                        Página ${current_page} de ${total_pages} (${total_batches} tickets totales)
+                        Mostrando ${start} a ${end} de ${total_batches} registros
                     </small>
                 </div>
-                <div class="btn-group" role="group">
-                    <button type="button" class="btn btn-sm btn-outline-primary" 
-                            id="btnPaginaAnterior" 
-                            ${!has_previous ? 'disabled' : ''}>
-                        <i class="bi bi-chevron-left"></i> Anterior
-                    </button>
-                    <button type="button" class="btn btn-sm btn-outline-primary" 
-                            id="btnPaginaSiguiente" 
-                            ${!has_next ? 'disabled' : ''}>
-                        Siguiente <i class="bi bi-chevron-right"></i>
-                    </button>
+                <div>
+                    <nav aria-label="Paginación de tickets">
+                        <ul class="pagination pagination-sm mb-0">
+                            <li class="page-item ${!has_previous ? 'disabled' : ''}">
+                                <button class="page-link" id="btnPaginaAnterior" ${!has_previous ? 'disabled' : ''}>
+                                    Anterior
+                                </button>
+                            </li>
+                            <li class="page-item active">
+                                <span class="page-link">
+                                    Página ${current_page} de ${total_pages}
+                                </span>
+                            </li>
+                            <li class="page-item ${!has_next ? 'disabled' : ''}">
+                                <button class="page-link" id="btnPaginaSiguiente" ${!has_next ? 'disabled' : ''}>
+                                    Siguiente
+                                </button>
+                            </li>
+                        </ul>
+                    </nav>
                 </div>
             </div>
         `;
@@ -220,13 +231,13 @@ document.addEventListener('DOMContentLoaded', function() {
         // Agregar eventos a botones de paginación
         if (has_previous) {
             document.getElementById('btnPaginaAnterior').addEventListener('click', () => {
-                cargarTodosLosTickets(previous_page, tamañoPagina);
+                cargarTodosLosTickets(previous_page, tamañoPagina, terminoBusqueda);
             });
         }
         
         if (has_next) {
             document.getElementById('btnPaginaSiguiente').addEventListener('click', () => {
-                cargarTodosLosTickets(next_page, tamañoPagina);
+                cargarTodosLosTickets(next_page, tamañoPagina, terminoBusqueda);
             });
         }
     }

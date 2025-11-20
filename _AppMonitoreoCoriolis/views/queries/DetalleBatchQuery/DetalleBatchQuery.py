@@ -499,6 +499,7 @@ class DetalleBatchQueryView(APIView):
                 'success': True,
                 'batch_info': {
                     'id': batch.id,
+                    'num_ticket': batch.num_ticket,
                     'sistema_tag': batch.systemId.tag,
                     'ubicación': batch.systemId.ubicacion.nombre if batch.systemId.ubicacion else "Sin ubicación",
                     'identificador_medidor': batch.systemId.identificacion_medidor if batch.systemId.identificacion_medidor else "N/A",
