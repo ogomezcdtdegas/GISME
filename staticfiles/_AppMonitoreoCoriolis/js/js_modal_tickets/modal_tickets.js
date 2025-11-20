@@ -11,14 +11,17 @@ document.addEventListener('DOMContentLoaded', function() {
     const resultadosTickets = document.getElementById('resultadosTickets');
     const listaTickets = document.getElementById('listaTickets');
     
-    // Variable para almacenar todos los tickets
+    // Variables para almacenar tickets y paginación
     let todosLosTickets = [];
     let ticketsFiltrados = [];
+    let paginacionInfo = null;
+    let paginaActual = 1;
+    let tamañoPagina = 10;
     
     // ================================
-    // FUNCIÓN PARA CARGAR TODOS LOS TICKETS
+    // FUNCIÓN PARA CARGAR TICKETS CON PAGINACIÓN
     // ================================
-    async function cargarTodosLosTickets() {
+    async function cargarTodosLosTickets(pagina = 1, pageSize = 10) {
         const sistemaId = obtenerSistemaActual();
         if (!sistemaId) {
             alert('No se ha seleccionado un sistema');
@@ -41,15 +44,20 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (data.success) {
                 todosLosTickets = data.batches || [];
-                // Ordenar por número de ticket (numérico)
+                paginacionInfo = data.pagination || null;
+                paginaActual = pagina;
+                tamañoPagina = pageSize;
+                
+                // Ordenar por número de ticket (numérico descendente)
                 todosLosTickets.sort((a, b) => {
                     const ticketA = a.num_ticket || 0;
                     const ticketB = b.num_ticket || 0;
-                    return ticketA - ticketB;
+                    return ticketB - ticketA;
                 });
                 
                 ticketsFiltrados = [...todosLosTickets];
                 mostrarTicketsEnTabla();
+                mostrarControlesPaginacion();
                 return true;
             } else {
                 alert('Error al cargar tickets: ' + data.error);
@@ -68,7 +76,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // ================================
-    // FUNCIÓN PARA FILTRAR TICKETS POR NÚMERO
+    // FUNCIÓN PARA FILTRAR TICKETS POR NÚMERO (lado cliente)
     // ================================
     function filtrarTickets() {
         const termino = buscarTicket.value.toLowerCase().trim();
@@ -81,6 +89,8 @@ document.addEventListener('DOMContentLoaded', function() {
             );
         }
         
+        // Al filtrar, ocultar controles de paginación porque filtramos la página actual
+        document.getElementById('paginacionTickets').innerHTML = '';
         mostrarTicketsEnTabla();
     }
     
@@ -97,6 +107,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         'No hay batches con tickets asignados en este sistema.'}
                 </div>
             `;
+            document.getElementById('paginacionTickets').innerHTML = '';
             return;
         }
         
@@ -162,6 +173,62 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
         
         listaTickets.innerHTML = html;
+        
+        // Solo mostrar paginación si no hay filtro activo
+        if (buscarTicket.value.trim() === '') {
+            mostrarControlesPaginacion();
+        }
+    }
+    
+    // ================================
+    // FUNCIÓN PARA MOSTRAR CONTROLES DE PAGINACIÓN
+    // ================================
+    function mostrarControlesPaginacion() {
+        const contenedorPaginacion = document.getElementById('paginacionTickets');
+        
+        if (!paginacionInfo || paginacionInfo.total_pages <= 1) {
+            contenedorPaginacion.innerHTML = '';
+            return;
+        }
+        
+        const { current_page, total_pages, has_previous, has_next, previous_page, next_page, total_batches } = paginacionInfo;
+        
+        let html = `
+            <div class="d-flex justify-content-between align-items-center w-100">
+                <div>
+                    <small class="text-muted">
+                        Página ${current_page} de ${total_pages} (${total_batches} tickets totales)
+                    </small>
+                </div>
+                <div class="btn-group" role="group">
+                    <button type="button" class="btn btn-sm btn-outline-primary" 
+                            id="btnPaginaAnterior" 
+                            ${!has_previous ? 'disabled' : ''}>
+                        <i class="bi bi-chevron-left"></i> Anterior
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-primary" 
+                            id="btnPaginaSiguiente" 
+                            ${!has_next ? 'disabled' : ''}>
+                        Siguiente <i class="bi bi-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        contenedorPaginacion.innerHTML = html;
+        
+        // Agregar eventos a botones de paginación
+        if (has_previous) {
+            document.getElementById('btnPaginaAnterior').addEventListener('click', () => {
+                cargarTodosLosTickets(previous_page, tamañoPagina);
+            });
+        }
+        
+        if (has_next) {
+            document.getElementById('btnPaginaSiguiente').addEventListener('click', () => {
+                cargarTodosLosTickets(next_page, tamañoPagina);
+            });
+        }
     }
     
     // ================================
@@ -170,7 +237,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Botón actualizar
     if (btnActualizarTickets) {
-        btnActualizarTickets.addEventListener('click', cargarTodosLosTickets);
+        btnActualizarTickets.addEventListener('click', () => cargarTodosLosTickets(1, tamañoPagina));
     }
     
     // Campo de búsqueda con filtrado en tiempo real
@@ -192,7 +259,7 @@ document.addEventListener('DOMContentLoaded', function() {
             if (buscarTicket) {
                 buscarTicket.value = ''; // Limpiar búsqueda
             }
-            cargarTodosLosTickets();
+            cargarTodosLosTickets(1, 10);
         });
         
         // Manejar foco para accesibilidad - eliminar advertencias aria-hidden

@@ -19,6 +19,7 @@ urlpatterns = [
     path('api/detectar-batches/<uuid:sistema_id>/', views.DetectarBatchesView.as_view(), name='detectar_batches'),
     path('api/listar-batches/<uuid:sistema_id>/', views.ListarBatchesView.as_view(), name='listar_batches'),
     path('api/listar-tickets/<uuid:sistema_id>/', views.ListarTicketsQueryView.as_view(), name='listar_tickets'),
+    path('api/listar-todos-tickets/<uuid:sistema_id>/', views.ListarTodosTicketsView.as_view(), name='listar_todos_tickets'),
     path('api/asignar-ticket-batch/<uuid:batch_id>/', views.AsignarTicketBatchView.as_view(), name='asignar_ticket_batch'),
     path('api/detalle-batch/<uuid:batch_id>/', views.DetalleBatchView.as_view(), name='detalle_batch'),
     path('api/configuracion/actualizar/<uuid:sistema_id>/', views.ActualizarConfiguracionView.as_view(), name='actualizar_configuracion'),

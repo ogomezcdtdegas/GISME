@@ -3,6 +3,7 @@ import pytz
 from datetime import datetime
 from django.shortcuts import get_object_or_404
 from django.db import models
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -64,15 +65,29 @@ class ListarBatchesQueryView(APIView):
             
             # Buscar batches que tengan fecha_inicio dentro del rango de fechas
             # Cualquier batch que inicie dentro del día seleccionado
-            batches = BatchDetectado.objects.filter(
+            batches_queryset = BatchDetectado.objects.filter(
                 systemId=sistema,
                 fecha_inicio__gte=fecha_inicio,
                 fecha_inicio__lte=fecha_fin
-            ).order_by('fecha_inicio')
+            ).order_by('-fecha_inicio')  # Ordenar de más reciente a más antiguo
             
-            # Serializar los datos
+            # Obtener parámetros de paginación
+            page_number = request.data.get('page', 1)
+            page_size = request.data.get('page_size', 10)
+            
+            # Crear paginador
+            paginator = Paginator(batches_queryset, page_size)
+            
+            try:
+                batches_page = paginator.page(page_number)
+            except PageNotAnInteger:
+                batches_page = paginator.page(1)
+            except EmptyPage:
+                batches_page = paginator.page(paginator.num_pages)
+            
+            # Serializar los datos de la página actual
             batches_data = []
-            for batch in batches:
+            for batch in batches_page:
                 batches_data.append({
                     'id': str(batch.id),
                     'num_ticket': batch.num_ticket,
@@ -89,12 +104,22 @@ class ListarBatchesQueryView(APIView):
                     'time_finished_batch': round(batch.time_finished_batch, 1) if batch.time_finished_batch else '-'
                 })
             
-            logger.info(f"Listando {len(batches_data)} batches para sistema {sistema_id} entre {fecha_inicio} y {fecha_fin}")
+            logger.info(f"Listando página {page_number} de {paginator.num_pages} - {len(batches_data)} batches de {paginator.count} totales para sistema {sistema_id}")
             
             return Response({
                 'success': True,
                 'batches': batches_data,
-                'total_batches': len(batches_data),
+                'pagination': {
+                    'current_page': batches_page.number,
+                    'total_pages': paginator.num_pages,
+                    'total_batches': paginator.count,
+                    'page_size': page_size,
+                    'has_next': batches_page.has_next(),
+                    'has_previous': batches_page.has_previous(),
+                    'next_page': batches_page.next_page_number() if batches_page.has_next() else None,
+                    'previous_page': batches_page.previous_page_number() if batches_page.has_previous() else None
+                },
+                'total_batches': paginator.count,  # Mantener compatibilidad
                 'sistema': {
                     'id': str(sistema.id),
                     'tag': sistema.tag,

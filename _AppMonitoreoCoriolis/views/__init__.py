@@ -13,7 +13,8 @@ from .queries import (
     DatosTendenciasQueryView,
     DetalleBatchQueryView,
     ListarBatchesQueryView,
-    ListarTicketsQueryView
+    ListarTicketsQueryView,
+    ListarTodosTicketsView
 )
 
 # Command Views (modifican datos)
@@ -45,6 +46,7 @@ __all__ = [
     'DetalleBatchQueryView',
     'ListarBatchesQueryView',
     'ListarTicketsQueryView',
+    'ListarTodosTicketsView',
     
     # Command Views (new names)
     'DetectarBatchesCommandView',
