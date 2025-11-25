@@ -274,7 +274,7 @@ class DetalleBatchQueryView(APIView):
                     driver_amp_threshold is not None and ruido_datos_disponibles
                 ),
                 'valor': driver_amp_max,
-                'unidad': 'mA',
+                'unidad': '',
                 'mensaje': 'Driver Amp y ruido elevados indican burbujeo/dos fases o cavitación.'
             })
             detalles_multifase.append({
@@ -285,7 +285,7 @@ class DetalleBatchQueryView(APIView):
                     driver_amp_threshold is not None
                 ),
                 'valor': driver_amp_max,
-                'unidad': 'mA',
+                'unidad': '',
                 'mensaje': 'Driver Amp alto con ruido normal suele asociarse a suciedad o mayor viscosidad.'
             })
             ruido_maximo = None
@@ -318,7 +318,7 @@ class DetalleBatchQueryView(APIView):
                     'valor': driver_amp_max,
                     'umbral': driver_amp_threshold,
                     'estado': estado_detalle(driver_amp_alto, driver_amp_threshold is not None and driver_amp_max is not None),
-                    'unidad': 'mA',
+                    'unidad': '',
                     'descripcion': 'Se compara contra el valor base configurado.'
                 },
                 {
