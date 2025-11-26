@@ -24,8 +24,8 @@ class NodeRedData(BaseModel):
     density = models.FloatField(null=True, blank=True)
     density_alm = models.FloatField(null=True, blank=True)
 
-    volume_60f = models.FloatField(null=True, blank=True)
-    specific_gravity_60f = models.FloatField(null=True, blank=True)
+    vol_detect_batch = models.FloatField(null=True, blank=True)
+    time_closed_batch = models.FloatField(null=True, blank=True)
 
     coriolis_temperature = models.FloatField(null=True, blank=True)
     coriolis_temperature_alm = models.FloatField(null=True, blank=True)

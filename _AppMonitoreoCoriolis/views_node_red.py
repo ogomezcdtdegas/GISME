@@ -37,12 +37,16 @@ class NodeRedReceiverView(BasicNodeRedAuthMixin, BaseCreateView):
             data['bt'] = coef.bt
             data['mp'] = coef.mp
             data['bp'] = coef.bp
+            data['vol_detect_batch'] = coef.vol_masico_ini_batch
+            data['time_closed_batch'] = coef.time_finished_batch
         except ConfiguracionCoeficientes.DoesNotExist:
             # Valores por defecto si no hay coeficientes configurados
             data['mt'] = 1.0
             data['bt'] = 0.0
             data['mp'] = 1.0
             data['bp'] = 0.0
+            data['vol_detect_batch'] = 75.0 # Valor por defecto kg
+            data['time_closed_batch'] = 5   # Valor por defecto min
 
         serializer = self.serializer_class(data=data)
         if serializer.is_valid():
