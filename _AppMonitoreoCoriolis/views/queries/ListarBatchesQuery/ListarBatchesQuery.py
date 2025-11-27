@@ -71,6 +71,11 @@ class ListarBatchesQueryView(APIView):
                 fecha_inicio__lte=fecha_fin
             ).order_by('-fecha_inicio')  # Ordenar de más reciente a más antiguo
             
+            # Calcular el total de masa de TODOS los batches (no solo la página)
+            from django.db.models import Sum
+            total_masa_resultado = batches_queryset.aggregate(total_masa=Sum('mass_total'))
+            total_masa_calculado = round(total_masa_resultado['total_masa'], 2) if total_masa_resultado['total_masa'] is not None else 0.0
+            
             # Obtener parámetros de paginación
             page_number = request.data.get('page', 1)
             page_size = request.data.get('page_size', 10)
@@ -120,6 +125,7 @@ class ListarBatchesQueryView(APIView):
                     'previous_page': batches_page.previous_page_number() if batches_page.has_previous() else None
                 },
                 'total_batches': paginator.count,  # Mantener compatibilidad
+                'total_masa': total_masa_calculado,  # Total de masa calculado con la misma precisión que el dashboard
                 'sistema': {
                     'id': str(sistema.id),
                     'tag': sistema.tag,

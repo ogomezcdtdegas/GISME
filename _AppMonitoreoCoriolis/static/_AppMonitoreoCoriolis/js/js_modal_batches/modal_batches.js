@@ -252,8 +252,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     <small>Use "Buscar Batches" para ejecutar la detección automática.</small>
                 </div>
             `;
+            // Resetear total de masa
+            document.getElementById('totalMasaBatches').textContent = '0.00';
             return;
         }
+        
+        // Usar el total de masa calculado por el backend (con la misma precisión que el dashboard)
+        const totalMasa = data.total_masa || 0;
+        
+        // Actualizar el display del total de masa
+        document.getElementById('totalMasaBatches').textContent = totalMasa.toFixed(2);
         
         let html = `
             <div class="alert alert-info">
