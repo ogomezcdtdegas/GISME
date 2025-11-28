@@ -132,8 +132,8 @@ class ListarBatchesQueryView(APIView):
                     'sistema_id': sistema.sistema_id,
                     'ubicacion': sistema.ubicacion.nombre
                 },
-                'fecha_inicio': fecha_inicio.strftime('%Y-%m-%d %H:%M:%S'),
-                'fecha_fin': fecha_fin.strftime('%Y-%m-%d %H:%M:%S')
+                'fecha_inicio': fecha_inicio.astimezone(COLOMBIA_TZ).strftime('%Y-%m-%d %H:%M:%S'),
+                'fecha_fin': fecha_fin.astimezone(COLOMBIA_TZ).strftime('%Y-%m-%d %H:%M:%S')
             })
             
         except Exception as e:
