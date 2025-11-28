@@ -236,5 +236,5 @@ function sweetAlert(message, type = 'info') {
 // ====================================================================
 // CONSOLE LOG PARA DEBUG
 // ====================================================================
-console.log('✅ SweetAlert2 Utils cargado globalmente');
-console.log('📋 Funciones disponibles: showSuccessAlert, showErrorAlert, showWarningAlert, showInfoAlert, showPermissionDeniedAlert, showConfirmAlert, showLoadingAlert, hideLoadingAlert, handleFetchResponse');
+//console.log('✅ SweetAlert2 Utils cargado globalmente');
+//console.log('📋 Funciones disponibles: showSuccessAlert, showErrorAlert, showWarningAlert, showInfoAlert, showPermissionDeniedAlert, showConfirmAlert, showLoadingAlert, hideLoadingAlert, handleFetchResponse');

@@ -252,8 +252,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     <small>Use "Buscar Batches" para ejecutar la detección automática.</small>
                 </div>
             `;
+            // Resetear total de masa
+            document.getElementById('totalMasaBatches').textContent = '0.00';
             return;
         }
+        
+        // Usar el total de masa calculado por el backend (con la misma precisión que el dashboard)
+        const totalMasa = data.total_masa || 0;
+        
+        // Actualizar el display del total de masa
+        document.getElementById('totalMasaBatches').textContent = totalMasa.toFixed(2);
         
         let html = `
             <div class="alert alert-info">
@@ -399,3 +407,20 @@ function abrirModalBatches() {
     const modal = new bootstrap.Modal(document.getElementById('modalBuscarBatches'));
     modal.show();
 }
+
+// ================================
+// ESCUCHAR EVENTO DE TICKET ASIGNADO
+// ================================
+window.addEventListener('ticketAsignado', function(event) {
+    // Verificar si el modal de batches está abierto
+    const modalBatches = document.getElementById('modalBuscarBatches');
+    if (modalBatches && modalBatches.classList.contains('show')) {
+        // Verificar si hay batches listados
+        const listaBatches = document.getElementById('listaBatches');
+        if (listaBatches && listaBatches.children.length > 0) {
+            // Recargar la lista de batches
+            console.log('Recargando lista de batches después de asignar ticket #' + event.detail.numTicket);
+            listarBatchesDetectados();
+        }
+    }
+});

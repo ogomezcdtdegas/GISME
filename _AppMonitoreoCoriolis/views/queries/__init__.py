@@ -7,6 +7,7 @@ from .DatosTendenciasQuery import DatosTendenciasQueryView
 from .DetalleBatchQuery import DetalleBatchQueryView
 from .ListarBatchesQuery import ListarBatchesQueryView
 from .ListarTicketsQuery import ListarTicketsQueryView
+from .ListarTodosTickets import ListarTodosTicketsView
 
 __all__ = [
     'DatosHistoricosFlujoQueryView',
@@ -16,5 +17,6 @@ __all__ = [
     'DatosTendenciasQueryView',
     'DetalleBatchQueryView',
     'ListarBatchesQueryView',
-    'ListarTicketsQueryView'
+    'ListarTicketsQueryView',
+    'ListarTodosTicketsView'
 ]

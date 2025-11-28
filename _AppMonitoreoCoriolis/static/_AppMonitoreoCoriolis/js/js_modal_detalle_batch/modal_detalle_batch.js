@@ -41,10 +41,31 @@ function mostrarDetalleBatch(data) {
     // Guardar datos para uso posterior
     datosActualesBatch = data;
     
+    // Debug: Verificar valor de num_ticket
+    //console.log('Número de ticket:', data.batch_info.num_ticket);
+    //console.log('Tipo:', typeof data.batch_info.num_ticket);
+    //console.log('Valor evaluado:', data.batch_info.num_ticket ? 'Tiene valor' : 'Sin valor');
+    
+    // Actualizar título del modal con el número de ticket si existe
+    const modalTitle = document.getElementById('modalDetalleBatchLabel');
+    if (modalTitle) {
+        // Validar que num_ticket no sea null, undefined, 0 o string vacío
+        if (data.batch_info.num_ticket && data.batch_info.num_ticket !== 0) {
+            modalTitle.innerHTML = `
+                <div class="d-flex align-items-center justify-content-center w-100">
+                    <i class="bi bi-graph-up"></i> 
+                    <span class="ms-2">Detalle del Batch Detectado</span>
+                    <span class="badge bg-success ms-2">Ticket #${data.batch_info.num_ticket}</span>
+                </div>
+            `;
+        } else {
+            modalTitle.innerHTML = `<i class="bi bi-graph-up"></i> Detalle del Batch Detectado`;
+        }
+    }
+    
     // Mostrar información básica
     document.getElementById('infoBatchBasica').innerHTML = `
       <p><strong>Sistema:</strong> ${data.batch_info.sistema_tag}</p>
-      ${data.batch_info.num_ticket ? `<p><strong># Ticket:</strong> <span class="badge bg-success">${data.batch_info.num_ticket}</span></p>` : ''}
       <p><strong>Inicio:</strong> ${data.batch_info.fecha_inicio}</p>
       <p><strong>Fin:</strong> ${data.batch_info.fecha_fin}</p>
       <p><strong>Duración:</strong> ${
@@ -800,10 +821,21 @@ async function asignarTicketBatch() {
             // Actualizar la información del batch en el modal
             datosActualesBatch.batch_info.num_ticket = data.data.ticket_asignado;
             
+            // Actualizar el título del modal con el número de ticket
+            const modalTitle = document.getElementById('modalDetalleBatchLabel');
+            if (modalTitle) {
+                modalTitle.innerHTML = `
+                    <div class="d-flex align-items-center justify-content-center w-100">
+                        <i class="bi bi-graph-up"></i> 
+                        <span class="ms-2">Detalle del Batch Detectado</span>
+                        <span class="badge bg-success ms-2">Ticket #${data.data.ticket_asignado}</span>
+                    </div>
+                `;
+            }
+            
             // Actualizar la visualización
             document.getElementById('infoBatchBasica').innerHTML = `
                 <p><strong>Sistema:</strong> ${datosActualesBatch.batch_info.sistema_tag}</p>
-                <p><strong># Ticket:</strong> <span class="badge bg-success">${data.data.ticket_asignado}</span></p>
                 <p><strong>Inicio:</strong> ${datosActualesBatch.batch_info.fecha_inicio}</p>
                 <p><strong>Fin:</strong> ${datosActualesBatch.batch_info.fecha_fin}</p>
                 <p><strong>Duración:</strong> ${(datosActualesBatch.batch_info.duracion_minutos !== null && datosActualesBatch.batch_info.duracion_minutos !== undefined) ? Math.trunc(datosActualesBatch.batch_info.duracion_minutos * 100) / 100 : 'N/A'} minutos</p>
@@ -817,6 +849,15 @@ async function asignarTicketBatch() {
             
             // Actualizar el estado del botón (ya no se podrá usar)
             actualizarEstadoBotonTicket(data.data.ticket_asignado);
+            
+            // Disparar evento personalizado para notificar que se asignó un ticket
+            const eventoTicketAsignado = new CustomEvent('ticketAsignado', {
+                detail: {
+                    batchId: batchId,
+                    numTicket: data.data.ticket_asignado
+                }
+            });
+            window.dispatchEvent(eventoTicketAsignado);
             
         } else {
             // Mostrar error con SweetAlert2

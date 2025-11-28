@@ -11,7 +11,7 @@ from _AppAdmin.mixins import ComplementosPermissionMixin
 # Configurar logging
 logger = logging.getLogger(__name__)
 
-class AsignarTicketBatchCommandView(ComplementosPermissionMixin,APIView):
+class AsignarTicketBatchCommandView(APIView):
     """
     CBV Command para asignar un ticket a un batch específico
     Toma el número actual de ticket de configuración, lo asigna al batch
