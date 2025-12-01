@@ -68,10 +68,19 @@ class MonitoreoCoriolisSistemaView(LoginRequiredMixin, TemplateView):
         fin_dia_anterior = (ahora - timedelta(days=1)).replace(hour=23, minute=59, second=59, microsecond=999999)
         
         # Consultar batches del día anterior para este sistema
+        from django.db.models import F
+        from django.db.models.functions import TruncDate
+        
+        # Filtrar solo batches que inicien Y terminen el mismo día (evitar duplicación)
         resultado = BatchDetectado.objects.filter(
             systemId_id=sistema_id,
             fecha_inicio__gte=inicio_dia_anterior,
             fecha_inicio__lte=fin_dia_anterior
+        ).annotate(
+            fecha_inicio_date=TruncDate('fecha_inicio', tzinfo=COLOMBIA_TZ),
+            fecha_fin_date=TruncDate('fecha_fin', tzinfo=COLOMBIA_TZ)
+        ).filter(
+            fecha_inicio_date=F('fecha_fin_date')
         ).aggregate(total_masa=Sum('mass_total'))
         
         # Retornar el total redondeado a 2 decimales o 0 si no hay batches
