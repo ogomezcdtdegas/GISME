@@ -89,7 +89,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 setInputValue('limInfCaudalMasico', data.data.lim_inf_caudal_masico ?? '0.0');
                 setInputValue('limSupCaudalMasico', data.data.lim_sup_caudal_masico ?? '1000000.0');
                 setInputValue('volMasicoIniBatch', data.data.vol_masico_ini_batch ?? '0.0');
-                setInputValue('numberTicket', data.data.num_ticket ?? '1');
                 setInputValue('timeFinishedBatch', data.data.time_finished_batch ?? '2.0');
 
                 // Campos de incertidumbre
@@ -162,7 +161,6 @@ document.addEventListener('DOMContentLoaded', function() {
             limInfCaudalMasico: '0.0',
             limSupCaudalMasico: '1000000.0',
             volMasicoIniBatch: '0.0',
-            numberTicket: '1',
             timeFinishedBatch: '2.0',
             MF: '1.0',
             vis: '0.0',
@@ -207,8 +205,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const limInfCaudalMasico = getInputValue('limInfCaudalMasico');
         const limSupCaudalMasico = getInputValue('limSupCaudalMasico');
         const volMasicoIniBatch = getInputValue('volMasicoIniBatch');
-        const numTicketRaw = getInputValue('numberTicket', null);
-        const numTicket = numTicketRaw !== null && numTicketRaw !== '' ? parseInt(numTicketRaw, 10) : null;
         const timeFinishedBatch = getInputValue('timeFinishedBatch');
 
         // Lectura campos incertidumbre
@@ -244,7 +240,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Validar que todos los valores son números válidos
         const requeridos = [mt, bt, mp, bp, limInfCaudalMasico, limSupCaudalMasico, volMasicoIniBatch, timeFinishedBatch];
-        if (requeridos.some(v => v === null || Number.isNaN(v)) || numTicket === null || Number.isNaN(numTicket)) {
+        if (requeridos.some(v => v === null || Number.isNaN(v))) {
             showErrorAlert('Todos los valores deben ser números válidos');
             return;
         }
@@ -285,8 +281,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // Validaciones adicionales
-        if (limInfCaudalMasico < 0 || limSupCaudalMasico < 0 || volMasicoIniBatch < 0 || numTicket < 1 || timeFinishedBatch < 0.1) {
-            showErrorAlert('Los valores de configuración no pueden ser negativos, el número de ticket debe ser mayor a 0 y el tiempo de cierre debe ser mayor a 0.1 minutos');
+        if (limInfCaudalMasico < 0 || limSupCaudalMasico < 0 || volMasicoIniBatch < 0 || timeFinishedBatch < 0.1) {
+            showErrorAlert('Los valores de configuración no pueden ser negativos y el tiempo de cierre debe ser mayor a 0.1 minutos');
             return;
         }
         
@@ -303,7 +299,6 @@ document.addEventListener('DOMContentLoaded', function() {
             lim_inf_caudal_masico: limInfCaudalMasico,
             lim_sup_caudal_masico: limSupCaudalMasico,
             vol_masico_ini_batch: volMasicoIniBatch,
-            num_ticket: numTicket,
             time_finished_batch: timeFinishedBatch,
             // Campos incertidumbre (sin densidad manual)
             mf: mfVal,
