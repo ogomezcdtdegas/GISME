@@ -76,18 +76,29 @@ class DetectarBatchesCommandView(APIView):
             fecha_inicio = fecha_inicio_colombia.astimezone(pytz.UTC)
             fecha_fin = fecha_fin_colombia.astimezone(pytz.UTC)
             
+            # IMPORTANTE: Agregar margen de tiempo después de fecha_fin para detectar batches
+            # que cruzan medianoche. Esto permite que si un batch inicia el día consultado
+            # pero termina después de medianoche, se pueda detectar el cambio de día y cerrar
+            # correctamente el batch del día anterior.
+            from datetime import timedelta
+            margen_deteccion = timedelta(hours=2)  # 2 horas después de fecha_fin
+            fecha_fin_con_margen = fecha_fin + margen_deteccion
+            
             # Log para debugging de zona horaria
             logger.info(f"Fechas Colombia - Inicio: {fecha_inicio_colombia} | Fin: {fecha_fin_colombia}")
             logger.info(f"Fechas UTC (para DB) - Inicio: {fecha_inicio} | Fin: {fecha_fin}")
+            logger.info(f"Fecha fin con margen de detección: {fecha_fin_con_margen} (UTC) - Margen: {margen_deteccion.total_seconds()/3600} horas")
             logger.info(f"Input recibido - fecha_inicio_str: '{fecha_inicio_str}', fecha_fin_str: '{fecha_fin_str}'")
             
-            # Obtener datos del rango de fechas, ordenados por fecha IoT
+            # Obtener datos del rango de fechas CON MARGEN, ordenados por fecha IoT
             datos = NodeRedData.objects.filter(
                 systemId=sistema,
                 created_at_iot__gte=fecha_inicio,
-                created_at_iot__lte=fecha_fin,
+                created_at_iot__lte=fecha_fin_con_margen,  # Usar fecha con margen
                 created_at_iot__isnull=False  # Solo datos con timestamp IoT válido
             ).order_by('created_at_iot')
+            
+            logger.info(f"📊 Datos consultados: {datos.count()} registros (incluye margen para detección de medianoche)")
             
             if not datos.exists():
                 return Response({
@@ -299,6 +310,81 @@ class DetectarBatchesCommandView(APIView):
                     logger.debug(f"Flujo actual: {mass_rate_kg_min:.2f} kg/min, masa actual: {total_mass} lb, volumen actual: {total_volume} cm³")
                 else:
                     # Continuar batch - el flujo volvió a subir, reiniciar contador de tiempo en cero
+                    
+                    # 🌙 VERIFICAR CAMBIO DE DÍA - Cerrar batch del día anterior si cruza medianoche
+                    fecha_inicio_batch_colombia = primer_dato.created_at_iot.astimezone(COLOMBIA_TZ).date()
+                    fecha_dato_actual_colombia = dato.created_at_iot.astimezone(COLOMBIA_TZ).date()
+                    
+                    if fecha_inicio_batch_colombia != fecha_dato_actual_colombia:
+                        # HAY CAMBIO DE DÍA - Cerrar batch del día anterior antes de continuar
+                        logger.info(f"🌙 CAMBIO DE DÍA DETECTADO: {fecha_inicio_batch_colombia} -> {fecha_dato_actual_colombia}")
+                        logger.info(f"   Cerrando batch del día anterior y comenzando nuevo batch")
+                        
+                        # Encontrar el último dato del día anterior (antes de medianoche)
+                        ultimo_dato_dia_anterior = None
+                        for d in reversed(datos_batch):
+                            if d.created_at_iot.astimezone(COLOMBIA_TZ).date() == fecha_inicio_batch_colombia:
+                                ultimo_dato_dia_anterior = d
+                                break
+                        
+                        if ultimo_dato_dia_anterior is not None:
+                            # Calcular masa y volumen hasta el último dato del día anterior
+                            masa_inicial_lb = primer_dato.total_mass
+                            masa_final_lb = ultimo_dato_dia_anterior.total_mass
+                            diferencia_masa_lb = masa_final_lb - masa_inicial_lb
+                            diferencia_masa_kg = lb_a_kg(diferencia_masa_lb)
+                            
+                            volumen_inicial_cm3 = primer_dato.total_volume
+                            volumen_final_cm3 = ultimo_dato_dia_anterior.total_volume
+                            diferencia_volumen_cm3 = volumen_final_cm3 - volumen_inicial_cm3
+                            diferencia_volumen_gal = cm3_a_gal(diferencia_volumen_cm3)
+                            
+                            logger.info(f"   Batch día anterior: {primer_dato.created_at_iot} - {ultimo_dato_dia_anterior.created_at_iot}")
+                            logger.info(f"   Masa: {diferencia_masa_kg:.2f} kg, Vol: {diferencia_volumen_gal:.3f} gal")
+                            
+                            # Validar con volumen mínimo
+                            if diferencia_masa_kg >= vol_minimo_batch:
+                                # Calcular datos del batch del día anterior
+                                datos_dia_anterior = [d for d in datos_batch if d.created_at_iot.astimezone(COLOMBIA_TZ).date() == fecha_inicio_batch_colombia]
+                                
+                                temperaturas = [d.coriolis_temperature for d in datos_dia_anterior if d.coriolis_temperature is not None]
+                                densidades = [d.density for d in datos_dia_anterior if d.density is not None]
+                                presiones = [d.pressure_out for d in datos_dia_anterior if d.pressure_out is not None]
+                                temp_prom = sum(temperaturas) / len(temperaturas) if temperaturas else 0
+                                dens_prom = sum(densidades) / len(densidades) if densidades else 0
+                                pres_prom = sum(presiones) / len(presiones) if presiones else None
+                                
+                                batches.append({
+                                    'fecha_inicio': primer_dato.created_at_iot,
+                                    'fecha_fin': ultimo_dato_dia_anterior.created_at_iot,
+                                    'vol_total': diferencia_volumen_gal,
+                                    'mass_total': diferencia_masa_kg,
+                                    'temperatura_coriolis_prom': temp_prom,
+                                    'densidad_prom': dens_prom,
+                                    'pressure_out_prom': pres_prom,
+                                    'duracion_minutos': (ultimo_dato_dia_anterior.created_at_iot - primer_dato.created_at_iot).total_seconds() / 60,
+                                    'total_registros': len(datos_dia_anterior),
+                                    'vol_minimo_usado': vol_minimo_batch,
+                                    'time_finished_usado': time_finished_batch_actual
+                                })
+                                logger.info(f"✅ Batch del día anterior guardado por cambio de día")
+                            else:
+                                logger.info(f"❌ Batch del día anterior descartado: {diferencia_masa_kg:.2f} kg < {vol_minimo_batch} kg")
+                        
+                        # Reiniciar estado - NO iniciar batch del nuevo día automáticamente
+                        # El batch del nuevo día se iniciará cuando el algoritmo detecte flujo > 0 sin estar en batch
+                        en_batch = False
+                        inicio_batch = None
+                        primer_dato = None
+                        datos_batch = []
+                        tiempo_cero_inicio = None
+                        ultimo_dato_con_flujo = None
+                        vol_minimo_batch = None
+                        time_finished_batch_actual = None
+                        logger.info(f"   Estado reiniciado. El batch del nuevo día se iniciará cuando se detecte según la lógica normal")
+                        continue
+                    
+                    # No hay cambio de día, continuar batch normalmente
                     datos_batch.append(dato)
                     ultimo_dato_con_flujo = dato
                     
@@ -406,49 +492,73 @@ class DetectarBatchesCommandView(APIView):
                 # Guardar este punto como posible referencia para el próximo batch
                 punto_anterior = dato
 
-        # Si termina con un batch abierto, cerrarlo si cumple el volumen mínimo
+        # IMPORTANTE: La lógica de tiempo de cierre (time_closed_batch) se mantiene en el loop principal
+        # Esta sección solo maneja el batch que queda abierto al TERMINAR el rango de fechas consultado
+        
+        # Si termina con un batch abierto al final del rango de fechas
         if en_batch and datos_batch and primer_dato is not None and ultimo_dato_con_flujo is not None:
-            # Cálculos de masa
-            masa_inicial_lb = primer_dato.total_mass
-            masa_final_lb = ultimo_dato_con_flujo.total_mass
-            diferencia_masa_lb = masa_final_lb - masa_inicial_lb
-            diferencia_masa_kg = lb_a_kg(diferencia_masa_lb)
+            # Verificar si el último dato procesado tiene flujo activo (mass_rate > 0)
+            ultimo_dato = datos_batch[-1] if datos_batch else None
+            ultimo_mass_rate_kg_min = lb_s_a_kg_min(ultimo_dato.mass_rate) if ultimo_dato and ultimo_dato.mass_rate is not None else 0
             
-            # Cálculos de volumen (convertir de cm³ a galones)
-            volumen_inicial_cm3 = primer_dato.total_volume
-            volumen_final_cm3 = ultimo_dato_con_flujo.total_volume
-            diferencia_volumen_cm3 = volumen_final_cm3 - volumen_inicial_cm3
-            diferencia_volumen_gal = cm3_a_gal(diferencia_volumen_cm3)
+            # Verificar si hay cambio de día entre el inicio del batch y el último dato
+            fecha_inicio_batch_colombia = primer_dato.created_at_iot.astimezone(COLOMBIA_TZ).date()
+            fecha_ultimo_dato_colombia = ultimo_dato.created_at_iot.astimezone(COLOMBIA_TZ).date() if ultimo_dato else fecha_inicio_batch_colombia
+            cambio_de_dia = fecha_inicio_batch_colombia != fecha_ultimo_dato_colombia
             
-            logger.debug(f"Cerrando batch abierto al final")
-            logger.debug(f"Masa inicial (punto en 0): {masa_inicial_lb:.2f} lb en {primer_dato.created_at_iot}")
-            logger.debug(f"Masa final (último punto >0): {masa_final_lb:.2f} lb en {ultimo_dato_con_flujo.created_at_iot}")
-            logger.debug(f"Diferencia masa: {diferencia_masa_lb:.2f} lb = {diferencia_masa_kg:.2f} kg")
-            logger.debug(f"Volumen inicial: {volumen_inicial_cm3:.2f} cm³, Volumen final: {volumen_final_cm3:.2f} cm³")
-            logger.debug(f"Diferencia volumen: {diferencia_volumen_cm3:.2f} cm³ = {diferencia_volumen_gal:.3f} gal")
-            
-            if diferencia_masa_kg >= vol_minimo_batch:
-                temperaturas = [d.coriolis_temperature for d in datos_batch if d.coriolis_temperature is not None]
-                densidades = [d.density for d in datos_batch if d.density is not None]
-                presiones = [d.pressure_out for d in datos_batch if d.pressure_out is not None]
-                temp_prom = sum(temperaturas) / len(temperaturas) if temperaturas else 0
-                dens_prom = sum(densidades) / len(densidades) if densidades else 0
-                pres_prom = sum(presiones) / len(presiones) if presiones else None
+            # Solo cerrar el batch si:
+            # 1. El flujo está en cero (mass_rate <= 0), O
+            # 2. Hay cambio de día (medianoche) para reportar lo del día anterior
+            if ultimo_mass_rate_kg_min <= 0 or cambio_de_dia:
+                # Cálculos de masa
+                masa_inicial_lb = primer_dato.total_mass
+                masa_final_lb = ultimo_dato_con_flujo.total_mass
+                diferencia_masa_lb = masa_final_lb - masa_inicial_lb
+                diferencia_masa_kg = lb_a_kg(diferencia_masa_lb)
                 
-                batches.append({
-                    'fecha_inicio': primer_dato.created_at_iot,
-                    'fecha_fin': ultimo_dato_con_flujo.created_at_iot,
-                    'vol_total': diferencia_volumen_gal,
-                    'mass_total': diferencia_masa_kg,
-                    'temperatura_coriolis_prom': temp_prom,
-                    'densidad_prom': dens_prom,
-                    'pressure_out_prom': pres_prom,
-                    'duracion_minutos': (ultimo_dato_con_flujo.created_at_iot - primer_dato.created_at_iot).total_seconds() / 60,
-                    'total_registros': len(datos_batch),
-                    'vol_minimo_usado': vol_minimo_batch,
-                    'time_finished_usado': time_finished_batch_actual
-                })
-                logger.info(f"Batch final guardado: {primer_dato.created_at_iot} - {ultimo_dato_con_flujo.created_at_iot}, Vol: {diferencia_volumen_gal:.3f} gal, Masa: {diferencia_masa_kg:.2f} kg")
+                # Cálculos de volumen (convertir de cm³ a galones)
+                volumen_inicial_cm3 = primer_dato.total_volume
+                volumen_final_cm3 = ultimo_dato_con_flujo.total_volume
+                diferencia_volumen_cm3 = volumen_final_cm3 - volumen_inicial_cm3
+                diferencia_volumen_gal = cm3_a_gal(diferencia_volumen_cm3)
+                
+                razon_cierre = "cambio de día (medianoche)" if cambio_de_dia else "flujo en cero al final del rango"
+                logger.info(f"📦 Cerrando batch final por {razon_cierre}")
+                logger.debug(f"Masa inicial (punto en 0): {masa_inicial_lb:.2f} lb en {primer_dato.created_at_iot}")
+                logger.debug(f"Masa final (último punto >0): {masa_final_lb:.2f} lb en {ultimo_dato_con_flujo.created_at_iot}")
+                logger.debug(f"Diferencia masa: {diferencia_masa_lb:.2f} lb = {diferencia_masa_kg:.2f} kg")
+                logger.debug(f"Volumen inicial: {volumen_inicial_cm3:.2f} cm³, Volumen final: {volumen_final_cm3:.2f} cm³")
+                logger.debug(f"Diferencia volumen: {diferencia_volumen_cm3:.2f} cm³ = {diferencia_volumen_gal:.3f} gal")
+                
+                if diferencia_masa_kg >= vol_minimo_batch:
+                    temperaturas = [d.coriolis_temperature for d in datos_batch if d.coriolis_temperature is not None]
+                    densidades = [d.density for d in datos_batch if d.density is not None]
+                    presiones = [d.pressure_out for d in datos_batch if d.pressure_out is not None]
+                    temp_prom = sum(temperaturas) / len(temperaturas) if temperaturas else 0
+                    dens_prom = sum(densidades) / len(densidades) if densidades else 0
+                    pres_prom = sum(presiones) / len(presiones) if presiones else None
+                    
+                    batches.append({
+                        'fecha_inicio': primer_dato.created_at_iot,
+                        'fecha_fin': ultimo_dato_con_flujo.created_at_iot,
+                        'vol_total': diferencia_volumen_gal,
+                        'mass_total': diferencia_masa_kg,
+                        'temperatura_coriolis_prom': temp_prom,
+                        'densidad_prom': dens_prom,
+                        'pressure_out_prom': pres_prom,
+                        'duracion_minutos': (ultimo_dato_con_flujo.created_at_iot - primer_dato.created_at_iot).total_seconds() / 60,
+                        'total_registros': len(datos_batch),
+                        'vol_minimo_usado': vol_minimo_batch,
+                        'time_finished_usado': time_finished_batch_actual
+                    })
+                    logger.info(f"✅ Batch final guardado ({razon_cierre}): {primer_dato.created_at_iot} - {ultimo_dato_con_flujo.created_at_iot}, Vol: {diferencia_volumen_gal:.3f} gal, Masa: {diferencia_masa_kg:.2f} kg")
+                else:
+                    logger.info(f"❌ Batch final descartado: {diferencia_masa_kg:.2f} kg < {vol_minimo_batch} kg")
+            else:
+                logger.info(f"⚠️ Batch NO cerrado: flujo activo ({ultimo_mass_rate_kg_min:.2f} kg/min) y sin cambio de día")
+                logger.info(f"   📊 Batch aún EN PROCESO - No se generará hasta que el flujo caiga a cero o cambie de día")
+                logger.info(f"   Inicio: {primer_dato.created_at_iot}, Último dato con flujo: {ultimo_dato_con_flujo.created_at_iot}")
+                logger.info(f"   Total registros hasta ahora: {len(datos_batch)}")
 
         logger.info(f"✅ Detección completada con lógica de PERFIL DINÁMICO. {len(batches)} batches detectados")
         return batches
