@@ -28,24 +28,18 @@ class ListarTodosTicketsView(APIView):
             page_size = request.GET.get('page_size', 10)
             search_term = request.GET.get('search', '').strip()
             
-            # Buscar todos los batches que tienen número de ticket asignado (mayor a 0)
+            # Buscar todos los batches que tienen número de ticket asignado (no nulo y no vacío)
             batches_queryset = BatchDetectado.objects.filter(
                 systemId=sistema,
-                num_ticket__isnull=False,
-                num_ticket__gt=0
-            )
+                num_ticket__isnull=False
+            ).exclude(num_ticket='')
             
             # Aplicar filtro de búsqueda si existe
             if search_term:
-                try:
-                    # Intentar convertir a número para búsqueda exacta
-                    num_ticket_busqueda = int(search_term)
-                    batches_queryset = batches_queryset.filter(num_ticket=num_ticket_busqueda)
-                except ValueError:
-                    # Si no es un número válido, no devolver resultados
-                    batches_queryset = batches_queryset.none()
+                # Buscar coincidencias parciales en el número de ticket (case-insensitive)
+                batches_queryset = batches_queryset.filter(num_ticket__icontains=search_term)
             
-            batches_queryset = batches_queryset.order_by('-num_ticket')  # Ordenar por ticket descendente
+            batches_queryset = batches_queryset.order_by('-fecha_inicio')  # Ordenar por fecha descendente
             
             # Crear paginador
             paginator = Paginator(batches_queryset, page_size)

@@ -124,6 +124,9 @@ class DetectarBatchesCommandView(APIView):
                 )
                 
                 try:
+                    # Generar número de ticket automático
+                    numero_ticket = self._generar_numero_ticket(sistema, batch_data['fecha_inicio'])
+                    
                     # Intentar crear el batch con el hash único
                     batch = BatchDetectado.objects.create(
                         systemId=sistema,
@@ -140,7 +143,8 @@ class DetectarBatchesCommandView(APIView):
                         perfil_vol_minimo=batch_data['vol_minimo_usado'],
                         duracion_minutos=batch_data['duracion_minutos'],
                         total_registros=batch_data['total_registros'],
-                        time_finished_batch=batch_data['time_finished_usado']
+                        time_finished_batch=batch_data['time_finished_usado'],
+                        num_ticket=numero_ticket
                     )
                 except IntegrityError:
                     # El batch ya existe (por el hash único), buscar el existente
@@ -562,6 +566,28 @@ class DetectarBatchesCommandView(APIView):
 
         logger.info(f"✅ Detección completada con lógica de PERFIL DINÁMICO. {len(batches)} batches detectados")
         return batches
+    
+    def _generar_numero_ticket(self, sistema, fecha_inicio):
+        """
+        Genera número de ticket único basado en sistema y fecha de inicio del batch.
+        Formato: {sistema_tag}-{YYYYMMDD}-{HHMMSS}
+        
+        Args:
+            sistema: Instancia del Sistema
+            fecha_inicio: datetime del inicio del batch (en UTC)
+        
+        Returns:
+            str: Número de ticket único (ej: 'SYS001-20251201-143025')
+        """
+        # Convertir a zona horaria de Colombia para el ticket
+        fecha_colombia = fecha_inicio.astimezone(COLOMBIA_TZ)
+        
+        # Formato legible: SYS001-20251201-143025
+        numero_ticket = f"{sistema.tag}-{fecha_colombia.strftime('%Y%m%d-%H%M%S')}"
+        
+        logger.debug(f"🎫 Ticket generado: {numero_ticket} para batch iniciado en {fecha_colombia}")
+        
+        return numero_ticket
     
     def _generar_hash_batch(self, fecha_inicio, fecha_fin, sistema_id, vol_minimo, time_finished_batch):
         """

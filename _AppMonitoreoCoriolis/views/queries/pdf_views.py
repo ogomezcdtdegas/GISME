@@ -49,11 +49,11 @@ def _header_footer(ticket_num: str, generado_por: str, generado_dt: datetime.dat
         c.setFont("Helvetica-Bold", 14)
         c.drawString(margin + 32 * mm, page_height - margin - 20, "COLGAS S.A E.S.P")
 
-        # Ticket a la derecha
-        c.setFont("Helvetica", 11)
+        # Ticket a la derecha (fuente más pequeña para tickets largos)
+        c.setFont("Helvetica", 9)
         text = f"Ticket #: {ticket_num}"
-        tw = c.stringWidth(text, "Helvetica", 11)
-        c.drawString(page_width - margin - tw, page_height - margin - 4, text)
+        tw = c.stringWidth(text, "Helvetica", 9)
+        c.drawString(page_width - margin - tw, page_height - margin - 8, text)
 
         # Footer con generación y paginación
         c.setFont("Helvetica", 8)
@@ -108,7 +108,7 @@ class DescargarTicketBatchPDFView(LoginRequiredMixin, View):
         generado_createAt = batch.created_at.astimezone(COLOMBIA_TZ)
 
         # Extraer datos del batch con conversión a zona horaria de Colombia
-        ticket_num = str(batch.num_ticket)[:8]  # Usar los primeros 8 caracteres del ID como ticket
+        ticket_num = str(batch.num_ticket) if batch.num_ticket else "N/A"  # Usar el número de ticket completo
         
         # Convertir fechas UTC a Colombia
         if batch.fecha_inicio:
