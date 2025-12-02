@@ -109,6 +109,9 @@ class DetectarBatchesCommandView(APIView):
             # Ejecutar algoritmo de detección de batches con perfil dinámico
             batches_detectados = self._detectar_batches_con_perfil_dinamico(datos, lim_inf, lim_sup, sistema)
             
+            # Calcular masa total bruta del rango (sin perfil, solo mass_rate > 0)
+            masa_total_bruta_kg = self._calcular_masa_total_bruta(datos, fecha_inicio, fecha_fin)
+            
             # Guardar batches en la base de datos con prevención de duplicados
             batches_guardados = []
             batches_existentes = 0
@@ -194,6 +197,7 @@ class DetectarBatchesCommandView(APIView):
                 'batches_nuevos': len(batches_guardados) - batches_existentes,
                 'batches_existentes': batches_existentes,
                 'batches': batches_completos,
+                'masa_total_bruta_kg': round(masa_total_bruta_kg, 2),
                 'configuracion_usada': {
                     'lim_inf_caudal_masico': lim_inf,
                     'lim_sup_caudal_masico': lim_sup,
@@ -578,3 +582,69 @@ class DetectarBatchesCommandView(APIView):
         # Generar hash SHA-256
         hash_obj = hashlib.sha256(datos_hash.encode('utf-8'))
         return hash_obj.hexdigest()
+    
+    def _calcular_masa_total_bruta(self, datos, fecha_inicio, fecha_fin):
+        """
+        Calcula la masa total bruta del rango SIN considerar perfil de detección.
+        Solo cuenta cuando hay flujo (mass_rate > 0) y detecta resets automáticamente.
+        
+        Args:
+            datos: QuerySet de NodeRedData ordenado por created_at_iot
+            fecha_inicio: Datetime de inicio del rango en UTC
+            fecha_fin: Datetime de fin del rango en UTC
+            
+        Returns:
+            float: Masa total acumulada en kg
+        """
+        masa_total_acumulada = 0.0
+        masa_anterior = None
+        registros_procesados = 0
+        resets_detectados = 0
+        
+        logger.info(f"📊 Calculando masa total bruta (sin perfil) - Solo mass_rate > 0")
+        
+        for dato in datos:
+            # Filtrar solo datos dentro del rango exacto (sin margen)
+            if not (fecha_inicio <= dato.created_at_iot <= fecha_fin):
+                continue
+                
+            mass_rate_raw = dato.mass_rate
+            total_mass_actual = dato.total_mass
+            
+            # Solo procesar si hay datos válidos
+            if mass_rate_raw is None or total_mass_actual is None:
+                continue
+            
+            registros_procesados += 1
+            
+            # Convertir a kg/min para verificar si hay flujo
+            mass_rate_kg_min = lb_s_a_kg_min(mass_rate_raw)
+            
+            # Solo contar masa cuando HAY FLUJO (mass_rate > 0)
+            if mass_rate_kg_min > 0:
+                if masa_anterior is not None:
+                    diferencia = total_mass_actual - masa_anterior
+                    
+                    # DETECCIÓN DE RESET: Si la diferencia es negativa o muy grande
+                    if diferencia < 0 or diferencia > 100000:  # 100,000 lb como límite razonable
+                        # Hubo reset, reiniciar desde el valor actual
+                        resets_detectados += 1
+                        logger.info(f"🔄 Reset #{resets_detectados} detectado en masa bruta: {masa_anterior:.2f} -> {total_mass_actual:.2f} lb en {dato.created_at_iot.astimezone(COLOMBIA_TZ)}")
+                        masa_anterior = total_mass_actual
+                    else:
+                        # Acumulación normal
+                        masa_acumulada_lb = diferencia
+                        masa_acumulada_kg = lb_a_kg(masa_acumulada_lb)
+                        masa_total_acumulada += masa_acumulada_kg
+                        masa_anterior = total_mass_actual
+                else:
+                    # Primera lectura con flujo
+                    logger.info(f"🟢 Primera lectura con flujo: total_mass = {total_mass_actual:.2f} lb, mass_rate = {mass_rate_kg_min:.2f} kg/min")
+                    masa_anterior = total_mass_actual
+            # Si mass_rate <= 0, mantener última referencia (no actualizar masa_anterior)
+        
+        logger.info(f"✅ Masa total bruta calculada: {masa_total_acumulada:.2f} kg")
+        logger.info(f"   📈 Registros procesados: {registros_procesados}")
+        logger.info(f"   🔄 Resets detectados: {resets_detectados}")
+        
+        return masa_total_acumulada
