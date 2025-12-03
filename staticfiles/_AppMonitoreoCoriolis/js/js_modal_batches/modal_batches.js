@@ -164,7 +164,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
-            //console.log(`✅ Detección completada: ${dataDeteccion.batches_detectados} batches encontrados`);
+            console.log(`✅ Detección completada: ${dataDeteccion.batches_detectados} batches encontrados`);
+            console.log(`📊 Masa total bruta recibida: ${dataDeteccion.masa_total_bruta_kg} kg`);
+            
+            // Actualizar el display del total de masa bruta (sin perfil) - NUEVO CAMPO
+            if (dataDeteccion.masa_total_bruta_kg !== undefined) {
+                const masaBrutaElement = document.getElementById('totalMasaBruta');
+                masaBrutaElement.textContent = dataDeteccion.masa_total_bruta_kg.toFixed(2);
+                console.log(`✅ Total de Masa Bruta (sin perfil) actualizado en UI: ${masaBrutaElement.textContent} kg`);
+            } else {
+                console.warn('⚠️ masa_total_bruta_kg no está definida en la respuesta');
+            }
             
             // PASO 2: Cambiar spinner para listado
             document.getElementById('spinnerText').textContent = 'Cargando batches detectados...';
@@ -252,16 +262,17 @@ document.addEventListener('DOMContentLoaded', function() {
                     <small>Use "Buscar Batches" para ejecutar la detección automática.</small>
                 </div>
             `;
-            // Resetear total de masa
+            // Resetear ambos totales de masa
             document.getElementById('totalMasaBatches').textContent = '0.00';
+            document.getElementById('totalMasaBruta').textContent = '0.00';
             return;
         }
         
-        // Usar el total de masa calculado por el backend (con la misma precisión que el dashboard)
-        const totalMasa = data.total_masa || 0;
+        // Usar el total de masa calculado por el backend (suma de batches CON perfil)
+        const totalMasaBatches = data.total_masa || 0;
         
-        // Actualizar el display del total de masa
-        document.getElementById('totalMasaBatches').textContent = totalMasa.toFixed(2);
+        // Actualizar el total de masa de batches (con perfil)
+        document.getElementById('totalMasaBatches').textContent = totalMasaBatches.toFixed(2);
         
         let html = `
             <div class="alert alert-info">

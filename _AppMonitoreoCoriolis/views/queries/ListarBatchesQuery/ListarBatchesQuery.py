@@ -71,10 +71,23 @@ class ListarBatchesQueryView(APIView):
                 fecha_inicio__lte=fecha_fin
             ).order_by('-fecha_inicio')  # Ordenar de más reciente a más antiguo
             
-            # Calcular el total de masa de TODOS los batches (no solo la página)
-            from django.db.models import Sum
-            total_masa_resultado = batches_queryset.aggregate(total_masa=Sum('mass_total'))
+            # Calcular el total de masa solo de batches que inicien y terminen el mismo día
+            # Para evitar contar batches que cruzan medianoche (se reportan en ambos días)
+            from django.db.models import Sum, F
+            from django.db.models.functions import TruncDate
+            
+            # Filtrar solo batches donde fecha_inicio y fecha_fin están en el mismo día (en hora de Colombia)
+            batches_mismo_dia = batches_queryset.annotate(
+                fecha_inicio_date=TruncDate('fecha_inicio', tzinfo=COLOMBIA_TZ),
+                fecha_fin_date=TruncDate('fecha_fin', tzinfo=COLOMBIA_TZ)
+            ).filter(
+                fecha_inicio_date=F('fecha_fin_date')
+            )
+            
+            total_masa_resultado = batches_mismo_dia.aggregate(total_masa=Sum('mass_total'))
             total_masa_calculado = round(total_masa_resultado['total_masa'], 2) if total_masa_resultado['total_masa'] is not None else 0.0
+            
+            logger.info(f"Total batches encontrados: {batches_queryset.count()}, Batches mismo día: {batches_mismo_dia.count()}, Total masa: {total_masa_calculado} kg")
             
             # Obtener parámetros de paginación
             page_number = request.data.get('page', 1)
