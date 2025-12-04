@@ -95,7 +95,7 @@ class DatosHistoricosPresionQueryView(APIView):
                 # Usar pressure_out con corrección del momento aplicada
                 if dato.pressure_out is not None:
                     # 1. Convertir valor crudo con span
-                    valor_convertido = convertir_presion_con_span(dato.pressure_out, span_presion)
+                    valor_convertido = dato.pressure_out
                     
                     # 2. Aplicar corrección mx+b
                     # Usar coeficientes del momento (mp, bp) si están disponibles, sino usar los actuales
