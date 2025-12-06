@@ -15,10 +15,9 @@ async function abrirModal(sensorId) {
 
     if (sensorId === 'sensor1') {
         // Modal de flujo (volumétrico y másico)
-        // Configurar fechas por defecto usando CONFIG
+        // Configurar fechas en los campos (solo referencia visual para búsqueda manual)
         const fechaFin = new Date();
-        const fechaInicio = new Date();
-        fechaInicio.setDate(fechaFin.getDate() - CONFIG.PERIODOS.DIAS_POR_DEFECTO);
+        const fechaInicio = new Date(fechaFin.getTime() - (1 * 60 * 60 * 1000)); // 1 hora atrás
         
         document.getElementById('fechaInicio').value = fechaInicio.toISOString().slice(0, 16);
         document.getElementById('fechaFin').value = fechaFin.toISOString().slice(0, 16);
@@ -58,10 +57,9 @@ async function abrirModalPresion() {
         return;
     }
     
-    // Configurar fechas por defecto usando CONFIG
+    // Configurar fechas en los campos (solo referencia visual para búsqueda manual)
     const fechaFin = new Date();
-    const fechaInicio = new Date();
-    fechaInicio.setDate(fechaFin.getDate() - CONFIG.PERIODOS.DIAS_POR_DEFECTO);
+    const fechaInicio = new Date(fechaFin.getTime() - (1 * 60 * 60 * 1000)); // 1 hora atrás
     
     document.getElementById('fechaInicioPresion').value = fechaInicio.toISOString().slice(0, 16);
     document.getElementById('fechaFinPresion').value = fechaFin.toISOString().slice(0, 16);
@@ -87,10 +85,9 @@ async function abrirModalTemperatura() {
         return;
     }
     
-    // Configurar fechas por defecto usando CONFIG
+    // Configurar fechas en los campos (solo referencia visual para búsqueda manual)
     const fechaFin = new Date();
-    const fechaInicio = new Date();
-    fechaInicio.setDate(fechaFin.getDate() - CONFIG.PERIODOS.DIAS_POR_DEFECTO);
+    const fechaInicio = new Date(fechaFin.getTime() - (1 * 60 * 60 * 1000)); // 1 hora atrás
     
     document.getElementById('fechaInicioTemperatura').value = fechaInicio.toISOString().slice(0, 16);
     document.getElementById('fechaFinTemperatura').value = fechaFin.toISOString().slice(0, 16);
