@@ -120,15 +120,9 @@ function mostrarDatosNoDisponibles() {
 // Función para cargar datos de los últimos 3 días (MODO TIEMPO REAL)
 async function cargarUltimos3DiasDinamico(sistemaId) {
     try {
-        // Calcular fechas usando CONFIG
-        const fechaFin = new Date();
-        const fechaInicio = new Date();
-        fechaInicio.setDate(fechaFin.getDate() - CONFIG.PERIODOS.DIAS_POR_DEFECTO);
-        
-        const fechaInicioStr = formatearFechaParaAPI(fechaInicio);
-        const fechaFinStr = formatearFechaParaAPI(fechaFin);
-        
-        const url = `/monitoreo/api/datos-flujo/${sistemaId}/?fecha_inicio=${fechaInicioStr}&fecha_fin=${fechaFinStr}`;
+        // En modo tiempo real, el backend calculará desde el último created_at_iot
+        const horasAtras = CONFIG.PERIODOS.DIAS_POR_DEFECTO * 24; // Convertir días a horas
+        const url = `/monitoreo/api/datos-flujo/${sistemaId}/?tiempo_real=true&horas_atras=${horasAtras}`;
         const response = await fetch(url);
         const data = await response.json();
         
@@ -276,15 +270,9 @@ function actualizarDisplaysSimulados() {
 // Función para cargar datos de presión de los últimos días (MODO TIEMPO REAL)
 async function cargarUltimosDiasPresion(sistemaId) {
     try {
-        // Calcular fechas usando CONFIG
-        const fechaFin = new Date();
-        const fechaInicio = new Date();
-        fechaInicio.setDate(fechaFin.getDate() - CONFIG.PERIODOS.DIAS_POR_DEFECTO);
-        
-        const fechaInicioStr = formatearFechaParaAPI(fechaInicio);
-        const fechaFinStr = formatearFechaParaAPI(fechaFin);
-        
-        const url = `/monitoreo/api/datos-presion/${sistemaId}/?fecha_inicio=${fechaInicioStr}&fecha_fin=${fechaFinStr}`;
+        // En modo tiempo real, el backend calculará desde el último created_at_iot
+        const horasAtras = CONFIG.PERIODOS.DIAS_POR_DEFECTO * 24; // Convertir días a horas
+        const url = `/monitoreo/api/datos-presion/${sistemaId}/?tiempo_real=true&horas_atras=${horasAtras}`;
         const response = await fetch(url);
         const data = await response.json();
         
@@ -396,15 +384,9 @@ async function cargarDatosHistoricosTemperatura(sistemaId, fechaInicio = null, f
             const fechaFinISO = formatearFechaParaAPI(fechaFin);
             url = `/monitoreo/api/datos-temperatura/${sistemaId}/?fecha_inicio=${fechaInicioISO}&fecha_fin=${fechaFinISO}`;
         } else {
-            // Modo tiempo real - usar fechas calculadas automáticamente
-            const fechaFinCalc = new Date();
-            const fechaInicioCalc = new Date();
-            fechaInicioCalc.setDate(fechaFinCalc.getDate() - CONFIG.PERIODOS.DIAS_POR_DEFECTO);
-            
-            const fechaInicioStr = formatearFechaParaAPI(fechaInicioCalc);
-            const fechaFinStr = formatearFechaParaAPI(fechaFinCalc);
-            
-            url = `/monitoreo/api/datos-temperatura/${sistemaId}/?fecha_inicio=${fechaInicioStr}&fecha_fin=${fechaFinStr}`;
+            // Modo tiempo real - el backend calculará desde el último created_at_iot
+            const horasAtras = CONFIG.PERIODOS.DIAS_POR_DEFECTO * 24; // Convertir días a horas
+            url = `/monitoreo/api/datos-temperatura/${sistemaId}/?tiempo_real=true&horas_atras=${horasAtras}`;
         }
         
         const response = await fetch(url);

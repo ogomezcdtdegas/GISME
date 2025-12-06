@@ -15,7 +15,7 @@ const CONFIG = {
     
     // Configuración de períodos por defecto
     PERIODOS: {
-        DIAS_POR_DEFECTO: 0.4,                // Días hacia atrás para mostrar por defecto (últimos 3 días)
+        DIAS_POR_DEFECTO: 0.166667,                // Días hacia atrás para mostrar por defecto (últimos 3 días)
     },
     
     // Configuración de gráficos
