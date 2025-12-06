@@ -15,7 +15,7 @@ const CONFIG = {
     
     // Configuración de períodos por defecto
     PERIODOS: {
-        DIAS_POR_DEFECTO: 0.166667,                // Días hacia atrás para mostrar por defecto (últimos 3 días)
+        DIAS_POR_DEFECTO: 0.125,                // Días hacia atrás para mostrar por defecto (últimos 3 días)
     },
     
     // Configuración de gráficos
@@ -62,36 +62,36 @@ const CONFIG = {
     TEXTOS: {
         get MODO_TIEMPO_REAL() {
             const segundos = Math.floor(CONFIG.INTERVALOS.ACTUALIZACION_GRAFICOS / 1000);
-            const dias = CONFIG.PERIODOS.DIAS_POR_DEFECTO;
-            return `Los gráficos se actualizan automáticamente cada ${segundos} segundos mostrando los últimos ${dias} días.`;
+            const horas = CONFIG.PERIODOS.DIAS_POR_DEFECTO * 24;
+            return `Los gráficos se actualizan automáticamente cada ${segundos} segundos mostrando las últimas ${horas} horas.`;
         },
         get INFO_PERIODO_TIEMPO_REAL() {
-            const dias = CONFIG.PERIODOS.DIAS_POR_DEFECTO;
-            return `Últimos ${dias} días - Se actualiza automáticamente`;
+            const horas = CONFIG.PERIODOS.DIAS_POR_DEFECTO * 24;
+            return `Últimas ${horas} horas - Se actualiza automáticamente`;
         },
         REGISTROS_TIEMPO_REAL_VOLUMETRICO: (total) => {
-            const dias = CONFIG.PERIODOS.DIAS_POR_DEFECTO;
-            return `${total} registros (Últimos ${dias} días - Actualizando)`;
+            const horas = CONFIG.PERIODOS.DIAS_POR_DEFECTO * 24;
+            return `${total} registros (Últimas ${horas} horas - Actualizando)`;
         },
         REGISTROS_TIEMPO_REAL_MASICO: (total) => {
-            const dias = CONFIG.PERIODOS.DIAS_POR_DEFECTO;
-            return `${total} registros (Últimos ${dias} días - Actualizando)`;
+            const horas = CONFIG.PERIODOS.DIAS_POR_DEFECTO * 24;
+            return `${total} registros (Últimas ${horas} horas - Actualizando)`;
         },
         REGISTROS_TIEMPO_REAL_PRESION: (total) => {
-            const dias = CONFIG.PERIODOS.DIAS_POR_DEFECTO;
-            return `${total} registros (Últimos ${dias} días - Actualizando)`;
+            const horas = CONFIG.PERIODOS.DIAS_POR_DEFECTO * 24;
+            return `${total} registros (Últimas ${horas} horas - Actualizando)`;
         },
         REGISTROS_TIEMPO_REAL_TEMPERATURA_CORIOLIS: (total) => {
-            const dias = CONFIG.PERIODOS.DIAS_POR_DEFECTO;
-            return `${total} registros (Últimos ${dias} días - Actualizando)`;
+            const horas = CONFIG.PERIODOS.DIAS_POR_DEFECTO * 24;
+            return `${total} registros (Últimas ${horas} horas - Actualizando)`;
         },
         REGISTROS_TIEMPO_REAL_TEMPERATURA_DIAGNOSTIC: (total) => {
-            const dias = CONFIG.PERIODOS.DIAS_POR_DEFECTO;
-            return `${total} registros (Últimos ${dias} días - Actualizando)`;
+            const horas = CONFIG.PERIODOS.DIAS_POR_DEFECTO * 24;
+            return `${total} registros (Últimas ${horas} horas - Actualizando)`;
         },
         REGISTROS_TIEMPO_REAL_TEMPERATURA_REDUNDANT: (total) => {
-            const dias = CONFIG.PERIODOS.DIAS_POR_DEFECTO;
-            return `${total} registros (Últimos ${dias} días - Actualizando)`;
+            const horas = CONFIG.PERIODOS.DIAS_POR_DEFECTO * 24;
+            return `${total} registros (Últimas ${horas} horas - Actualizando)`;
         },
         get CONSOLE_ACTUALIZACION() {
             const segundos = Math.floor(CONFIG.INTERVALOS.ACTUALIZACION_DISPLAYS / 1000);
