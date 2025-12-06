@@ -278,7 +278,7 @@ async function cargarUltimosDiasPresion(sistemaId) {
         
         if (data.success) {
             // Renderizar gráfico en modo tiempo real
-            renderGraficoPresion(data);
+            renderGraficoPresion(data, true);
             
             // Actualizar contadores con indicación de tiempo real usando CONFIG
             document.getElementById('contador-presion').textContent = 
@@ -393,8 +393,9 @@ async function cargarDatosHistoricosTemperatura(sistemaId, fechaInicio = null, f
         const data = await response.json();
         
         if (data.success) {
-            // Renderizar gráficos con datos históricos
-            renderGraficosTemperatura(data);
+            // Renderizar gráficos (con o sin animación según el modo)
+            const esTiempoReal = !fechaInicio && !fechaFin;
+            renderGraficosTemperatura(data, esTiempoReal);
             
             if (fechaInicio && fechaFin) {
                 // Modo filtrado - contadores sin indicación de tiempo real
