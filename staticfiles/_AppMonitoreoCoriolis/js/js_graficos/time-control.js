@@ -96,10 +96,9 @@ function configurarEventosModal() {
 function resetearAModoTiempoReal() {
     // console.log('▶️ Reseteando a modo tiempo real - últimos 3 días dinámico');
     
-    // Resetear fechas a valores por defecto (últimos 3 días)
+    // Resetear campos de fecha (solo referencia visual, no afecta tiempo real)
     const fechaFin = new Date();
-    const fechaInicio = new Date();
-    fechaInicio.setDate(fechaFin.getDate() - 3);
+    const fechaInicio = new Date(fechaFin.getTime() - (1 * 60 * 60 * 1000)); // 1 hora atrás
     
     document.getElementById('fechaInicio').value = fechaInicio.toISOString().slice(0, 16);
     document.getElementById('fechaFin').value = fechaFin.toISOString().slice(0, 16);
@@ -201,10 +200,9 @@ function cambiarAModoFiltradoPresion() {
 function resetearPresionATiempoReal() {
     //console.log('▶️ Reseteando presión a modo tiempo real');
     
-    // Resetear fechas a valores por defecto
+    // Resetear campos de fecha (solo referencia visual, no afecta tiempo real)
     const fechaFin = new Date();
-    const fechaInicio = new Date();
-    fechaInicio.setDate(fechaFin.getDate() - CONFIG.PERIODOS.DIAS_POR_DEFECTO);
+    const fechaInicio = new Date(fechaFin.getTime() - (1 * 60 * 60 * 1000)); // 1 hora atrás
     
     document.getElementById('fechaInicioPresion').value = fechaInicio.toISOString().slice(0, 16);
     document.getElementById('fechaFinPresion').value = fechaFin.toISOString().slice(0, 16);
@@ -333,10 +331,9 @@ function cambiarAModoFiltradoTemperatura() {
 function resetearTemperaturaATiempoReal() {
     //console.log('▶️ Reseteando temperatura a modo tiempo real');
     
-    // Resetear fechas a valores por defecto
+    // Resetear campos de fecha (solo referencia visual, no afecta tiempo real)
     const fechaFin = new Date();
-    const fechaInicio = new Date();
-    fechaInicio.setDate(fechaFin.getDate() - CONFIG.PERIODOS.DIAS_POR_DEFECTO);
+    const fechaInicio = new Date(fechaFin.getTime() - (1 * 60 * 60 * 1000)); // 1 hora atrás
     
     document.getElementById('fechaInicioTemperatura').value = fechaInicio.toISOString().slice(0, 16);
     document.getElementById('fechaFinTemperatura').value = fechaFin.toISOString().slice(0, 16);

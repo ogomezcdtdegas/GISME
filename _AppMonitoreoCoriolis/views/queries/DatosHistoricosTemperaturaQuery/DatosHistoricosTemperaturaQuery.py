@@ -35,11 +35,27 @@ class DatosHistoricosTemperaturaQueryView(APIView):
             fecha_inicio = request.GET.get('fecha_inicio')
             fecha_fin = request.GET.get('fecha_fin')
             export = request.GET.get('export')
+            tiempo_real = request.GET.get('tiempo_real', 'false').lower() == 'true'
+            horas_atras = float(request.GET.get('horas_atras', '4'))  # Por defecto 4 horas
             
-            logger.info(f"Fechas recibidas - Inicio: {fecha_inicio}, Fin: {fecha_fin}")
+            logger.info(f"Fechas recibidas - Inicio: {fecha_inicio}, Fin: {fecha_fin}, Tiempo Real: {tiempo_real}")
             
+            # MODO TIEMPO REAL: Calcular desde el último dato disponible
+            if tiempo_real:
+                ultimo_dato = NodeRedData.objects.filter(systemId=sistema).order_by('-created_at_iot').first()
+                
+                if ultimo_dato and ultimo_dato.created_at_iot:
+                    # Usar el created_at_iot del último dato como fecha_fin
+                    fecha_fin = ultimo_dato.created_at_iot
+                    fecha_inicio = fecha_fin - timedelta(hours=horas_atras)
+                    logger.info(f"Modo Tiempo Real - Último dato: {fecha_fin}, Inicio calculado: {fecha_inicio}")
+                else:
+                    # Si no hay datos, usar fecha actual
+                    fecha_fin = timezone.now()
+                    fecha_inicio = fecha_fin - timedelta(hours=horas_atras)
+                    logger.info(f"No hay datos previos. Usando fechas por defecto - Inicio: {fecha_inicio}, Fin: {fecha_fin}")
             # Si no se especifican fechas, usar últimos 7 días
-            if not fecha_inicio or not fecha_fin:
+            elif not fecha_inicio or not fecha_fin:
                 fecha_fin = timezone.now()
                 fecha_inicio = fecha_fin - timedelta(days=7)
                 logger.info(f"Using default dates - Inicio: {fecha_inicio}, Fin: {fecha_fin}")
