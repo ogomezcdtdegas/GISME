@@ -82,12 +82,14 @@ class DatosHistoricosFlujoQueryView(APIView):
                 
                 logger.info(f"Fechas convertidas a UTC - Inicio: {fecha_inicio}, Fin: {fecha_fin}")
             
-            # Consultar datos
+            # Consultar datos usando created_at_iot (timestamp del dispositivo IoT)
             logger.info(f"Consultando datos para sistema: {sistema.tag}")
             datos = NodeRedData.objects.filter(
                 systemId=sistema,
-                created_at__range=[fecha_inicio, fecha_fin]
-            ).order_by('created_at')
+                created_at_iot__gte=fecha_inicio,
+                created_at_iot__lte=fecha_fin,
+                created_at_iot__isnull=False
+            ).order_by('created_at_iot')
             
             logger.info(f"Datos encontrados: {datos.count()} registros")
             
@@ -96,8 +98,8 @@ class DatosHistoricosFlujoQueryView(APIView):
             flujo_masico = []
             
             for dato in datos:
-                # Convertir UTC a hora de Colombia
-                fecha_colombia = dato.created_at.astimezone(COLOMBIA_TZ)
+                # Convertir UTC a hora de Colombia usando created_at_iot
+                fecha_colombia = dato.created_at_iot.astimezone(COLOMBIA_TZ)
                 timestamp = int(fecha_colombia.timestamp() * 1000)
                 fecha_str = fecha_colombia.strftime('%d/%m %H:%M')
                 
