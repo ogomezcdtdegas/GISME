@@ -8,6 +8,7 @@ from _AppComplementos.models import ConfiguracionCoeficientes
 from _AppMonitoreoCoriolis.models import NodeRedData, BatchDetectado
 from UTIL_LIB.conversiones import celsius_a_fahrenheit, lb_s_a_kg_min, lb_a_kg, g_cm3_a_kg_m3
 from _AppMonitoreoCoriolis.views.utils import COLOMBIA_TZ
+from _AppMonitoreoCoriolis.views.utils_decimation import decimar_datos_inteligente, calcular_estadisticas_decimacion
 from UTIL_LIB.GUM_coriolis_simp import GUM
 from UTIL_LIB.densidad60Modelo import rho15_from_rhoobs_api1124
 
@@ -22,8 +23,16 @@ class DetalleBatchQueryView(APIView):
     
     def get(self, request, batch_id):
         try:
+            # Parámetro opcional para desactivar decimación (útil para análisis detallado)
+            sin_decimacion = request.GET.get('sin_decimacion', 'false').lower() == 'true'
+            max_puntos = None if sin_decimacion else 2000
+            
             # Obtener el batch
             batch = get_object_or_404(BatchDetectado, id=batch_id)
+            
+            logger.info(f"📊 Consultando detalle del batch #{batch_id}")
+            logger.info(f"   Sistema: {batch.systemId.tag}")
+            logger.info(f"   Decimación: {'DESACTIVADA' if sin_decimacion else f'ACTIVA (max {max_puntos} puntos)'}")
             
             # Obtener configuración para los límites del flujo másico
             config = None
@@ -40,18 +49,32 @@ class DetalleBatchQueryView(APIView):
             fin_extendido = batch.fecha_fin + timedelta(minutes=3)
             
             # Obtener todos los datos del intervalo extendido del batch
-            datos = NodeRedData.objects.filter(
+            datos_query = NodeRedData.objects.filter(
                 systemId=batch.systemId,
                 created_at_iot__gte=inicio_extendido,
                 created_at_iot__lte=fin_extendido,
                 created_at_iot__isnull=False  # Solo datos con timestamp IoT válido
             ).order_by('created_at_iot')
             
-            if not datos.exists():
+            total_registros_db = datos_query.count()
+            logger.info(f"   Registros en DB: {total_registros_db}")
+            
+            if total_registros_db == 0:
                 return Response({
                     'success': False,
                     'error': 'No se encontraron datos para este batch'
                 }, status=404)
+            
+            # Aplicar decimación si es necesario
+            if max_puntos and total_registros_db > max_puntos:
+                datos = decimar_datos_inteligente(datos_query, max_puntos=max_puntos)
+            else:
+                datos = list(datos_query)
+            
+            # Calcular estadísticas de decimación
+            stats_decimacion = calcular_estadisticas_decimacion(total_registros_db, len(datos))
+            logger.info(f"   Registros para gráfica: {len(datos)} "
+                       f"({stats_decimacion['porcentaje_reduccion']:.1f}% reducción)")
             
             # Preparar datos para el gráfico y acumular Qm (dentro del batch)
             datos_grafico = []
@@ -520,6 +543,14 @@ class DetalleBatchQueryView(APIView):
                 },
                 'datos_grafico': datos_grafico,
                 'total_datos': len(datos_grafico),
+                # Información de decimación
+                'decimacion_info': {
+                    'aplicada': stats_decimacion['decimacion_aplicada'],
+                    'registros_originales': stats_decimacion['total_original'],
+                    'registros_graficados': stats_decimacion['total_decimado'],
+                    'factor_reduccion': stats_decimacion['factor_reduccion'],
+                    'porcentaje_reduccion': stats_decimacion['porcentaje_reduccion']
+                },
                 # Límites para las líneas horizontales en el gráfico
                 'lim_inf_caudal_masico': lim_inf,
                 'lim_sup_caudal_masico': lim_sup,

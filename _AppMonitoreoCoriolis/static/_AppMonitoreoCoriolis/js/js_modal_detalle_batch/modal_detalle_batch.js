@@ -114,6 +114,13 @@ function mostrarDetalleBatch(data) {
           <p><strong>Total Registros:</strong> ${data.batch_info.total_registros}</p>
         </div>
       </div>
+      ${data.decimacion_info && data.decimacion_info.aplicada ? `
+      <div class="alert alert-info mt-2 mb-0" role="alert">
+        <i class="bi bi-info-circle"></i> <strong>Optimización activada:</strong> 
+        Se muestran ${data.decimacion_info.registros_graficados.toLocaleString()} de ${data.decimacion_info.registros_originales.toLocaleString()} puntos 
+        (reducción del ${data.decimacion_info.porcentaje_reduccion}% para mejorar rendimiento)
+      </div>
+      ` : ''}
     `;
 
     // Mostrar diagnóstico
@@ -531,6 +538,12 @@ function crearGraficoBatch(datos, limites) {
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            animation: {
+                duration: 0  // Desactivar animaciones para mejor rendimiento
+            },
+            parsing: false,  // Los datos ya están parseados
+            normalized: true,  // Los datos ya están normalizados
+            spanGaps: true,  // Conectar líneas con valores null
             interaction: {
                 mode: 'index',
                 intersect: false,
@@ -555,6 +568,11 @@ function crearGraficoBatch(datos, limites) {
                             return prefijo + context.dataset.label + ': ' + context.formattedValue;
                         }
                     }
+                },
+                decimation: {
+                    enabled: true,  // Habilitar decimación adicional de Chart.js si es necesario
+                    algorithm: 'lttb',  // Largest-Triangle-Three-Buckets algorithm
+                    samples: 1000
                 }
             },
             scales: {
@@ -1040,6 +1058,12 @@ function crearGraficoTecnicoBatch(datos, limites) {
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            animation: {
+                duration: 0  // Desactivar animaciones para mejor rendimiento
+            },
+            parsing: false,  // Los datos ya están parseados
+            normalized: true,  // Los datos ya están normalizados
+            spanGaps: true,  // Conectar líneas con valores null
             interaction: {
                 mode: 'index',
                 intersect: false,
@@ -1064,6 +1088,11 @@ function crearGraficoTecnicoBatch(datos, limites) {
                             return prefijo + context.dataset.label + ': ' + context.formattedValue;
                         }
                     }
+                },
+                decimation: {
+                    enabled: true,  // Habilitar decimación adicional de Chart.js si es necesario
+                    algorithm: 'lttb',  // Largest-Triangle-Three-Buckets algorithm
+                    samples: 1000
                 }
             },
             scales: {
