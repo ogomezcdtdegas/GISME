@@ -1,6 +1,8 @@
 import logging
 from datetime import timedelta
 from django.shortcuts import get_object_or_404
+from django.db.models import Window, F, Q, IntegerField
+from django.db.models.functions import RowNumber, Mod
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -8,7 +10,7 @@ from _AppComplementos.models import ConfiguracionCoeficientes
 from _AppMonitoreoCoriolis.models import NodeRedData, BatchDetectado
 from UTIL_LIB.conversiones import celsius_a_fahrenheit, lb_s_a_kg_min, lb_a_kg, g_cm3_a_kg_m3
 from _AppMonitoreoCoriolis.views.utils import COLOMBIA_TZ
-from _AppMonitoreoCoriolis.views.utils_decimation import decimar_datos_inteligente, calcular_estadisticas_decimacion
+from _AppMonitoreoCoriolis.views.utils_decimation import calcular_estadisticas_decimacion
 from UTIL_LIB.GUM_coriolis_simp import GUM
 from UTIL_LIB.densidad60Modelo import rho15_from_rhoobs_api1124
 
@@ -65,11 +67,48 @@ class DetalleBatchQueryView(APIView):
                     'error': 'No se encontraron datos para este batch'
                 }, status=404)
             
-            # Aplicar decimación si es necesario
+            # Aplicar decimación SQL directa si es necesario
             if max_puntos and total_registros_db > max_puntos:
-                datos = decimar_datos_inteligente(datos_query, max_puntos=max_puntos)
+                # Calcular factor de decimación
+                factor = max(1, total_registros_db // max_puntos)
+                
+                logger.info(f"🔍 Aplicando decimación SQL directa")
+                logger.info(f"   Factor: tomar 1 de cada {factor} registros")
+                
+                # Obtener los IDs decimados primero
+                subquery = datos_query.annotate(
+                    row_num=Window(
+                        expression=RowNumber(),
+                        order_by=F('created_at_iot').asc()
+                    ),
+                    row_mod=Mod(
+                        Window(
+                            expression=RowNumber(),
+                            order_by=F('created_at_iot').asc()
+                        ),
+                        factor,
+                        output_field=IntegerField()
+                    )
+                ).filter(
+                    Q(row_num=1) |
+                    Q(row_num=total_registros_db) |
+                    Q(row_mod=0)
+                ).values_list('id', flat=True)
+                
+                # Convertir a lista para ejecutar la query
+                ids_list = list(subquery)
+                
+                logger.info(f"   📋 IDs seleccionados: {len(ids_list)}")
+                
+                # Obtener objetos completos sin anotaciones usando los IDs
+                datos = list(
+                    NodeRedData.objects.filter(id__in=ids_list).order_by('created_at_iot')
+                )
+                
+                logger.info(f"   ✅ Objetos cargados: {len(datos)}")
             else:
                 datos = list(datos_query)
+                logger.info(f"   ℹ️ Sin decimación: {len(datos)} registros")
             
             # Calcular estadísticas de decimación
             stats_decimacion = calcular_estadisticas_decimacion(total_registros_db, len(datos))
@@ -80,6 +119,9 @@ class DetalleBatchQueryView(APIView):
             datos_grafico = []
             suma_qm_in = 0.0
             conteo_qm_in = 0
+            
+            logger.info(f"   🔄 Procesando {len(datos)} datos para gráficas...")
+            
             for dato in datos:
                 # Convertir UTC a hora de Colombia usando timestamp IoT
                 fecha_colombia = dato.created_at_iot.astimezone(COLOMBIA_TZ)
@@ -124,6 +166,8 @@ class DetalleBatchQueryView(APIView):
                     suma_qm_in += mass_rate_kg_min
                     conteo_qm_in += 1
 
+            logger.info(f"   ✅ Datos procesados para gráficas: {len(datos_grafico)} registros")
+            
             # Qm promedio durante el batch
             Qm_prom = (suma_qm_in / conteo_qm_in) if conteo_qm_in > 0 else None
 

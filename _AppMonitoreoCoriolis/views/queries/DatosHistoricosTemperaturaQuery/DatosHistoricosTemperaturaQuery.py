@@ -2,6 +2,8 @@ from django.utils import timezone
 from datetime import timedelta, datetime
 import pytz
 import logging
+from django.db.models import Window, F, Q, IntegerField
+from django.db.models.functions import RowNumber, Mod
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -9,6 +11,7 @@ from _AppComplementos.models import Sistema
 from _AppMonitoreoCoriolis.models import NodeRedData
 from UTIL_LIB.conversiones import celsius_a_fahrenheit
 from _AppMonitoreoCoriolis.views.utils import COLOMBIA_TZ, get_coeficientes_correccion
+from _AppMonitoreoCoriolis.views.utils_decimation import calcular_estadisticas_decimacion
 
 # Configurar logging
 logger = logging.getLogger(__name__)
@@ -94,12 +97,55 @@ class DatosHistoricosTemperaturaQueryView(APIView):
                 created_at_iot__isnull=False
             ).order_by('created_at_iot')
             
+            total_registros = datos_query.count()
             logger.info(f"Query generada: {datos_query.query}")
-            logger.info(f"Total de registros encontrados: {datos_query.count()}")
+            logger.info(f"Total de registros encontrados: {total_registros}")
             
-            # Si es exportación CSV, retornar CSV
+            # Si es exportación CSV, retornar CSV (sin decimación)
             if export == 'csv':
                 return self._exportar_csv_temperatura(datos_query, sistema, fecha_inicio, fecha_fin)
+            
+            # Aplicar decimación SQL si hay más de 2000 registros
+            max_puntos = 2000
+            decimacion_info = {'aplicada': False}
+            
+            if total_registros > max_puntos:
+                factor = max(1, total_registros // max_puntos)
+                logger.info(f"🔍 Aplicando decimación SQL: factor {factor} (tomar 1 de cada {factor})")
+                
+                # Obtener IDs decimados
+                ids_decimados = datos_query.annotate(
+                    row_num=Window(
+                        expression=RowNumber(),
+                        order_by=F('created_at_iot').asc()
+                    ),
+                    row_mod=Mod(
+                        Window(
+                            expression=RowNumber(),
+                            order_by=F('created_at_iot').asc()
+                        ),
+                        factor,
+                        output_field=IntegerField()
+                    )
+                ).filter(
+                    Q(row_num=1) |
+                    Q(row_num=total_registros) |
+                    Q(row_mod=0)
+                ).values_list('id', flat=True)
+                
+                # Obtener objetos limpios
+                datos_query = NodeRedData.objects.filter(id__in=list(ids_decimados)).order_by('created_at_iot')
+                stats = calcular_estadisticas_decimacion(total_registros, datos_query.count())
+                decimacion_info = {
+                    'aplicada': True,
+                    'total_original': total_registros,
+                    'total_decimado': datos_query.count(),
+                    'factor_reduccion': stats['factor_reduccion'],
+                    'porcentaje_reduccion': stats['porcentaje_reduccion']
+                }
+                logger.info(f"✅ Decimación aplicada: {datos_query.count()} registros ({stats['porcentaje_reduccion']:.1f}% reducción)")
+            else:
+                logger.info(f"ℹ️ Sin decimación: {total_registros} registros")
             
             # Preparar datos para gráficos separados
             datos_coriolis = []
@@ -160,6 +206,7 @@ class DatosHistoricosTemperaturaQueryView(APIView):
                     'total_registros': len(datos_redundant),
                     'unidad': '°F'
                 },
+                'decimacion_info': decimacion_info,
                 'sistema': {
                     'id': str(sistema.id),
                     'tag': sistema.tag,

@@ -41,6 +41,12 @@ function mostrarDetalleBatch(data) {
     // Guardar datos para uso posterior
     datosActualesBatch = data;
     
+    // Debug temporal: Verificar datos recibidos
+    console.log('📊 Datos recibidos en mostrarDetalleBatch:');
+    console.log('  - batch_info:', data.batch_info ? 'OK' : 'MISSING');
+    console.log('  - datos_grafico:', data.datos_grafico ? `${data.datos_grafico.length} registros` : 'MISSING');
+    console.log('  - decimacion_info:', data.decimacion_info);
+    
     // Debug: Verificar valor de num_ticket
     //console.log('Número de ticket:', data.batch_info.num_ticket);
     //console.log('Tipo:', typeof data.batch_info.num_ticket);
@@ -541,8 +547,6 @@ function crearGraficoBatch(datos, limites) {
             animation: {
                 duration: 0  // Desactivar animaciones para mejor rendimiento
             },
-            parsing: false,  // Los datos ya están parseados
-            normalized: true,  // Los datos ya están normalizados
             spanGaps: true,  // Conectar líneas con valores null
             interaction: {
                 mode: 'index',
@@ -568,11 +572,6 @@ function crearGraficoBatch(datos, limites) {
                             return prefijo + context.dataset.label + ': ' + context.formattedValue;
                         }
                     }
-                },
-                decimation: {
-                    enabled: true,  // Habilitar decimación adicional de Chart.js si es necesario
-                    algorithm: 'lttb',  // Largest-Triangle-Three-Buckets algorithm
-                    samples: 1000
                 }
             },
             scales: {
@@ -1061,8 +1060,6 @@ function crearGraficoTecnicoBatch(datos, limites) {
             animation: {
                 duration: 0  // Desactivar animaciones para mejor rendimiento
             },
-            parsing: false,  // Los datos ya están parseados
-            normalized: true,  // Los datos ya están normalizados
             spanGaps: true,  // Conectar líneas con valores null
             interaction: {
                 mode: 'index',
@@ -1088,11 +1085,6 @@ function crearGraficoTecnicoBatch(datos, limites) {
                             return prefijo + context.dataset.label + ': ' + context.formattedValue;
                         }
                     }
-                },
-                decimation: {
-                    enabled: true,  // Habilitar decimación adicional de Chart.js si es necesario
-                    algorithm: 'lttb',  // Largest-Triangle-Three-Buckets algorithm
-                    samples: 1000
                 }
             },
             scales: {
