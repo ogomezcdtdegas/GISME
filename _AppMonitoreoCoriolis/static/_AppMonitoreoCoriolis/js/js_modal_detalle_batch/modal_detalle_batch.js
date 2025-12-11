@@ -120,13 +120,6 @@ function mostrarDetalleBatch(data) {
           <p><strong>Total Registros:</strong> ${data.batch_info.total_registros}</p>
         </div>
       </div>
-      ${data.decimacion_info && data.decimacion_info.aplicada ? `
-      <div class="alert alert-info mt-2 mb-0" role="alert">
-        <i class="bi bi-info-circle"></i> <strong>Optimización activada:</strong> 
-        Se muestran ${data.decimacion_info.registros_graficados.toLocaleString()} de ${data.decimacion_info.registros_originales.toLocaleString()} puntos 
-        (reducción del ${data.decimacion_info.porcentaje_reduccion}% para mejorar rendimiento)
-      </div>
-      ` : ''}
     `;
 
     // Mostrar diagnóstico
