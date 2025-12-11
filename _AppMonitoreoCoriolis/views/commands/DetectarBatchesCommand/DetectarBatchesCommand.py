@@ -115,6 +115,7 @@ class DetectarBatchesCommandView(APIView):
             # Guardar batches en la base de datos con prevención de duplicados
             batches_guardados = []
             batches_existentes = 0
+            batches_nuevos = 0
             
             for batch_data in batches_detectados:
                 # Generar hash para este batch usando el perfil dinámico que se usó
@@ -126,30 +127,48 @@ class DetectarBatchesCommandView(APIView):
                     batch_data['time_finished_usado']
                 )
                 
-                try:
-                    # Intentar crear el batch con el hash único
-                    batch = BatchDetectado.objects.create(
-                        systemId=sistema,
-                        fecha_inicio=batch_data['fecha_inicio'],
-                        fecha_fin=batch_data['fecha_fin'],
-                        vol_total=batch_data['vol_total'],
-                        mass_total=batch_data['mass_total'],
-                        temperatura_coriolis_prom=batch_data['temperatura_coriolis_prom'],
-                        densidad_prom=batch_data['densidad_prom'],
-                        pressure_out_prom=batch_data.get('pressure_out_prom'),
-                        hash_identificacion=hash_batch,
-                        perfil_lim_inf_caudal=lim_inf,
-                        perfil_lim_sup_caudal=lim_sup,
-                        perfil_vol_minimo=batch_data['vol_minimo_usado'],
-                        duracion_minutos=batch_data['duracion_minutos'],
-                        total_registros=batch_data['total_registros'],
-                        time_finished_batch=batch_data['time_finished_usado']
-                    )
-                except IntegrityError:
-                    # El batch ya existe (por el hash único), buscar el existente
-                    logger.info(f"Batch ya existe con hash {hash_batch[:16]}...")
-                    batch = BatchDetectado.objects.get(hash_identificacion=hash_batch)
+                # VERIFICAR PRIMERO SI YA EXISTE antes de intentar crear
+                batch_existente = BatchDetectado.objects.filter(hash_identificacion=hash_batch).first()
+                
+                if batch_existente:
+                    # El batch ya existe, no crear duplicado
+                    #logger.info(f"⚠️ Batch ya existe con hash {hash_batch[:16]}... - OMITIENDO")
+                    #logger.info(f"   ID existente: {batch_existente.id}")
+                    #logger.info(f"   Rango: {batch_existente.fecha_inicio.astimezone(COLOMBIA_TZ).strftime('%d/%m/%Y %H:%M:%S')} - {batch_existente.fecha_fin.astimezone(COLOMBIA_TZ).strftime('%d/%m/%Y %H:%M:%S')}")
                     batches_existentes += 1
+                    batch = batch_existente
+                else:
+                    # El batch NO existe, crear uno nuevo
+                    try:
+                        batch = BatchDetectado.objects.create(
+                            systemId=sistema,
+                            fecha_inicio=batch_data['fecha_inicio'],
+                            fecha_fin=batch_data['fecha_fin'],
+                            vol_total=batch_data['vol_total'],
+                            mass_total=batch_data['mass_total'],
+                            temperatura_coriolis_prom=batch_data['temperatura_coriolis_prom'],
+                            densidad_prom=batch_data['densidad_prom'],
+                            pressure_out_prom=batch_data.get('pressure_out_prom'),
+                            hash_identificacion=hash_batch,
+                            perfil_lim_inf_caudal=lim_inf,
+                            perfil_lim_sup_caudal=lim_sup,
+                            perfil_vol_minimo=batch_data['vol_minimo_usado'],
+                            duracion_minutos=batch_data['duracion_minutos'],
+                            total_registros=batch_data['total_registros'],
+                            time_finished_batch=batch_data['time_finished_usado']
+                        )
+                        batches_nuevos += 1
+                        #logger.info(f"✅ Batch nuevo creado con ID {batch.id}")
+                        #logger.info(f"   Hash: {hash_batch[:16]}...")
+                        #logger.info(f"   Rango: {batch.fecha_inicio.astimezone(COLOMBIA_TZ).strftime('%d/%m/%Y %H:%M:%S')} - {batch.fecha_fin.astimezone(COLOMBIA_TZ).strftime('%d/%m/%Y %H:%M:%S')}")
+                    except IntegrityError as e:
+                        # Por si acaso hay condición de carrera (otro proceso creó el batch justo ahora)
+                        #logger.warning(f"⚠️ IntegrityError al crear batch (condición de carrera detectada)")
+                        #logger.warning(f"   Error: {str(e)}")
+                        batch = BatchDetectado.objects.get(hash_identificacion=hash_batch)
+                        batches_existentes += 1
+                
+                # Agregar a la lista de respuesta (ya sea nuevo o existente)
                 batches_guardados.append({
                     'id': batch.id,
                     'fecha_inicio': batch.fecha_inicio.astimezone(COLOMBIA_TZ).strftime('%d/%m/%Y %H:%M:%S'),
@@ -194,7 +213,7 @@ class DetectarBatchesCommandView(APIView):
             return Response({
                 'success': True,
                 'batches_detectados': len(batches_completos),
-                'batches_nuevos': len(batches_guardados) - batches_existentes,
+                'batches_nuevos': batches_nuevos,
                 'batches_existentes': batches_existentes,
                 'batches': batches_completos,
                 'masa_total_bruta_kg': round(masa_total_bruta_kg, 2),
