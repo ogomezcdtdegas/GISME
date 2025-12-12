@@ -12,6 +12,7 @@ urlpatterns = [
     path('api/datos-flujo/<uuid:sistema_id>/', views.DatosHistoricosFlujoView.as_view(), name='datos_flujo'),
     path('api/datos-presion/<uuid:sistema_id>/', views.DatosHistoricosPresionView.as_view(), name='datos_presion'),
     path('api/datos-temperatura/<uuid:sistema_id>/', views.DatosHistoricosTemperaturaView.as_view(), name='datos_temperatura'),
+    path('api/datos-otras-variables/<uuid:sistema_id>/', views.DatosHistoricosOtrasVariablesView.as_view(), name='datos_otras_variables'),
     path('api/datos-tiempo-real/<uuid:sistema_id>/', views.DatosTiempoRealView.as_view(), name='datos_tiempo_real'),
     path('api/datos-tendencias/<uuid:sistema_id>/', views.DatosTendenciasView.as_view(), name='datos_tendencias'),
     

@@ -2,6 +2,7 @@
 from .DatosHistoricosFlujoQuery import DatosHistoricosFlujoQueryView
 from .DatosHistoricosPresionQuery import DatosHistoricosPresionQueryView
 from .DatosHistoricosTemperaturaQuery import DatosHistoricosTemperaturaQueryView
+from .DatosHistoricosOtrasVariablesQuery import DatosHistoricosOtrasVariablesQueryView
 from .DatosTiempoRealQuery import DatosTiempoRealQueryView
 from .DatosTendenciasQuery import DatosTendenciasQueryView
 from .DetalleBatchQuery import DetalleBatchQueryView
@@ -13,6 +14,7 @@ __all__ = [
     'DatosHistoricosFlujoQueryView',
     'DatosHistoricosPresionQueryView',
     'DatosHistoricosTemperaturaQueryView',
+    'DatosHistoricosOtrasVariablesQueryView',
     'DatosTiempoRealQueryView',
     'DatosTendenciasQueryView',
     'DetalleBatchQueryView',

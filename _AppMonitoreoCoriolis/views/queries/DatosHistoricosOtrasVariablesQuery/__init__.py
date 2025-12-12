@@ -1,0 +1,3 @@
+from .DatosHistoricosOtrasVariablesQuery import DatosHistoricosOtrasVariablesQueryView
+
+__all__ = ['DatosHistoricosOtrasVariablesQueryView']

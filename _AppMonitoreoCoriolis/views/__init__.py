@@ -9,6 +9,7 @@ from .queries import (
     DatosHistoricosFlujoQueryView,
     DatosHistoricosPresionQueryView,
     DatosHistoricosTemperaturaQueryView,
+    DatosHistoricosOtrasVariablesQueryView,
     DatosTiempoRealQueryView,
     DatosTendenciasQueryView,
     DetalleBatchQueryView,
@@ -24,6 +25,7 @@ from .commands import DetectarBatchesCommandView, AsignarTicketBatchCommandView,
 DatosHistoricosFlujoView = DatosHistoricosFlujoQueryView
 DatosHistoricosPresionView = DatosHistoricosPresionQueryView
 DatosHistoricosTemperaturaView = DatosHistoricosTemperaturaQueryView
+DatosHistoricosOtrasVariablesView = DatosHistoricosOtrasVariablesQueryView
 DatosTiempoRealView = DatosTiempoRealQueryView
 DatosTendenciasView = DatosTendenciasQueryView
 DetectarBatchesView = DetectarBatchesCommandView
@@ -41,6 +43,7 @@ __all__ = [
     'DatosHistoricosFlujoQueryView',
     'DatosHistoricosPresionQueryView',
     'DatosHistoricosTemperaturaQueryView',
+    'DatosHistoricosOtrasVariablesQueryView',
     'DatosTiempoRealQueryView',
     'DatosTendenciasQueryView',
     'DetalleBatchQueryView',
@@ -57,6 +60,7 @@ __all__ = [
     'DatosHistoricosFlujoView',
     'DatosHistoricosPresionView',
     'DatosHistoricosTemperaturaView',
+    'DatosHistoricosOtrasVariablesView',
     'DatosTiempoRealView',
     'DatosTendenciasView',
     'DetectarBatchesView',
