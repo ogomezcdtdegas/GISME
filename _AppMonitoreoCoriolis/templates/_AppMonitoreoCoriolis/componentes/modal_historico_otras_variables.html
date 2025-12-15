@@ -1,0 +1,126 @@
+{% load static %}
+
+<!-- Modal para Histórico de Otras Variables del Sistema -->
+<div class="modal fade" id="modalHistoricoOtrasVariables" tabindex="-1" aria-labelledby="modalHistoricoOtrasVariablesLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalHistoricoOtrasVariablesLabel">
+                    <i class="bi bi-activity"></i> Histórico de Otras Variables
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Filtros de Búsqueda -->
+                <div class="card mb-3">
+                    <div class="card-header bg-light">
+                        <i class="bi bi-funnel"></i> Filtros de Búsqueda
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-5">
+                                <label for="fechaInicioOtrasVars" class="form-label">Desde:</label>
+                                <input type="datetime-local" class="form-control" id="fechaInicioOtrasVars">
+                            </div>
+                            <div class="col-md-5">
+                                <label for="fechaFinOtrasVars" class="form-label">Hasta:</label>
+                                <input type="datetime-local" class="form-control" id="fechaFinOtrasVars">
+                            </div>
+                            <div class="col-md-2 d-flex align-items-end">
+                                <button type="button" class="btn btn-primary w-100" onclick="buscarOtrasVariables()">
+                                    <i class="bi bi-search"></i> Buscar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gráfico de Otras Variables -->
+                <div class="card">
+                    <div class="card-header bg-light">
+                        <i class="bi bi-graph-up"></i> Otras Variables del Sistema
+                        <span class="badge bg-secondary float-end" id="totalRegistrosOtrasVars">0 registros</span>
+                    </div>
+                    <div class="card-body">
+                        <!-- Contenedor del gráfico -->
+                        <div class="chart-container mb-3" style="position: relative; height: 450px;">
+                            <canvas id="chartOtrasVariables"></canvas>
+                        </div>
+
+                        <!-- Controles de Escalas -->
+                        <div class="chart-controls border rounded-3 p-3 bg-white">
+                            <h6 class="fw-semibold mb-3 text-center">
+                                <i class="bi bi-rulers"></i> Activar Escalas a la Derecha
+                            </h6>
+                            <div class="row g-2">
+                                <div class="col-md-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="scalePresion" checked>
+                                        <label class="form-check-label" for="scalePresion">
+                                            Escala Presión
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="scaleTempSalida" checked>
+                                        <label class="form-check-label" for="scaleTempSalida">
+                                            Escala Temp. Salida
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="scaleFrecuencia">
+                                        <label class="form-check-label" for="scaleFrecuencia">
+                                            Escala Frecuencia
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="scaleDensidad">
+                                        <label class="form-check-label" for="scaleDensidad">
+                                            Escala Densidad
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="scaleIntensidadGateway">
+                                        <label class="form-check-label" for="scaleIntensidadGateway">
+                                            Escala Señal Gateway
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="scaleTempGateway">
+                                        <label class="form-check-label" for="scaleTempGateway">
+                                            Escala Temp. Gateway
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Información adicional -->
+                        <div class="alert alert-secondary mt-3 mb-0 small">
+                            <i class="bi bi-info-circle"></i> <strong>Información:</strong>
+                            Las variables se muestran en las unidades configuradas del sistema. 
+                            Use la leyenda del gráfico para mostrar/ocultar variables y los checkboxes para activar sus escalas.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle"></i> Cerrar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- JavaScript para el modal -->
+<script src="{% static '_AppMonitoreoCoriolis/js/js_modal_historico_otras_variables/modal_historico_otras_variables.js' %}"></script>

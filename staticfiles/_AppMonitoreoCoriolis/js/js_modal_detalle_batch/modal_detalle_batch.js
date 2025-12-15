@@ -41,6 +41,12 @@ function mostrarDetalleBatch(data) {
     // Guardar datos para uso posterior
     datosActualesBatch = data;
     
+    // Debug temporal: Verificar datos recibidos
+    console.log('📊 Datos recibidos en mostrarDetalleBatch:');
+    console.log('  - batch_info:', data.batch_info ? 'OK' : 'MISSING');
+    console.log('  - datos_grafico:', data.datos_grafico ? `${data.datos_grafico.length} registros` : 'MISSING');
+    console.log('  - decimacion_info:', data.decimacion_info);
+    
     // Debug: Verificar valor de num_ticket
     //console.log('Número de ticket:', data.batch_info.num_ticket);
     //console.log('Tipo:', typeof data.batch_info.num_ticket);
@@ -531,6 +537,10 @@ function crearGraficoBatch(datos, limites) {
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            animation: {
+                duration: 0  // Desactivar animaciones para mejor rendimiento
+            },
+            spanGaps: true,  // Conectar líneas con valores null
             interaction: {
                 mode: 'index',
                 intersect: false,
@@ -1040,6 +1050,10 @@ function crearGraficoTecnicoBatch(datos, limites) {
         options: {
             responsive: true,
             maintainAspectRatio: false,
+            animation: {
+                duration: 0  // Desactivar animaciones para mejor rendimiento
+            },
+            spanGaps: true,  // Conectar líneas con valores null
             interaction: {
                 mode: 'index',
                 intersect: false,

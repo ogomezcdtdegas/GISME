@@ -9,22 +9,25 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from _AppComplementos.models import Sistema
 from _AppMonitoreoCoriolis.models import NodeRedData
-from _AppMonitoreoCoriolis.views.utils import COLOMBIA_TZ, get_coeficientes_correccion, convertir_presion_con_span
+from UTIL_LIB.conversiones import cm3_s_a_gal_min, lb_s_a_kg_min, celsius_a_fahrenheit
+from _AppMonitoreoCoriolis.views.utils import COLOMBIA_TZ, get_coeficientes_correccion
 from _AppMonitoreoCoriolis.views.utils_decimation import calcular_estadisticas_decimacion
 
 # Configurar logging
 logger = logging.getLogger(__name__)
 
-class DatosHistoricosPresionQueryView(APIView):
+class DatosHistoricosOtrasVariablesQueryView(APIView):
     """
-    CBV para obtener datos históricos de presión para un sistema específico
+    CBV para obtener datos históricos de otras variables del sistema
+    Incluye: Presión, Flujo Másico, Temperatura Salida, Frecuencia, Densidad,
+    Intensidad Señal Gateway y Temperatura Gateway
     """
     permission_classes = [IsAuthenticated]
     
     def get(self, request, sistema_id):
         try:
             # Logging para debug
-            logger.info(f"DatosHistoricosPresionQueryView - Sistema ID: {sistema_id}")
+            logger.info(f"DatosHistoricosOtrasVariablesQueryView - Sistema ID: {sistema_id}")
             logger.info(f"Query params: {dict(request.GET)}")
             
             # Verificar que el sistema existe
@@ -46,12 +49,10 @@ class DatosHistoricosPresionQueryView(APIView):
                 ultimo_dato = NodeRedData.objects.filter(systemId=sistema).order_by('-created_at_iot').first()
                 
                 if ultimo_dato and ultimo_dato.created_at_iot:
-                    # Usar el created_at_iot del último dato como fecha_fin
                     fecha_fin = ultimo_dato.created_at_iot
                     fecha_inicio = fecha_fin - timedelta(hours=horas_atras)
                     logger.info(f"Modo Tiempo Real - Último dato: {fecha_fin}, Inicio calculado: {fecha_inicio}")
                 else:
-                    # Si no hay datos, usar fecha actual
                     fecha_fin = timezone.now()
                     fecha_inicio = fecha_fin - timedelta(hours=horas_atras)
                     logger.info(f"No hay datos previos. Usando fechas por defecto - Inicio: {fecha_inicio}, Fin: {fecha_fin}")
@@ -63,16 +64,13 @@ class DatosHistoricosPresionQueryView(APIView):
             else:
                 # Parsear fechas con formato datetime y establecer timezone de Colombia
                 try:
-                    # Intentar formato con fecha y hora: "2025-09-17T21:31:00"
                     fecha_inicio_naive = datetime.strptime(fecha_inicio, '%Y-%m-%dT%H:%M:%S')
                     fecha_fin_naive = datetime.strptime(fecha_fin, '%Y-%m-%dT%H:%M:%S')
                 except ValueError:
                     try:
-                        # Fallback a formato solo fecha: "2025-09-17"
                         fecha_inicio_naive = datetime.strptime(fecha_inicio, '%Y-%m-%d')
                         fecha_fin_naive = datetime.strptime(fecha_fin, '%Y-%m-%d')
                         
-                        # Establecer horas para cubrir todo el rango del día
                         fecha_inicio_naive = fecha_inicio_naive.replace(hour=0, minute=0, second=0, microsecond=0)
                         fecha_fin_naive = fecha_fin_naive.replace(hour=23, minute=59, second=59, microsecond=999999)
                     except ValueError:
@@ -81,27 +79,22 @@ class DatosHistoricosPresionQueryView(APIView):
                             'error': 'Formato de fecha inválido. Use YYYY-MM-DD o YYYY-MM-DDTHH:MM:SS'
                         })
                 
-                # Asumir que las fechas del frontend están en hora de Colombia y convertir a UTC
                 fecha_inicio = COLOMBIA_TZ.localize(fecha_inicio_naive).astimezone(pytz.UTC)
                 fecha_fin = COLOMBIA_TZ.localize(fecha_fin_naive).astimezone(pytz.UTC)
                 
                 logger.info(f"Fechas convertidas a UTC - Inicio: {fecha_inicio}, Fin: {fecha_fin}")
             
-            # Consultar datos
-            logger.info(f"Consultando datos de presión para sistema: {sistema.tag}")
+            # Consultar datos usando created_at_iot (timestamp del dispositivo IoT)
+            logger.info(f"Consultando datos para sistema: {sistema.tag}")
             datos_query = NodeRedData.objects.filter(
                 systemId=sistema,
-                created_at_iot__range=[fecha_inicio, fecha_fin],
+                created_at_iot__gte=fecha_inicio,
+                created_at_iot__lte=fecha_fin,
                 created_at_iot__isnull=False
             ).order_by('created_at_iot')
             
             total_registros = datos_query.count()
             logger.info(f"Datos encontrados: {total_registros} registros")
-            
-            # Verificar si se solicita exportación CSV
-            export_format = request.GET.get('export')
-            if export_format == 'csv':
-                return self._exportar_csv_presion(datos_query, sistema, fecha_inicio, fecha_fin)
             
             # Aplicar decimación SQL si hay más de 2000 registros
             max_puntos = 2000
@@ -146,36 +139,122 @@ class DatosHistoricosPresionQueryView(APIView):
                 datos = list(datos_query)
                 logger.info(f"ℹ️ Sin decimación: {total_registros} registros")
             
-            # Preparar datos de presión
+            # Preparar datos para cada variable
             datos_presion = []
+            datos_flujo_masico = []
+            datos_temperatura_salida = []
+            datos_frecuencia = []
+            datos_densidad = []
+            datos_intensidad_gateway = []
+            datos_temperatura_gateway = []
             
             for dato in datos:
-                # Convertir UTC a hora de Colombia usando timestamp IoT
+                # Convertir UTC a hora de Colombia usando created_at_iot
                 fecha_colombia = dato.created_at_iot.astimezone(COLOMBIA_TZ)
                 timestamp = int(fecha_colombia.timestamp() * 1000)
                 fecha_str = fecha_colombia.strftime('%d/%m %H:%M')
                 
-                # Usar pressure_out con corrección del momento aplicada
+                # Presión (PSI) - con corrección
                 if dato.pressure_out is not None:
-                    # 1. Convertir valor crudo con span
-                    valor_convertido = dato.pressure_out
-                    
-                    # 2. Aplicar corrección mx+b
-                    # Usar coeficientes del momento (mp, bp) si están disponibles, sino usar los actuales
                     mp_momento = dato.mp if dato.mp is not None else mp
                     bp_momento = dato.bp if dato.bp is not None else bp
-                    presion_corregida = mp_momento * valor_convertido + bp_momento
+                    presion_corregida = mp_momento * dato.pressure_out + bp_momento
                     datos_presion.append({
                         'fecha': fecha_str,
                         'valor': presion_corregida,
                         'timestamp': timestamp
                     })
+                
+                # Flujo Másico (kg/min)
+                if dato.mass_rate is not None:
+                    valor_convertido = lb_s_a_kg_min(float(dato.mass_rate))
+                    datos_flujo_masico.append({
+                        'fecha': fecha_str,
+                        'valor': valor_convertido,
+                        'timestamp': timestamp
+                    })
+                
+                # Temperatura de Salida (°F) - con corrección
+                if dato.redundant_temperature is not None:
+                    mt_momento = dato.mt if dato.mt is not None else mt
+                    bt_momento = dato.bt if dato.bt is not None else bt
+                    temp_corregida = mt_momento * float(dato.redundant_temperature) + bt_momento
+                    valor_convertido = celsius_a_fahrenheit(temp_corregida)
+                    datos_temperatura_salida.append({
+                        'fecha': fecha_str,
+                        'valor': valor_convertido,
+                        'timestamp': timestamp
+                    })
+                
+                # Frecuencia (Hz)
+                if dato.coriolis_frecuency is not None:
+                    datos_frecuencia.append({
+                        'fecha': fecha_str,
+                        'valor': float(dato.coriolis_frecuency),
+                        'timestamp': timestamp
+                    })
+                
+                # Densidad (g/cc)
+                if dato.density is not None:
+                    datos_densidad.append({
+                        'fecha': fecha_str,
+                        'valor': float(dato.density),
+                        'timestamp': timestamp
+                    })
+                
+                # Intensidad Señal Gateway (dB)
+                if dato.signal_strength_rxCoriolis is not None:
+                    datos_intensidad_gateway.append({
+                        'fecha': fecha_str,
+                        'valor': float(dato.signal_strength_rxCoriolis),
+                        'timestamp': timestamp
+                    })
+                
+                # Temperatura Gateway (°C)
+                if dato.temperature_gateway is not None:
+                    datos_temperatura_gateway.append({
+                        'fecha': fecha_str,
+                        'valor': float(dato.temperature_gateway),
+                        'timestamp': timestamp
+                    })
             
             return Response({
                 'success': True,
-                'datos': datos_presion,
-                'unidad': 'PSI',
-                'total_registros': len(datos_presion),
+                'presion': {
+                    'datos': datos_presion,
+                    'unidad': 'PSI',
+                    'total_registros': len(datos_presion)
+                },
+                'flujo_masico': {
+                    'datos': datos_flujo_masico,
+                    'unidad': 'kg/min',
+                    'total_registros': len(datos_flujo_masico)
+                },
+                'temperatura_salida': {
+                    'datos': datos_temperatura_salida,
+                    'unidad': '°F',
+                    'total_registros': len(datos_temperatura_salida)
+                },
+                'frecuencia': {
+                    'datos': datos_frecuencia,
+                    'unidad': 'Hz',
+                    'total_registros': len(datos_frecuencia)
+                },
+                'densidad': {
+                    'datos': datos_densidad,
+                    'unidad': 'g/cc',
+                    'total_registros': len(datos_densidad)
+                },
+                'intensidad_gateway': {
+                    'datos': datos_intensidad_gateway,
+                    'unidad': 'dB',
+                    'total_registros': len(datos_intensidad_gateway)
+                },
+                'temperatura_gateway': {
+                    'datos': datos_temperatura_gateway,
+                    'unidad': '°C',
+                    'total_registros': len(datos_temperatura_gateway)
+                },
                 'decimacion_info': decimacion_info,
                 'sistema': {
                     'id': str(sistema.id),
@@ -193,40 +272,10 @@ class DatosHistoricosPresionQueryView(APIView):
                 'error': 'Sistema no encontrado'
             }, status=404)
         except Exception as e:
-            logger.error(f"Error en DatosHistoricosPresionQueryView: {str(e)}", exc_info=True)
+            logger.error(f"Error en DatosHistoricosOtrasVariablesQueryView: {str(e)}", exc_info=True)
             logger.error(f"Tipo de error: {type(e).__name__}")
             logger.error(f"Args del error: {e.args}")
             return Response({
                 'success': False,
                 'error': f'Error interno del servidor: {str(e)}'
             }, status=500)
-    
-    def _exportar_csv_presion(self, datos, sistema, fecha_inicio, fecha_fin):
-        """Exportar datos de presión como CSV"""
-        from django.http import HttpResponse
-        import csv
-        
-        # Obtener coeficientes de corrección
-        mt, bt, mp, bp, span_presion, zero_presion = get_coeficientes_correccion(sistema)
-        
-        response = HttpResponse(content_type='text/csv')
-        response['Content-Disposition'] = f'attachment; filename="presion_{sistema.tag}_{fecha_inicio.strftime("%Y%m%d")}_{fecha_fin.strftime("%Y%m%d")}.csv"'
-        
-        writer = csv.writer(response)
-        writer.writerow(['Fecha', 'Hora', 'Presión (PSI)', 'Sistema'])
-        
-        for dato in datos:
-            if dato.pressure_out is not None:
-                fecha_colombia = dato.created_at.astimezone(COLOMBIA_TZ)
-                # Usar coeficientes del momento si están disponibles, sino usar los actuales
-                mp_momento = dato.mp if dato.mp is not None else mp
-                bp_momento = dato.bp if dato.bp is not None else bp
-                presion_corregida = mp_momento * float(dato.pressure_out) + bp_momento
-                writer.writerow([
-                    fecha_colombia.strftime('%d/%m/%Y'),
-                    fecha_colombia.strftime('%H:%M:%S'),
-                    presion_corregida,
-                    sistema.tag
-                ])
-        
-        return response
