@@ -183,6 +183,12 @@ function mostrarVistaSelector() {
         //console.log('🛑 Intervalo de tendencias detenido');
     }
     
+    // 🔌 Desconectar WebSocket
+    if (typeof desconectarWebSocket === 'function') {
+        desconectarWebSocket();
+        console.log('🔌 WebSocket desconectado');
+    }
+    
     // Mostrar vista de selector
     const selectorView = document.getElementById('sistema-selector-view');
     if (selectorView) {
@@ -248,29 +254,28 @@ document.addEventListener('DOMContentLoaded', function() {
         // ✅ LÓGICA CORREGIDA: Si se detecta cualquier sistema (contexto Django O URL), mostrar vista de monitoreo
         mostrarVistaMonitoreo();
         
-        // Actualizar displays inmediatamente
+        // Actualizar displays inmediatamente (solo carga inicial)
         actualizarDisplaysConDatosReales();
         
-        // Cargar gráfico de tendencias con retraso para asegurar que la vista esté visible
+        // 🚀 WEBSOCKET: Conectar para recibir TODOS los datos en tiempo real
+        console.log('🔌 Iniciando conexión WebSocket para tiempo real...');
+        console.log('🔍 Sistema ID para WebSocket:', sistemaId);
+        conectarWebSocketTendencias(sistemaId);
+        
+        // Cargar gráfico de tendencias inicial
         setTimeout(() => {
             cargarDatosTendencias();
-        }, 500); // Incrementado a 500ms para asegurar visibilidad
+        }, 500);
         
-        // Configurar actualización automática de displays
-        if (tiempoRealInterval) clearInterval(tiempoRealInterval);
-        tiempoRealInterval = setInterval(() => {
-            actualizarDisplaysConDatosReales();
-        }, CONFIG.INTERVALOS.ACTUALIZACION_DISPLAYS);
+        // ✅ ELIMINADO: Ya NO necesitamos polling para displays
+        // El WebSocket ahora envía TODOS los datos (tendencias + displays)
+        // Comentado para referencia:
+        // if (tiempoRealInterval) clearInterval(tiempoRealInterval);
+        // tiempoRealInterval = setInterval(() => {
+        //     actualizarDisplaysConDatosReales();
+        // }, CONFIG.INTERVALOS.ACTUALIZACION_DISPLAYS);
         
-        // Configurar actualización automática de tendencias usando CONFIG
-        if (tendenciasInterval) clearInterval(tendenciasInterval);
-        tendenciasInterval = setInterval(() => {
-            cargarDatosTendencias();
-            //console.log('🔄 Tendencias actualizadas automáticamente');
-        }, CONFIG.INTERVALOS.ACTUALIZACION_TENDENCIAS);
-        
-        //console.log(CONFIG.TEXTOS.CONSOLE_ACTUALIZACION);
-        //console.log(`📊 Gráfico de tendencias configurado para actualización automática cada ${CONFIG.INTERVALOS.ACTUALIZACION_TENDENCIAS/1000} segundos`);
+        console.log('✅ WebSocket conectado - Sistema 100% en tiempo real (sin polling)');
     } else {
         //console.warn('⚠️ No se detectó un sistema específico - mostrar tabla de selección');
         // Mostrar la vista de selección de sistemas

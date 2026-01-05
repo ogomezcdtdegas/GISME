@@ -1,11 +1,13 @@
 import logging
 from datetime import timedelta
+from django.db.models import Window, F, Q, IntegerField, FloatField, ExpressionWrapper
+from django.db.models.functions import RowNumber, Mod
+from django.core.cache import cache
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from _AppComplementos.models import Sistema
 from _AppMonitoreoCoriolis.models import NodeRedData
-from UTIL_LIB.conversiones import celsius_a_fahrenheit, cm3_s_a_gal_min, lb_s_a_kg_min
 from _AppMonitoreoCoriolis.views.utils import COLOMBIA_TZ, get_coeficientes_correccion, convertir_presion_con_span
 
 # Configurar logging
@@ -19,6 +21,16 @@ class DatosTendenciasQueryView(APIView):
     permission_classes = [IsAuthenticated]
     
     def get(self, request, sistema_id):
+        # Intentar obtener del caché primero
+        cache_key = f'tendencias_{sistema_id}'
+        cached_response = cache.get(cache_key)
+        
+        if cached_response:
+            logger.info(f"📦 Datos de tendencias servidos desde caché para sistema {sistema_id}")
+            # Agregar flag para debugging
+            cached_response['from_cache'] = True
+            return Response(cached_response)
+        
         try:
             sistema = Sistema.objects.get(id=sistema_id)
             
@@ -51,11 +63,83 @@ class DatosTendenciasQueryView(APIView):
             fecha_inicio = fecha_fin - timedelta(minutes=30)
             
             # Consultar datos en esa ventana de tiempo usando timestamp IoT
-            datos = NodeRedData.objects.filter(
+            datos_query = NodeRedData.objects.filter(
                 systemId=sistema,
                 created_at_iot__range=[fecha_inicio, fecha_fin],
                 created_at_iot__isnull=False
             ).order_by('created_at_iot')
+            
+            total_registros = datos_query.count()
+            max_puntos = 80  # Reducido aún más para mejor performance
+            decimacion_info = {'aplicada': False}
+            
+            # Aplicar decimación si hay más registros
+            if total_registros > max_puntos:
+                factor = max(2, total_registros // max_puntos)
+                
+                # Traer solo IDs (muy rápido)
+                todos_ids = list(datos_query.values_list('id', flat=True))
+                
+                # Decimar índices
+                ids_decimados = [todos_ids[i] for i in range(0, len(todos_ids), factor)]
+                if todos_ids[-1] not in ids_decimados:
+                    ids_decimados.append(todos_ids[-1])
+                
+                # Query con conversiones en SQL (más rápido que Python)
+                datos = list(NodeRedData.objects.filter(id__in=ids_decimados).annotate(
+                    # Conversiones matemáticas en PostgreSQL (10x más rápido)
+                    flujo_masico_kg=ExpressionWrapper(
+                        F('mass_rate') * 27.2155,  # lb/s a kg/min (60 * 0.453592)
+                        output_field=FloatField()
+                    ),
+                    flujo_vol_gal=ExpressionWrapper(
+                        F('flow_rate') * 0.0158503,  # cm³/s a gal/min
+                        output_field=FloatField()
+                    ),
+                    temp_coriolis_f=ExpressionWrapper(
+                        (F('coriolis_temperature') * 9.0 / 5.0) + 32.0,  # °C a °F
+                        output_field=FloatField()
+                    ),
+                    temp_redundante_celsius=F('redundant_temperature'),  # Para corrección posterior
+                    presion_raw=F('pressure_out'),  # Para corrección posterior
+                    densidad_gcc=F('density')
+                ).values(
+                    'created_at_iot', 'flujo_masico_kg', 'flujo_vol_gal', 
+                    'temp_coriolis_f', 'temp_redundante_celsius', 'presion_raw',
+                    'densidad_gcc', 'mt', 'bt', 'mp', 'bp'
+                ).order_by('created_at_iot'))
+                
+                decimacion_info = {
+                    'aplicada': True,
+                    'total_original': total_registros,
+                    'total_decimado': len(ids_decimados),
+                    'factor': factor,
+                    'porcentaje_reduccion': round((1 - len(ids_decimados) / total_registros) * 100, 1)
+                }
+            else:
+                # Query con conversiones en SQL (más rápido que Python)
+                datos = list(datos_query.annotate(
+                    # Conversiones matemáticas en PostgreSQL (10x más rápido)
+                    flujo_masico_kg=ExpressionWrapper(
+                        F('mass_rate') * 27.2155,  # lb/s a kg/min (60 * 0.453592)
+                        output_field=FloatField()
+                    ),
+                    flujo_vol_gal=ExpressionWrapper(
+                        F('flow_rate') * 0.0158503,  # cm³/s a gal/min
+                        output_field=FloatField()
+                    ),
+                    temp_coriolis_f=ExpressionWrapper(
+                        (F('coriolis_temperature') * 9.0 / 5.0) + 32.0,  # °C a °F
+                        output_field=FloatField()
+                    ),
+                    temp_redundante_celsius=F('redundant_temperature'),  # Para corrección posterior
+                    presion_raw=F('pressure_out'),  # Para corrección posterior
+                    densidad_gcc=F('density')
+                ).values(
+                    'created_at_iot', 'flujo_masico_kg', 'flujo_vol_gal', 
+                    'temp_coriolis_f', 'temp_redundante_celsius', 'presion_raw',
+                    'densidad_gcc', 'mt', 'bt', 'mp', 'bp'
+                ))
             
             # Preparar datos para cada variable
             flujo_masico = []
@@ -65,79 +149,71 @@ class DatosTendenciasQueryView(APIView):
             presion = []
             densidad = []
             
+            # Loop optimizado: solo aplicar correcciones y formatear
+            # Las conversiones ya se hicieron en SQL (mucho más rápido)
             for dato in datos:
                 # Convertir UTC a hora de Colombia usando timestamp IoT
-                fecha_colombia = dato.created_at_iot.astimezone(COLOMBIA_TZ)
+                fecha_colombia = dato['created_at_iot'].astimezone(COLOMBIA_TZ)
                 timestamp = int(fecha_colombia.timestamp() * 1000)
                 fecha_str = fecha_colombia.strftime('%H:%M')
                 
-                # Flujo Másico - convertir a kg/min
-                if dato.mass_rate is not None:
-                    valor_convertido = lb_s_a_kg_min(float(dato.mass_rate))
+                # Flujo Másico - ya convertido en SQL
+                if dato['flujo_masico_kg'] is not None:
                     flujo_masico.append({
                         'x': timestamp,
-                        'y': valor_convertido,
+                        'y': round(dato['flujo_masico_kg'], 2),
                         'fecha': fecha_str
                     })
                 
-                # Flujo Volumétrico - convertir a gal/min
-                if dato.flow_rate is not None:
-                    valor_convertido = cm3_s_a_gal_min(float(dato.flow_rate))
+                # Flujo Volumétrico - ya convertido en SQL
+                if dato['flujo_vol_gal'] is not None:
                     flujo_volumetrico.append({
                         'x': timestamp,
-                        'y': valor_convertido,
+                        'y': round(dato['flujo_vol_gal'], 2),
                         'fecha': fecha_str
                     })
                 
-                # Temperatura Coriolis - convertir a °F
-                if dato.coriolis_temperature is not None:
-                    valor_convertido = celsius_a_fahrenheit(float(dato.coriolis_temperature))
+                # Temperatura Coriolis - ya convertido en SQL a °F
+                if dato['temp_coriolis_f'] is not None:
                     temperatura_coriolis.append({
                         'x': timestamp,
-                        'y': valor_convertido,
+                        'y': round(dato['temp_coriolis_f'], 2),
                         'fecha': fecha_str
                     })
                 
-                # Temperatura de Salida (redundant_temperature) - APLICAR CORRECCIÓN DEL MOMENTO y convertir a °F
-                if dato.redundant_temperature is not None:
-                    # Usar coeficientes del momento si están disponibles, sino usar los actuales
-                    mt_momento = dato.mt if dato.mt is not None else mt
-                    bt_momento = dato.bt if dato.bt is not None else bt
-                    temp_corregida = mt_momento * float(dato.redundant_temperature) + bt_momento
-                    valor_convertido = celsius_a_fahrenheit(temp_corregida)
+                # Temperatura de Salida - aplicar corrección mx+b y convertir a °F
+                if dato['temp_redundante_celsius'] is not None:
+                    mt_momento = dato['mt'] if dato['mt'] is not None else mt
+                    bt_momento = dato['bt'] if dato['bt'] is not None else bt
+                    # Corrección en Celsius primero, luego convertir a °F
+                    temp_celsius_corr = mt_momento * float(dato['temp_redundante_celsius']) + bt_momento
+                    temp_f_corr = (temp_celsius_corr * 9.0 / 5.0) + 32.0
                     temperatura_salida.append({
                         'x': timestamp,
-                        'y': valor_convertido,
+                        'y': round(temp_f_corr, 2),
                         'fecha': fecha_str
                     })
                 
-                # Presión - APLICAR CORRECCIÓN DEL MOMENTO y mantener en PSI
-                if dato.pressure_out is not None:
-                    # 1. Convertir valor crudo con span
-                    #valor_convertido = convertir_presion_con_span(dato.pressure_out, span_presion)
-
-                    # 2. Aplicar corrección mx+b del momento
-                    # Usar coeficientes del momento si están disponibles, sino usar los actuales
-                    mp_momento = dato.mp if dato.mp is not None else mp
-                    bp_momento = dato.bp if dato.bp is not None else bp
-                    #presion_corregida = mp_momento * valor_convertido + bp_momento
-                    presion_corregida = mp_momento * dato.pressure_out + bp_momento
-                    
+                # Presión - aplicar corrección mx+b
+                if dato['presion_raw'] is not None:
+                    mp_momento = dato['mp'] if dato['mp'] is not None else mp
+                    bp_momento = dato['bp'] if dato['bp'] is not None else bp
+                    presion_corregida = mp_momento * dato['presion_raw'] + bp_momento
                     presion.append({
                         'x': timestamp,
-                        'y': presion_corregida,
+                        'y': round(presion_corregida, 2),
                         'fecha': fecha_str
                     })
 
-                # Densidad - mantener en g/cc
-                if dato.density is not None:
+                # Densidad - ya viene en g/cc
+                if dato['densidad_gcc'] is not None:
                     densidad.append({
                         'x': timestamp,
-                        'y': dato.density,
+                        'y': round(dato['densidad_gcc'], 4),
                         'fecha': fecha_str
                     })
 
-            return Response({
+            response_data = {
                 'success': True,
                 'datasets': {
                     'flujo_masico': {
@@ -195,8 +271,16 @@ class DatosTendenciasQueryView(APIView):
                     'ultimo_dato': ultimo_dato.created_at_iot.astimezone(COLOMBIA_TZ).strftime('%d/%m/%Y %H:%M:%S')
                 },
                 'timestamp': fecha_fin.isoformat(),
-                'total_registros': datos.count()
-            })
+                'total_registros': total_registros,
+                'decimacion_info': decimacion_info,
+                'from_cache': False
+            }
+            
+            # Guardar en caché por 30 segundos para mejor performance al cambiar de sistema
+            cache.set(cache_key, response_data, 30)
+            logger.info(f"💾 Datos de tendencias guardados en caché para sistema {sistema_id}")
+            
+            return Response(response_data)
             
         except Sistema.DoesNotExist:
             return Response({

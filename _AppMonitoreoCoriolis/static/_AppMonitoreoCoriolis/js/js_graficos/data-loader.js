@@ -473,8 +473,9 @@ function exportarDatosTemperatura() {
 // FUNCIONES PARA GRÁFICO DE TENDENCIAS
 // ====================================================================
 
-// Variable global para el gráfico de tendencias
+// Variable global para el gráfico de tendencias (accesible desde otros scripts)
 let trendChart = null;
+window.trendChart = null; // Hacer accesible globalmente
 
 // Función para cargar datos de tendencias (últimas 4 horas)
 async function cargarDatosTendencias() {
@@ -484,16 +485,22 @@ async function cargarDatosTendencias() {
         return;
     }
     
+    const startTime = performance.now(); // Medir tiempo
+    
     try {
         const response = await fetch(`/monitoreo/api/datos-tendencias/${sistemaId}/`);
         const data = await response.json();
         
+        const endTime = performance.now();
+        const loadTime = (endTime - startTime).toFixed(0);
+        
         if (data.success) {
             renderGraficoTendencias(data);
+            const cacheStatus = data.from_cache ? '📦 CACHÉ' : '🔄 BD';
             const info = data.ventana_tiempo ? 
                 `${data.total_registros} registros (${data.ventana_tiempo.inicio} - ${data.ventana_tiempo.fin})` : 
                 `${data.total_registros} registros`;
-            //console.log('✅ Datos de tendencias cargados:', info);
+            console.log(`✅ ${cacheStatus} | ${loadTime}ms | ${info}`);
             
             // Mostrar info de ventana de tiempo si está disponible
             if (data.ventana_tiempo) {
@@ -505,7 +512,9 @@ async function cargarDatosTendencias() {
             mostrarErrorTendencias(data.error);
         }
     } catch (error) {
-        //console.error('❌ Error en la petición de tendencias:', error);
+        const endTime = performance.now();
+        const loadTime = (endTime - startTime).toFixed(0);
+        console.error(`❌ Error en ${loadTime}ms:`, error);
         mostrarErrorTendencias('Error de conexión');
     }
 }
@@ -581,20 +590,22 @@ function renderGraficoTendencias(data, intentos = 0) {
     // 🔄 PRESERVAR el estado de visibilidad de los datasets existentes
     let estadoVisibilidad = {};
     if (trendChart && trendChart.data && trendChart.data.datasets) {
-        trendChart.data.datasets.forEach((dataset, index) => {
-            // Verificar si el dataset está visible u oculto
-            const meta = trendChart.getDatasetMeta(index);
-            const isVisible = meta && meta.visible !== false; // Por defecto visible
+        const datasetsLength = trendChart.data.datasets.length;
+        for (let i = 0; i < datasetsLength; i++) {
+            const dataset = trendChart.data.datasets[i];
+            const meta = trendChart.getDatasetMeta(i);
+            const isVisible = meta && meta.visible !== false;
             estadoVisibilidad[dataset.label] = isVisible;
-            //console.log(`📊 Estado preservado: ${dataset.label} = ${isVisible ? 'visible' : 'oculto'}`);
-        });
+        }
     }
     
     // Preparar datasets para Chart.js - SOLO los que tienen datos
     const datasets = [];
     
     // Agregar cada variable como dataset SOLO si tiene datos
-    Object.keys(data.datasets).forEach(key => {
+    const keys = Object.keys(data.datasets);
+    for (let i = 0; i < keys.length; i++) {
+        const key = keys[i];
         const dataset = data.datasets[key];
         
         // 🔥 FILTRAR: Solo agregar si el dataset tiene datos
@@ -611,14 +622,14 @@ function renderGraficoTendencias(data, intentos = 0) {
                 backgroundColor: dataset.color + '20', // Agregar transparencia
                 fill: false,
                 tension: 0.4,
-                pointRadius: 2,
-                pointHoverRadius: 4,
-                hidden: shouldBeHidden // Aplicar el estado preservado
+                pointRadius: 1,  // Reducido de 2 a 1
+                pointHoverRadius: 3,  // Reducido de 4 a 3
+                hidden: shouldBeHidden,
+                parsing: false,  // Optimización: datos ya están en formato correcto
+                normalized: true  // Optimización: evitar normalización redundante
             });
-            
-            //console.log(`➕ Dataset agregado: ${label}, oculto: ${shouldBeHidden}`);
         }
-    });
+    }
     
     // Si no hay datasets con datos, mostrar mensaje
     if (datasets.length === 0) {
@@ -631,8 +642,6 @@ function renderGraficoTendencias(data, intentos = 0) {
         // 🔄 ACTUALIZAR datos sin recrear el gráfico
         trendChart.data.datasets = datasets;
         trendChart.update('none'); // 'none' = sin animación para mejor rendimiento
-        
-        //console.log('🔄 Gráfico de tendencias actualizado con', datasets.length, 'variables (preservando selecciones)');
         return;
     }
     
@@ -692,6 +701,9 @@ function renderGraficoTendencias(data, intentos = 0) {
             }
         }
     });
+    
+    // Hacer accesible globalmente para WebSocket
+    window.trendChart = trendChart;
     
     //console.log('✅ Gráfico de tendencias creado inicialmente con', datasets.length, 'variables');
 }

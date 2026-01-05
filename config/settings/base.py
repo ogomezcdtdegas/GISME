@@ -70,12 +70,14 @@ SECURE_REFERRER_POLICY = "same-origin"
 # Limita la info del Referer a tu mismo origen para reducir fuga de datos en enlaces externos.
 
 INSTALLED_APPS = [
+    'daphne',  # Debe estar primero para WebSockets
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'channels',  # Soporte para WebSockets
     'rest_framework',
     '_AppHome',
     '_AppMonitoreoCoriolis',
@@ -149,6 +151,16 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'config.wsgi.application'
+
+# ASGI Application para WebSockets
+ASGI_APPLICATION = 'config.asgi.application'
+
+# Configuración de Channels (sin Redis para desarrollo)
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer'
+    }
+}
 
 AUTH_PASSWORD_VALIDATORS = [
     {
