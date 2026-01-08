@@ -12,7 +12,6 @@ from _AppMonitoreoCoriolis.models import NodeRedData, BatchDetectado
 from UTIL_LIB.conversiones import lb_s_a_kg_min, lb_a_kg, cm3_a_gal
 from _AppMonitoreoCoriolis.views.utils import COLOMBIA_TZ
 
-# Configurar logging
 logger = logging.getLogger(__name__)
 
 class DetectarBatchesCommandView(APIView):
@@ -83,11 +82,7 @@ class DetectarBatchesCommandView(APIView):
             margen_deteccion = timedelta(hours=2)  # 2 horas después de fecha_fin
             fecha_fin_con_margen = fecha_fin + margen_deteccion
             
-            # Log para debugging de zona horaria
-            logger.info(f"Fechas Colombia - Inicio: {fecha_inicio_colombia} | Fin: {fecha_fin_colombia}")
-            logger.info(f"Fechas UTC (para DB) - Inicio: {fecha_inicio} | Fin: {fecha_fin}")
-            logger.info(f"Fecha fin con margen de detección: {fecha_fin_con_margen} (UTC) - Margen: {margen_deteccion.total_seconds()/3600} horas")
-            logger.info(f"Input recibido - fecha_inicio_str: '{fecha_inicio_str}', fecha_fin_str: '{fecha_fin_str}'")
+            logger.info(f"Detectando batches - Rango: {fecha_inicio_colombia.strftime('%d/%m/%Y %H:%M')} a {fecha_fin_colombia.strftime('%d/%m/%Y %H:%M')} (Colombia)")
             
             # Obtener datos del rango de fechas CON MARGEN, ordenados por fecha IoT
             datos = NodeRedData.objects.filter(
@@ -96,8 +91,6 @@ class DetectarBatchesCommandView(APIView):
                 created_at_iot__lte=fecha_fin_con_margen,  # Usar fecha con margen
                 created_at_iot__isnull=False  # Solo datos con timestamp IoT válido
             ).order_by('created_at_iot')
-            
-            logger.info(f"📊 Datos consultados: {datos.count()} registros (incluye margen para detección de medianoche)")
             
             if not datos.exists():
                 return Response({
@@ -121,10 +114,9 @@ class DetectarBatchesCommandView(APIView):
                     batches_en_rango.append(batch_data)
                 else:
                     batches_fuera_rango += 1
-                    logger.info(f"🚫 Batch descartado (inicia fuera del rango): {fecha_inicio_batch.astimezone(COLOMBIA_TZ)}")
             
             if batches_fuera_rango > 0:
-                logger.info(f"📊 Batches filtrados: {len(batches_en_rango)} en rango, {batches_fuera_rango} fuera de rango")
+                logger.info(f"Filtrados {batches_fuera_rango} batches fuera del rango solicitado")
             
             # Calcular masa total bruta del rango (sin perfil, solo mass_rate > 0)
             masa_total_bruta_kg = self._calcular_masa_total_bruta(datos, fecha_inicio, fecha_fin)
@@ -149,9 +141,6 @@ class DetectarBatchesCommandView(APIView):
                 
                 if batch_existente:
                     # El batch ya existe, no crear duplicado
-                    #logger.info(f"⚠️ Batch ya existe con hash {hash_batch[:16]}... - OMITIENDO")
-                    #logger.info(f"   ID existente: {batch_existente.id}")
-                    #logger.info(f"   Rango: {batch_existente.fecha_inicio.astimezone(COLOMBIA_TZ).strftime('%d/%m/%Y %H:%M:%S')} - {batch_existente.fecha_fin.astimezone(COLOMBIA_TZ).strftime('%d/%m/%Y %H:%M:%S')}")
                     batches_existentes += 1
                     batch = batch_existente
                 else:
@@ -175,13 +164,8 @@ class DetectarBatchesCommandView(APIView):
                             time_finished_batch=batch_data['time_finished_usado']
                         )
                         batches_nuevos += 1
-                        #logger.info(f"✅ Batch nuevo creado con ID {batch.id}")
-                        #logger.info(f"   Hash: {hash_batch[:16]}...")
-                        #logger.info(f"   Rango: {batch.fecha_inicio.astimezone(COLOMBIA_TZ).strftime('%d/%m/%Y %H:%M:%S')} - {batch.fecha_fin.astimezone(COLOMBIA_TZ).strftime('%d/%m/%Y %H:%M:%S')}")
-                    except IntegrityError as e:
-                        # Por si acaso hay condición de carrera (otro proceso creó el batch justo ahora)
-                        #logger.warning(f"⚠️ IntegrityError al crear batch (condición de carrera detectada)")
-                        #logger.warning(f"   Error: {str(e)}")
+                    except IntegrityError:
+                        # Condición de carrera: otro proceso creó el batch
                         batch = BatchDetectado.objects.get(hash_identificacion=hash_batch)
                         batches_existentes += 1
                 
@@ -228,6 +212,8 @@ class DetectarBatchesCommandView(APIView):
                     'perfil_lim_sup': batch.perfil_lim_sup_caudal or 0,
                     'perfil_vol_min': batch.perfil_vol_minimo or 0
                 })
+            
+            logger.info(f"✅ Proceso completado: {batches_nuevos} nuevos, {batches_existentes} existentes, {len(batches_completos)} total")
             
             return Response({
                 'success': True,
@@ -297,46 +283,34 @@ class DetectarBatchesCommandView(APIView):
         vol_minimo_batch = None
         time_finished_batch_actual = None
 
-        logger.info(f"🔍 Iniciando detección con PERFIL DINÁMICO del primer dato de cada batch")
-
         for dato in datos:
             mass_rate_raw = dato.mass_rate  # En lb/sec
             total_mass = dato.total_mass
             total_volume = dato.total_volume
             timestamp_actual = dato.created_at_iot
             
-            # LOG: Mostrar timestamp de cada registro para debugging
-            logger.debug(f"📅 Procesando registro: {timestamp_actual} | mass_rate: {mass_rate_raw} lb/sec")
-            
             # Verificar que tenemos los datos necesarios
             if mass_rate_raw is None or total_mass is None or total_volume is None:
-                logger.debug(f"⚠️ Saltando registro con datos faltantes en {timestamp_actual}")
                 continue
                 
             # Convertir mass_rate de lb/sec a kg/min
             mass_rate_kg_min = lb_s_a_kg_min(mass_rate_raw)
-            logger.debug(f"🔄 Convertido: {mass_rate_kg_min:.3f} kg/min")
             
             # LÓGICA DINÁMICA: Detectar cambio de 0 a > 0 y manejar tiempo de espera con perfil del primer dato
             if mass_rate_kg_min > 0:
-                logger.debug(f"💧 Flujo activo ({mass_rate_kg_min:.2f} kg/min) - en_batch: {en_batch}")
                 if not en_batch:
                     # VALIDAR: NO iniciar batch si el dato está fuera del rango solicitado
                     if timestamp_actual < fecha_inicio_rango or timestamp_actual > fecha_fin_rango:
-                        print(f"⏭️ SALTANDO dato fuera del rango: {timestamp_actual} (rango: {fecha_inicio_rango} - {fecha_fin_rango})")
-                        punto_anterior = dato  # Guardar como punto anterior por si acaso
+                        punto_anterior = dato
                         continue
                     
-                    print(f"🆕 INICIANDO NUEVO BATCH - timestamp: {timestamp_actual}")
-                    logger.info(f"🆕 INICIANDO NUEVO BATCH - timestamp: {timestamp_actual}")
-                    # 🎯 CAPTURAR PERFIL DEL PRIMER DATO
+                    # Capturar perfil del primer dato
                     vol_detect = dato.vol_detect_batch
                     time_closed = dato.time_closed_batch
                     
                     # Validar que el dato tiene perfil válido
                     if vol_detect is None or time_closed is None:
-                        print(f"⚠️ Dato sin perfil válido en {dato.created_at_local}: vol_detect={vol_detect}, time_closed={time_closed} - IGNORANDO")
-                        logger.warning(f"⚠️ Dato sin perfil válido en {dato.created_at_local}: vol_detect={vol_detect}, time_closed={time_closed} - IGNORANDO")
+                        logger.warning(f"Dato sin perfil válido (vol_detect={vol_detect}, time_closed={time_closed}) - IGNORANDO")
                         continue
                     
                     # Capturar perfil para este batch
@@ -348,37 +322,26 @@ class DetectarBatchesCommandView(APIView):
                     inicio_batch = dato.created_at_iot
                     tiempo_cero_inicio = None
                     
+                    logger.info(f"🆕 Batch iniciado - Perfil: vol={vol_minimo_batch:.2f}kg, time={time_finished_batch_actual:.2f}min")
+                    
                     # Si tenemos punto anterior (donde flujo = 0), usarlo como referencia
                     if punto_anterior is not None:
                         primer_dato = punto_anterior
-                        logger.info(f"✅ Iniciando batch en {inicio_batch}, usando punto anterior como referencia")
-                        logger.info(f"   Punto inicial (flujo=0): masa={primer_dato.total_mass} lb, volumen={primer_dato.total_volume} cm³")
-                        logger.info(f"   🎯 PERFIL CAPTURADO: vol_detect={vol_minimo_batch:.2f} kg, time_closed={time_finished_batch_actual:.2f} min")
                     else:
                         primer_dato = dato
-                        logger.info(f"✅ Iniciando batch en {inicio_batch}, sin punto anterior disponible")
-                        logger.info(f"   🎯 PERFIL CAPTURADO: vol_detect={vol_minimo_batch:.2f} kg, time_closed={time_finished_batch_actual:.2f} min")
                     
                     datos_batch = [dato]
                     ultimo_dato_con_flujo = dato
-                    logger.debug(f"Flujo actual: {mass_rate_kg_min:.2f} kg/min, masa actual: {total_mass} lb, volumen actual: {total_volume} cm³")
                 else:
                     # Continuar batch - verificar cambio de día PRIMERO antes de continuar
-                    print(f"📝 CONTINUANDO BATCH EXISTENTE - timestamp: {timestamp_actual}")
-                    logger.info(f"📝 CONTINUANDO BATCH EXISTENTE - timestamp: {timestamp_actual}")
                     
                     # 🌙 VERIFICAR CAMBIO DE DÍA - Cerrar batch del día anterior si cruza medianoche
                     fecha_inicio_batch_colombia = primer_dato.created_at_iot.astimezone(COLOMBIA_TZ).date()
                     fecha_dato_actual_colombia = dato.created_at_iot.astimezone(COLOMBIA_TZ).date()
                     
-                    print(f"🔍 Verificando cambio de día: inicio={fecha_inicio_batch_colombia}, actual={fecha_dato_actual_colombia}")
-                    logger.info(f"🔍 Verificando cambio de día: inicio={fecha_inicio_batch_colombia}, actual={fecha_dato_actual_colombia}")
-                    
                     if fecha_inicio_batch_colombia != fecha_dato_actual_colombia:
                         # HAY CAMBIO DE DÍA - Cerrar batch del día anterior antes de continuar
-                        print(f"🌙 CAMBIO DE DÍA DETECTADO: {fecha_inicio_batch_colombia} -> {fecha_dato_actual_colombia}")
-                        logger.info(f"🌙 CAMBIO DE DÍA DETECTADO: {fecha_inicio_batch_colombia} -> {fecha_dato_actual_colombia}")
-                        logger.info(f"   Cerrando batch del día anterior a las 23:59:59.999999")
+                        logger.warning(f"🌙 Cambio de día detectado: {fecha_inicio_batch_colombia} -> {fecha_dato_actual_colombia}")
                         
                         # Encontrar el último dato del día anterior (antes de medianoche)
                         ultimo_dato_dia_anterior = None
@@ -403,10 +366,6 @@ class DetectarBatchesCommandView(APIView):
                             fecha_fin_dia_anterior = COLOMBIA_TZ.localize(
                                 datetime.combine(fecha_inicio_batch_colombia, time(23, 59, 59, 999999))
                             ).astimezone(pytz.UTC)
-                            
-                            logger.info(f"   Batch día anterior: {primer_dato.created_at_iot} - {fecha_fin_dia_anterior}")
-                            logger.info(f"   (Último dato real: {ultimo_dato_dia_anterior.created_at_iot})")
-                            logger.info(f"   Masa: {diferencia_masa_kg:.2f} kg, Vol: {diferencia_volumen_gal:.3f} gal")
                             
                             # Validar con volumen mínimo
                             if diferencia_masa_kg >= vol_minimo_batch:
@@ -433,15 +392,14 @@ class DetectarBatchesCommandView(APIView):
                                     'vol_minimo_usado': vol_minimo_batch,
                                     'time_finished_usado': time_finished_batch_actual
                                 })
-                                logger.info(f"✅ Batch del día anterior guardado por cambio de día (cerrado a 23:59:59.999999)")
+                                logger.info(f"✅ Batch día anterior guardado: Masa={diferencia_masa_kg:.2f}kg, Vol={diferencia_volumen_gal:.2f}gal")
                             else:
-                                logger.info(f"❌ Batch del día anterior descartado: {diferencia_masa_kg:.2f} kg < {vol_minimo_batch} kg")
+                                logger.info(f"❌ Batch día anterior descartado: {diferencia_masa_kg:.2f}kg < {vol_minimo_batch:.2f}kg")
                         
                         # IMPORTANTE: Después de cerrar el batch del día anterior, verificar si el dato actual
                         # está dentro del rango solicitado para iniciar un nuevo batch inmediatamente
                         if timestamp_actual >= fecha_inicio_rango and timestamp_actual <= fecha_fin_rango:
                             # El dato actual está en el rango, iniciar nuevo batch con este dato
-                            print(f"🔄 Iniciando nuevo batch del día siguiente: {fecha_dato_actual_colombia}")
                             logger.info(f"🔄 Iniciando nuevo batch del día siguiente: {fecha_dato_actual_colombia}")
                             
                             # Capturar perfil del dato actual
@@ -458,14 +416,8 @@ class DetectarBatchesCommandView(APIView):
                                 tiempo_cero_inicio = None
                                 vol_minimo_batch = vol_detect_nuevo
                                 time_finished_batch_actual = time_closed_nuevo
-                                
-                                print(f"   ✅ Nuevo batch iniciado en {inicio_batch}")
-                                print(f"   🎯 PERFIL: vol_detect={vol_minimo_batch:.2f} kg, time_closed={time_finished_batch_actual:.2f} min")
-                                logger.info(f"   ✅ Nuevo batch iniciado en {inicio_batch}")
-                                logger.info(f"   🎯 PERFIL: vol_detect={vol_minimo_batch:.2f} kg, time_closed={time_finished_batch_actual:.2f} min")
                             else:
                                 # Si no tiene perfil válido, reiniciar estado
-                                print(f"   ⚠️ Dato sin perfil válido, esperando siguiente dato")
                                 en_batch = False
                                 inicio_batch = None
                                 primer_dato = None
@@ -476,8 +428,6 @@ class DetectarBatchesCommandView(APIView):
                                 time_finished_batch_actual = None
                         else:
                             # El dato actual está fuera del rango, reiniciar estado y no continuar
-                            print(f"   ⏭️ Dato actual fuera del rango, no iniciar nuevo batch")
-                            logger.info(f"   Dato actual fuera del rango solicitado, estado reiniciado")
                             en_batch = False
                             inicio_batch = None
                             primer_dato = None
@@ -497,36 +447,27 @@ class DetectarBatchesCommandView(APIView):
                     if tiempo_cero_inicio is not None:
                         tiempo_antes_subir = timestamp_actual - tiempo_cero_inicio
                         minutos_antes_subir = tiempo_antes_subir.total_seconds() / 60
-                        logger.info(f"🟢 FLUJO VOLVIÓ A SUBIR - Continuando batch")
-                        logger.info(f"⏱️ Tiempo que estuvo en cero: {minutos_antes_subir:.3f} min (límite: {time_finished_batch_actual} min)")
-                        logger.info(f"🔄 Reiniciando contador de tiempo en cero")
-                        tiempo_cero_inicio = None  # Reiniciar porque el flujo volvió a subir
+                        logger.info(f"� Flujo volvió a subir después de {minutos_antes_subir:.2f} min - Continuando batch")
+                        tiempo_cero_inicio = None
                     else:
-                        logger.debug(f"➕ Agregando datos al batch en curso (timestamp: {timestamp_actual})")
+                        # Agregar datos al batch en curso
+                        pass
             else:
                 # mass_rate <= 0: verificar tiempo de espera si estaba en batch
                 if en_batch:
                     if tiempo_cero_inicio is None:
                         # Primera vez que el flujo cae a cero, iniciar contador
                         tiempo_cero_inicio = timestamp_actual
-                        logger.info(f"🔴 FLUJO CAYÓ A CERO - Iniciando contador de tiempo")
-                        logger.info(f"⏱️ Tiempo inicio cero: {tiempo_cero_inicio}")
-                        logger.info(f"⏳ Esperando {time_finished_batch_actual} minutos para cerrar batch")
+                        logger.info(f"🔴 Flujo cayó a cero - Esperando {time_finished_batch_actual:.2f} min para cerrar batch")
                     else:
                         # Verificar si ya pasó el tiempo de espera
                         tiempo_transcurrido = timestamp_actual - tiempo_cero_inicio
                         minutos_en_cero = tiempo_transcurrido.total_seconds() / 60
                         
-                        logger.debug(f"⏰ Registro actual: {timestamp_actual}")
-                        logger.debug(f"🕐 Tiempo desde inicio cero: {tiempo_transcurrido}")
-                        logger.debug(f"📊 Minutos transcurridos: {minutos_en_cero:.3f} min / {time_finished_batch_actual} min")
-                        
                         if minutos_en_cero >= time_finished_batch_actual:
                             # Ha pasado el tiempo de espera, cerrar el batch
-                            fin_batch = tiempo_cero_inicio  # Usar el momento cuando empezó a estar en cero
-                            
-                            logger.info(f"✅ TIEMPO SUPERADO - Cerrando batch después de {minutos_en_cero:.3f} min en cero")
-                            logger.info(f"🏁 Batch se cierra en: {fin_batch}")
+                            fin_batch = tiempo_cero_inicio
+                            logger.info(f"✅ Cerrando batch - {minutos_en_cero:.2f} min en cero (límite: {time_finished_batch_actual:.2f} min)")
                             
                             # Calcular diferencias de masa y volumen entre último dato con flujo y primer punto
                             if primer_dato and ultimo_dato_con_flujo:
@@ -541,13 +482,6 @@ class DetectarBatchesCommandView(APIView):
                                 volumen_final_cm3 = ultimo_dato_con_flujo.total_volume
                                 diferencia_volumen_cm3 = volumen_final_cm3 - volumen_inicial_cm3
                                 diferencia_volumen_gal = cm3_a_gal(diferencia_volumen_cm3)
-                                
-                                logger.debug(f"Cerrando batch después de {minutos_en_cero:.2f} min en cero (límite: {time_finished_batch_actual} min)")
-                                logger.debug(f"Masa inicial (punto en 0): {masa_inicial_lb:.2f} lb en {primer_dato.created_at_iot}")
-                                logger.debug(f"Masa final (último punto >0): {masa_final_lb:.2f} lb en {ultimo_dato_con_flujo.created_at_iot}")
-                                logger.debug(f"Diferencia masa: {diferencia_masa_lb:.2f} lb = {diferencia_masa_kg:.2f} kg")
-                                logger.debug(f"Volumen inicial: {volumen_inicial_cm3:.2f} cm³, Volumen final: {volumen_final_cm3:.2f} cm³")
-                                logger.debug(f"Diferencia volumen: {diferencia_volumen_cm3:.2f} cm³ = {diferencia_volumen_gal:.3f} gal")
                                 
                                 # Solo guardar si la diferencia de masa supera el volumen mínimo (criterio de validación)
                                 if diferencia_masa_kg >= vol_minimo_batch:
@@ -572,9 +506,7 @@ class DetectarBatchesCommandView(APIView):
                                         'vol_minimo_usado': vol_minimo_batch,
                                         'time_finished_usado': time_finished_batch_actual
                                     })
-                                    logger.info(f"Batch guardado después de {minutos_en_cero:.2f} min en cero: {primer_dato.created_at_iot} - {fin_batch}, Vol: {diferencia_volumen_gal:.3f} gal, Masa: {diferencia_masa_kg:.2f} kg")
-                                else:
-                                    logger.debug(f"Batch descartado: {diferencia_masa_kg:.2f} kg < {vol_minimo_batch} kg")
+                                    logger.info(f"✅ Batch guardado: Vol={diferencia_volumen_gal:.2f}gal, Masa={diferencia_masa_kg:.2f}kg")
                             
                             # Reiniciar estado
                             en_batch = False
@@ -586,10 +518,7 @@ class DetectarBatchesCommandView(APIView):
                             # 🔄 Resetear perfil para el siguiente batch
                             vol_minimo_batch = None
                             time_finished_batch_actual = None
-                        else:
-                            # Si no ha pasado el tiempo, seguir esperando
-                            tiempo_restante = time_finished_batch_actual - minutos_en_cero
-                            logger.debug(f"⏳ Esperando... Faltan {tiempo_restante:.3f} min para cerrar batch")
+                        # Si no ha pasado el tiempo, seguir esperando (sin log)
                 else:
                     # No hay batch activo, guardar como punto anterior
                     tiempo_cero_inicio = None
@@ -628,12 +557,6 @@ class DetectarBatchesCommandView(APIView):
                 diferencia_volumen_gal = cm3_a_gal(diferencia_volumen_cm3)
                 
                 razon_cierre = "cambio de día (medianoche)" if cambio_de_dia else "flujo en cero al final del rango"
-                logger.info(f"📦 Cerrando batch final por {razon_cierre}")
-                logger.debug(f"Masa inicial (punto en 0): {masa_inicial_lb:.2f} lb en {primer_dato.created_at_iot}")
-                logger.debug(f"Masa final (último punto >0): {masa_final_lb:.2f} lb en {ultimo_dato_con_flujo.created_at_iot}")
-                logger.debug(f"Diferencia masa: {diferencia_masa_lb:.2f} lb = {diferencia_masa_kg:.2f} kg")
-                logger.debug(f"Volumen inicial: {volumen_inicial_cm3:.2f} cm³, Volumen final: {volumen_final_cm3:.2f} cm³")
-                logger.debug(f"Diferencia volumen: {diferencia_volumen_cm3:.2f} cm³ = {diferencia_volumen_gal:.3f} gal")
                 
                 if diferencia_masa_kg >= vol_minimo_batch:
                     temperaturas = [d.coriolis_temperature for d in datos_batch if d.coriolis_temperature is not None]
@@ -656,16 +579,14 @@ class DetectarBatchesCommandView(APIView):
                         'vol_minimo_usado': vol_minimo_batch,
                         'time_finished_usado': time_finished_batch_actual
                     })
-                    logger.info(f"✅ Batch final guardado ({razon_cierre}): {primer_dato.created_at_iot} - {ultimo_dato_con_flujo.created_at_iot}, Vol: {diferencia_volumen_gal:.3f} gal, Masa: {diferencia_masa_kg:.2f} kg")
-                else:
-                    logger.info(f"❌ Batch final descartado: {diferencia_masa_kg:.2f} kg < {vol_minimo_batch} kg")
+                logger.info(f"✅ Batch final guardado: Vol={diferencia_volumen_gal:.2f}gal, Masa={diferencia_masa_kg:.2f}kg")
             else:
-                logger.info(f"⚠️ Batch NO cerrado: flujo activo ({ultimo_mass_rate_kg_min:.2f} kg/min) y sin cambio de día")
-                logger.info(f"   📊 Batch aún EN PROCESO - No se generará hasta que el flujo caiga a cero o cambie de día")
-                logger.info(f"   Inicio: {primer_dato.created_at_iot}, Último dato con flujo: {ultimo_dato_con_flujo.created_at_iot}")
-                logger.info(f"   Total registros hasta ahora: {len(datos_batch)}")
+                logger.info(f"❌ Batch final descartado: {diferencia_masa_kg:.2f}kg < {vol_minimo_batch:.2f}kg")
+        else:
+            # Batch NO cerrado: flujo activo y sin cambio de día
+            pass
 
-        logger.info(f"✅ Detección completada con lógica de PERFIL DINÁMICO. {len(batches)} batches detectados")
+        logger.info(f"✅ Detección completada: {len(batches)} batches detectados")
         return batches
     
     def _generar_hash_batch(self, fecha_inicio, fecha_fin, sistema_id, vol_minimo, time_finished_batch):
@@ -702,8 +623,6 @@ class DetectarBatchesCommandView(APIView):
         registros_procesados = 0
         resets_detectados = 0
         
-        logger.info(f"📊 Calculando masa total bruta (sin perfil) - Solo mass_rate > 0")
-        
         for dato in datos:
             # Filtrar solo datos dentro del rango exacto (sin margen)
             if not (fecha_inicio <= dato.created_at_iot <= fecha_fin):
@@ -726,7 +645,7 @@ class DetectarBatchesCommandView(APIView):
                 if masa_anterior is not None:
                     diferencia = total_mass_actual - masa_anterior
                     
-                    # DETECCIÓN DE RESET: Si la diferencia es negativa o muy grande
+                    # Detección de reset: Si la diferencia es negativa o muy grande
                     if diferencia < 0 or diferencia > 100000:  # 100,000 lb como límite razonable
                         # Hubo reset, reiniciar desde el valor actual
                         resets_detectados += 1
@@ -744,8 +663,7 @@ class DetectarBatchesCommandView(APIView):
                     masa_anterior = total_mass_actual
             # Si mass_rate <= 0, mantener última referencia (no actualizar masa_anterior)
         
-        logger.info(f"✅ Masa total bruta calculada: {masa_total_acumulada:.2f} kg")
-        logger.info(f"   📈 Registros procesados: {registros_procesados}")
-        logger.info(f"   🔄 Resets detectados: {resets_detectados}")
+        if resets_detectados > 0:
+            logger.info(f"Masa total: {masa_total_acumulada:.2f} kg - {resets_detectados} resets detectados")
         
         return masa_total_acumulada
