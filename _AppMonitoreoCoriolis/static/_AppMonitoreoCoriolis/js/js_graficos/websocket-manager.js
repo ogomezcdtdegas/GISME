@@ -246,8 +246,27 @@ function actualizarDisplaysConDatosWebSocket(datos) {
             }
         });
         
+        // ✅ Actualizar timestamp de "Última actualización"
+        if (datos.timestamp) {
+            const timestampElement = document.getElementById('ultima-actualizacion');
+            if (timestampElement) {
+                const fecha = new Date(datos.timestamp);
+                const fechaFormateada = fecha.toLocaleString('es-CO', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                    hour12: false
+                });
+                timestampElement.textContent = fechaFormateada;
+                actualizados++;
+            }
+        }
+        
         if (actualizados > 0) {
-            console.log(`✅ ${actualizados} elementos actualizados (displays + tabla)`);
+            console.log(`✅ ${actualizados} elementos actualizados (displays + tabla + timestamp)`);
         }
         
     } catch (error) {
