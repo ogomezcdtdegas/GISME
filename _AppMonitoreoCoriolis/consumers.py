@@ -23,7 +23,7 @@ class TendenciasConsumer(AsyncWebsocketConsumer):
         )
 
         await self.accept()
-        logger.info(f"✅ WebSocket conectado - Usuario unido a grupo: {self.room_group_name}")
+        """logger.info(f"✅ WebSocket conectado - Usuario unido a grupo: {self.room_group_name}")"""
 
     async def disconnect(self, close_code):
         """Se ejecuta cuando un cliente se desconecta"""
@@ -32,7 +32,7 @@ class TendenciasConsumer(AsyncWebsocketConsumer):
             self.room_group_name,
             self.channel_name
         )
-        logger.info(f"❌ WebSocket desconectado - Usuario salió de grupo: {self.room_group_name}")
+        """logger.info(f"❌ WebSocket desconectado - Usuario salió de grupo: {self.room_group_name}")"""
 
     async def receive(self, text_data):
         """
@@ -55,4 +55,4 @@ class TendenciasConsumer(AsyncWebsocketConsumer):
             'timestamp': event.get('timestamp', None)
         }))
         
-        logger.info(f"📤 Datos enviados por WebSocket a grupo: {self.room_group_name}")
+        """logger.info(f"📤 Datos enviados por WebSocket a grupo: {self.room_group_name}")"""
