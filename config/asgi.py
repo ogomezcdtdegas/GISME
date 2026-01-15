@@ -19,6 +19,18 @@ django_asgi_app = get_asgi_application()
 
 # Importar después de inicializar Django
 from _AppMonitoreoCoriolis.routing import websocket_urlpatterns
+from _AppAuth.middleware_msal import MSALAuthMiddleware
+
+# ====================================================
+# ASGI Application con Redis y autenticación
+# ====================================================
+# Configuración optimizada para WebSockets con:
+#   - AuthMiddlewareStack: Maneja sesiones Django y autenticación básica
+#   - URLRouter: Enruta conexiones WebSocket
+#   - Redis (Channel Layers): Distribuye mensajes entre workers
+#
+# NOTA: MSALAuthMiddleware removido temporalmente porque es MiddlewareMixin (HTTP)
+# y no es compatible con ASGI WebSockets. La autenticación se maneja via sesión Django.
 
 application = ProtocolTypeRouter({
     "http": django_asgi_app,
