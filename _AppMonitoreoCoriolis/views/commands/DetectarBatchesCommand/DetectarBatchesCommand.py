@@ -29,6 +29,65 @@ class DetectarBatchesCommandView(APIView):
         self.detector = BatchDetectorService()
         self.mass_calculator = MassCalculatorService()
     
+    def _generate_num_ticket(self, fecha_inicio_batch, sistema):
+        """
+        Genera el num_ticket en formato AAMMDD_# 
+        El número secuencial reinicia cada día y continúa si ya existen batches ese día.
+        
+        Args:
+            fecha_inicio_batch: datetime UTC del inicio del batch
+            sistema: instancia del Sistema
+            
+        Returns:
+            str: num_ticket en formato AAMMDD_#
+        """
+        # Convertir fecha a timezone Colombia
+        fecha_colombia = fecha_inicio_batch.astimezone(COLOMBIA_TZ)
+        
+        # Formatear fecha como AAMMDD
+        prefijo_fecha = fecha_colombia.strftime('%y%m%d')
+        
+        # Obtener el inicio y fin del día en Colombia
+        inicio_dia = fecha_colombia.replace(hour=0, minute=0, second=0, microsecond=0)
+        fin_dia = fecha_colombia.replace(hour=23, minute=59, second=59, microsecond=999999)
+        
+        # Convertir a UTC para la consulta
+        inicio_dia_utc = inicio_dia.astimezone(pytz.UTC)
+        fin_dia_utc = fin_dia.astimezone(pytz.UTC)
+        
+        # Buscar TODOS los tickets de ese día para este sistema
+        batches_del_dia = BatchDetectado.objects.filter(
+            systemId=sistema,
+            fecha_inicio__gte=inicio_dia_utc,
+            fecha_inicio__lte=fin_dia_utc,
+            num_ticket__startswith=prefijo_fecha,
+            num_ticket__isnull=False
+        ).values_list('num_ticket', flat=True)
+        
+        # Extraer todos los números y encontrar el máximo
+        numeros_usados = []
+        for ticket in batches_del_dia:
+            try:
+                # Verificar que el ticket sea string y tenga el formato correcto
+                if not isinstance(ticket, str):
+                    continue
+                if '_' not in ticket:
+                    continue
+                # Extraer la parte numérica después del guion bajo
+                numero = int(ticket.split('_')[1])
+                numeros_usados.append(numero)
+            except (IndexError, ValueError):
+                # Si hay error al parsear, ignorar este ticket
+                continue
+        
+        # Calcular el siguiente número
+        if numeros_usados:
+            nuevo_numero = max(numeros_usados) + 1
+        else:
+            nuevo_numero = 1
+        
+        return f"{prefijo_fecha}_{nuevo_numero}"
+    
     def post(self, request, sistema_id):
         try:
             # Obtener parámetros
@@ -140,6 +199,9 @@ class DetectarBatchesCommandView(APIView):
                     batch = batch_existente
                 else:
                     # El batch NO existe, crear uno nuevo
+                    # Generar num_ticket basado en la fecha de inicio del batch
+                    num_ticket = self._generate_num_ticket(batch_data['fecha_inicio'], sistema)
+                    
                     try:
                         batch = BatchDetectado.objects.create(
                             systemId=sistema,
@@ -156,9 +218,11 @@ class DetectarBatchesCommandView(APIView):
                             perfil_vol_minimo=batch_data['vol_minimo_usado'],
                             duracion_minutos=batch_data['duracion_minutos'],
                             total_registros=batch_data['total_registros'],
-                            time_finished_batch=batch_data['time_finished_usado']
+                            time_finished_batch=batch_data['time_finished_usado'],
+                            num_ticket=num_ticket  # Asignar el num_ticket generado
                         )
                         batches_nuevos += 1
+                        logger.info(f"✅ Batch creado con ticket: {num_ticket}")
                     except IntegrityError:
                         # Condición de carrera: otro proceso creó el batch
                         batch = BatchDetectado.objects.get(hash_identificacion=hash_batch)
@@ -167,6 +231,7 @@ class DetectarBatchesCommandView(APIView):
                 # Agregar a la lista de respuesta (ya sea nuevo o existente)
                 batches_guardados.append({
                     'id': batch.id,
+                    'num_ticket': batch.num_ticket,
                     'fecha_inicio': batch.fecha_inicio.astimezone(COLOMBIA_TZ).strftime('%d/%m/%Y %H:%M:%S'),
                     'fecha_fin': batch.fecha_fin.astimezone(COLOMBIA_TZ).strftime('%d/%m/%Y %H:%M:%S'),
                     'vol_total': round(batch.vol_total, 2),
@@ -194,6 +259,7 @@ class DetectarBatchesCommandView(APIView):
             for batch in todos_batches:
                 batches_completos.append({
                     'id': batch.id,
+                    'num_ticket': batch.num_ticket,
                     'fecha_inicio': batch.fecha_inicio.astimezone(COLOMBIA_TZ).strftime('%d/%m/%Y %H:%M:%S'),
                     'fecha_fin': batch.fecha_fin.astimezone(COLOMBIA_TZ).strftime('%d/%m/%Y %H:%M:%S'),
                     'vol_total': round(batch.vol_total, 2),
